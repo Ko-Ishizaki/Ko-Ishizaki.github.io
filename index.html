@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>menu-module</title>
+  <style>
+    /* 基本リセット */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ハンバーガーメニューアイコン */
+    .hamburger {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      z-index: 1001;
+    }
+
+    /* 各バー */
+    .bar {
+      width: 100%;
+      height: 4px;
+      background-color: black;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    /* ハンバーガーが「×」に変形 */
+    .hamburger.active .bar1 {
+      transform: rotate(45deg) translate(10px, 10px);
+      background-color: white;
+    }
+
+    .hamburger.active .bar2 {
+      opacity: 0;
+    }
+
+    .hamburger.active .bar3 {
+      transform: rotate(-45deg) translate(10px, -10px);
+      background-color: white;
+    }
+
+    /* サイドメニュー */
+    .menu, .submenu {
+      position: fixed;
+      top: 0;
+      right: -250px;
+      height: 100%;
+      width: 250px;
+      background-color: #444;
+      color: white;
+      transition: right 0.3s ease;
+      padding-top: 60px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* メニューが表示された状態 */
+    .menu.show, .submenu.show {
+      right: 0;
+    }
+
+    /* 画面幅が500px以下の場合のスタイル */
+    @media (max-width: 500px) {
+      .menu, .submenu {
+        width: 100%;
+        right: -100%;
+      }
+      .menu.show, .submenu.show {
+        right: 0;
+      }
+    }
+
+    /* メニューアイテム */
+    .menu-item, .submenu-item {
+      padding: 15px 0;
+      font-size: 18px;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .menu-item:hover, .submenu-item:hover {
+      background-color: #555;
+    }
+
+    /* サブメニューの戻るボタン */
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 40px; /* サイズを大きく */
+      height: 40px; /* サイズを大きく */
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* カスタム矢印アイコン */
+    .back-btn::before {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 3px;
+      background-color: white;
+      position: relative;
+      top: -5px; 
+      left: -3px;
+    }
+
+    .back-btn::after {
+      content: '';
+      display: block;
+      width: 12px; 
+      height: 12px;
+      border-top: 3px solid white; 
+      border-right: 3px solid white;
+      position: absolute;
+      transform: rotate(-135deg);
+      left: 6px;
+      top: 8px;
+    }
+
+    .arrow {
+      margin-left: 10px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- ハンバーガーメニューアイコン -->
+  <div class="hamburger" onclick="toggleMenu()">
+    <div class="bar bar1"></div>
+    <div class="bar bar2"></div>
+    <div class="bar bar3"></div>
+  </div>
+
+  <!-- メインメニュー -->
+  <div class="menu" id="sideMenu">
+    <div class="menu-item">Home</div>
+    <div class="menu-item">Resume</div>
+    <div class="menu-item" onclick="openSubmenu('productSubmenu')">Product</div>
+    <div class="menu-item">Blog</div>
+    <div class="menu-item">Request_Form</div>
+  </div>
+
+  <!-- Productのサブメニュー -->
+  <div class="submenu" id="productSubmenu">
+    <div class="back-btn" onclick="closeSubmenu()"></div>
+    <div class="submenu-item">カラーコード確認</div>
+    <div class="submenu-item">郵便番号から住所</div>
+  </div>
+
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById("sideMenu");
+      const hamburger = document.querySelector(".hamburger");
+      const submenus = document.querySelectorAll(".submenu");
+
+      // ハンバーガーアイコンの状態を切り替え
+      hamburger.classList.toggle("active");
+
+      // メニューまたはサブメニューが開いているか確認し、すべて閉じる
+      if (menu.classList.contains("show") || Array.from(submenus).some(submenu => submenu.classList.contains("show"))) {
+        menu.classList.remove("show");
+        submenus.forEach(submenu => submenu.classList.remove("show"));
+      } else {
+        menu.classList.add("show");
+      }
+    }
+
+    function openSubmenu(submenuId) {
+      // メインメニューを非表示にし、指定されたサブメニューを表示
+      document.getElementById("sideMenu").classList.remove("show");
+      document.getElementById(submenuId).classList.add("show");
+    }
+
+    function closeSubmenu() {
+      // サブメニューを閉じてメインメニューを表示
+      const submenus = document.querySelectorAll(".submenu");
+      submenus.forEach(submenu => submenu.classList.remove("show"));
+      document.getElementById("sideMenu").classList.add("show");
+    }
+  </script>
+
+</body>
+</html>
