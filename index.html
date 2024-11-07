@@ -55,7 +55,7 @@
     }
 
     /* サイドメニュー */
-    .menu, .submenu {
+    .menu {
       position: fixed;
       top: 0;
       right: -250px;
@@ -72,8 +72,61 @@
     }
 
     /* メニューが表示された状態 */
-    .menu.show, .submenu.show {
+    .menu.show {
       right: 0;
+    }
+
+    /* サブメニュー */
+    .submenu {
+      position: fixed;
+      top: 0;
+      right: -250px;
+      height: 100%;
+      width: 250px;
+      background-color: #555;
+      color: white;
+      transition: right 0.3s ease;
+      padding-top: 60px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* サブメニューが表示された状態 */
+    .submenu.show {
+      right: 0;
+    }
+
+    /* トグルダウン用の子メニュー */
+    .dropdown {
+      display: none;
+      flex-direction: column;
+      width: 100%;
+      background-color: #555;
+    }
+
+    /* ドロップダウン表示時 */
+    .dropdown.show {
+      display: flex;
+    }
+
+    /* メニューアイテム */
+    .menu-item, .submenu-item {
+      padding: 15px 0;
+      font-size: 18px;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-decoration: none;
+    }
+
+    .menu-item:hover, .submenu-item:hover {
+      background-color: #666;
     }
 
     /* 画面幅が500px以下の場合のスタイル */
@@ -87,29 +140,13 @@
       }
     }
 
-    /* メニューアイテム */
-    .menu-item, .submenu-item {
-      padding: 15px 0;
-      font-size: 18px;
-      cursor: pointer;
-      width: 100%;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .menu-item:hover, .submenu-item:hover {
-      background-color: #555;
-    }
-
     /* サブメニューの戻るボタン */
     .back-btn {
       position: absolute;
       top: 20px;
       left: 20px;
-      width: 40px; /* サイズを大きく */
-      height: 40px; /* サイズを大きく */
+      width: 40px;
+      height: 40px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -124,27 +161,22 @@
       height: 3px;
       background-color: white;
       position: relative;
-      top: -5px; 
+      top: -5px;
       left: -3px;
     }
 
     .back-btn::after {
       content: '';
       display: block;
-      width: 12px; 
+      width: 12px;
       height: 12px;
-      border-top: 3px solid white; 
+      border-top: 3px solid white;
       border-right: 3px solid white;
       position: absolute;
       transform: rotate(-135deg);
       left: 6px;
       top: 8px;
     }
-
-    .arrow {
-      margin-left: 10px;
-    }
-
   </style>
 </head>
 <body>
@@ -160,17 +192,25 @@
   <div class="menu" id="sideMenu">
     <div class="menu-item">Home</div>
     <div class="menu-item">Resume</div>
-    <div class="menu-item" onclick="openSubmenu('productSubmenu')">Project</div>
+    <div class="menu-item" onclick="openSubmenu('productSubmenu')">Product</div>
+    
+    <!-- Design_Researchのトグルダウンメニュー -->
+    <div class="menu-item" onclick="toggleDropdown()">Design_Research</div>
+    <div class="dropdown" id="designDropdown">
+      <a href="#research-methods" class="submenu-item">Research Methods</a>
+      <a href="#case-studies" class="submenu-item">Case Studies</a>
+      <a href="#publications" class="submenu-item">Publications</a>
+    </div>
+    
     <div class="menu-item">Blog</div>
     <div class="menu-item">Request_Form</div>
   </div>
 
   <!-- Productのサブメニュー -->
   <div class="submenu" id="productSubmenu">
-    <div class="back-btn" onclick="closeSubmenu()"></div>
-    <div class="submenu-item">T様・乱数生成ツール</div>
-    <div class="submenu-item">K様・拡張子変換ツール</div>
-    <div class="submenu-item">C様・業務管理システム開発</div>
+    <div class="back-btn" onclick="closeSubmenu('productSubmenu')"></div>
+    <div class="submenu-item">カラーコード確認</div>
+    <div class="submenu-item">郵便番号から住所</div>
   </div>
 
   <script>
@@ -182,7 +222,7 @@
       // ハンバーガーアイコンの状態を切り替え
       hamburger.classList.toggle("active");
 
-      // メニューまたはサブメニューが開いているか確認し、すべて閉じる
+      // メインメニューとサブメニューをすべて閉じる
       if (menu.classList.contains("show") || Array.from(submenus).some(submenu => submenu.classList.contains("show"))) {
         menu.classList.remove("show");
         submenus.forEach(submenu => submenu.classList.remove("show"));
@@ -197,11 +237,15 @@
       document.getElementById(submenuId).classList.add("show");
     }
 
-    function closeSubmenu() {
+    function closeSubmenu(submenuId) {
       // サブメニューを閉じてメインメニューを表示
-      const submenus = document.querySelectorAll(".submenu");
-      submenus.forEach(submenu => submenu.classList.remove("show"));
+      document.getElementById(submenuId).classList.remove("show");
       document.getElementById("sideMenu").classList.add("show");
+    }
+
+    function toggleDropdown() {
+      const dropdown = document.getElementById("designDropdown");
+      dropdown.classList.toggle("show");
     }
   </script>
 
