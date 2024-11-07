@@ -140,6 +140,24 @@
       }
     }
 
+    /* 画面幅が1000px以上の場合のスタイル */
+    @media (min-width: 1000px) {
+      .hamburger {
+        display: none; /* ハンバーガーメニューアイコンを非表示にする */
+      }
+      .menu {
+        position: fixed;  /* 固定位置を設定 */
+        right: 0;         /* 右側に固定 */
+        top: 0;           /* 上部からスタート */
+        height: 100%;     /* 画面の高さに合わせる */
+        width: 250px;     /* 固定幅を維持 */
+        display: flex;    /* メニューを常に表示 */
+      }
+      .menu.show {
+        right: 0; /* 展開状態を維持 */
+      }
+    }
+
     /* サブメニューの戻るボタン */
     .back-btn {
       position: absolute;
@@ -192,10 +210,16 @@
   <div class="menu" id="sideMenu">
     <div class="menu-item">Home</div>
     <div class="menu-item">Resume</div>
-    <div class="menu-item" onclick="openSubmenu('productSubmenu')">Product</div>
     
+    <!-- Productメニュー：1000px以上でトグル、1000px以下でスライドメニュー -->
+    <div class="menu-item" onclick="handleProductClick()">Product</div>
+    <div class="dropdown" id="productDropdown">
+      <a href="#color-check" class="submenu-item">カラーコード確認</a>
+      <a href="#postal-address" class="submenu-item">郵便番号から住所</a>
+    </div>
+
     <!-- Design_Researchのトグルダウンメニュー -->
-    <div class="menu-item" onclick="toggleDropdown()">Design_Research</div>
+    <div class="menu-item" onclick="toggleDropdown('designDropdown')">Design_Research</div>
     <div class="dropdown" id="designDropdown">
       <a href="#research-methods" class="submenu-item">Research Methods</a>
       <a href="#case-studies" class="submenu-item">Case Studies</a>
@@ -206,7 +230,7 @@
     <div class="menu-item">Request_Form</div>
   </div>
 
-  <!-- Productのサブメニュー -->
+  <!-- Productのサブメニュー（1000px以下のスライド用） -->
   <div class="submenu" id="productSubmenu">
     <div class="back-btn" onclick="closeSubmenu('productSubmenu')"></div>
     <div class="submenu-item">カラーコード確認</div>
@@ -215,37 +239,45 @@
 
   <script>
     function toggleMenu() {
-      const menu = document.getElementById("sideMenu");
-      const hamburger = document.querySelector(".hamburger");
-      const submenus = document.querySelectorAll(".submenu");
+      if (window.innerWidth < 1000) {
+        const menu = document.getElementById("sideMenu");
+        const hamburger = document.querySelector(".hamburger");
+        const submenus = document.querySelectorAll(".submenu");
 
-      // ハンバーガーアイコンの状態を切り替え
-      hamburger.classList.toggle("active");
+        hamburger.classList.toggle("active");
 
-      // メインメニューとサブメニューをすべて閉じる
-      if (menu.classList.contains("show") || Array.from(submenus).some(submenu => submenu.classList.contains("show"))) {
-        menu.classList.remove("show");
-        submenus.forEach(submenu => submenu.classList.remove("show"));
-      } else {
-        menu.classList.add("show");
+        if (menu.classList.contains("show") || Array.from(submenus).some(submenu => submenu.classList.contains("show"))) {
+          menu.classList.remove("show");
+          submenus.forEach(submenu => submenu.classList.remove("show"));
+        } else {
+          menu.classList.add("show");
+        }
       }
     }
 
+    function handleProductClick() {
+      if (window.innerWidth >= 1000) {
+        // 1000px以上ではドロップダウンをトグル
+        toggleDropdown('productDropdown');
+      } else {
+        // 1000px以下ではサブメニューをスライド表示
+        openSubmenu('productSubmenu');
+      }
+    }
+
+    function toggleDropdown(dropdownId) {
+      const dropdown = document.getElementById(dropdownId);
+      dropdown.classList.toggle("show");
+    }
+
     function openSubmenu(submenuId) {
-      // メインメニューを非表示にし、指定されたサブメニューを表示
       document.getElementById("sideMenu").classList.remove("show");
       document.getElementById(submenuId).classList.add("show");
     }
 
     function closeSubmenu(submenuId) {
-      // サブメニューを閉じてメインメニューを表示
       document.getElementById(submenuId).classList.remove("show");
       document.getElementById("sideMenu").classList.add("show");
-    }
-
-    function toggleDropdown() {
-      const dropdown = document.getElementById("designDropdown");
-      dropdown.classList.toggle("show");
     }
   </script>
 
