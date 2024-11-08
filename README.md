@@ -1,1 +1,1 @@
-ko-ishizaki.github.io　Setting
+`ko-ishizaki.github.io` では、ポートフォリオとしての機能をメインとしております。
