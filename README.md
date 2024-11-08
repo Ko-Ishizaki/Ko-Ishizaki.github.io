@@ -1,1 +1,5 @@
-[ko-ishizaki.github.io](https://ko-ishizaki.github.io) では、ポートフォリオとしての機能をメインとしております。
+🌐 **[ko-ishizaki.github.io](https://ko-ishizaki.github.io)** では、**ポートフォリオ**としての機能をメインにしています。
+
+💡 掲載されているツールは、**良識の範囲内で**、基本的に**ご自由にお使いください！**
+
+🚀 **どうぞ、楽しんで！**
