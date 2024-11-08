@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Formatter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        form {
+            width: 100%;
+            max-width: 600px; /* フォーム幅を広げました */
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+        textarea, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 200px; /* テキストエリアの縦幅を調整 */
+        }
+        .output-group {
+            white-space: pre-wrap;
+            background-color: #f1f1f1;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            max-width: 600px; /* 出力コンテナ幅を調整 */
+            width: 100%;
+        }
+        .output-group textarea {
+            height: 200px; /* 出力用テキストエリアの縦幅も調整 */
+        }
+        .formatButton {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #007BFF; /* ボタンの背景色を青に */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .formatButton:hover {
+            background-color: #0056b3; /* ホバー時の色 */
+        }
+        .copyButton {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .copyButton:hover {
+            background-color: #45a049;
+        }
+        .group-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .spinner {
+            display: none;
+            margin: 20px auto;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #007BFF; /* スピナーも青色に合わせて調整 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<h1>リストフォーマッター</h1>
+
+<form id="formatForm">
+    <label for="inputList">アイテムを入力してください（一行ごとに）:</label>
+    <textarea id="inputList" placeholder="SAMPLE1&#10;SAMPLE2&#10;SAMPLE3&#10;SAMPLE4"></textarea>
+    
+    <label for="splitSize">一括処理件数（例: 20000件）:</label>
+    <input type="number" id="splitSize" value="20000">
+    
+    <button type="button" class="formatButton" onclick="formatList()">フォーマット</button>
+</form>
+
+<div class="spinner" id="loadingSpinner"></div>
+<div id="outputContainer"></div>
+
+<script>
+    function formatList() {
+        const input = document.getElementById('inputList').value;
+        const splitSize = parseInt(document.getElementById('splitSize').value);
+        const outputContainer = document.getElementById('outputContainer');
+        const spinner = document.getElementById('loadingSpinner');
+        
+        outputContainer.innerHTML = '';
+        spinner.style.display = 'block';
+        
+        setTimeout(() => {
+            const lines = input.split('\n').map(line => line.trim()).filter(line => line !== '');
+            
+            if (lines.length === 0) {
+                alert("リストが空です。");
+                spinner.style.display = 'none';
+                return;
+            }
+            
+            const chunks = [];
+            for (let i = 0; i < lines.length; i += splitSize) {
+                chunks.push(lines.slice(i, i + splitSize));
+            }
+            
+            chunks.forEach((chunk, index) => {
+                const formattedChunk = chunk.map(line => `'${line}'`).join(',\n');
+                const groupDiv = document.createElement('div');
+                groupDiv.classList.add('output-group');
+                
+                const groupLabel = document.createElement('div');
+                groupLabel.classList.add('group-label');
+                groupLabel.textContent = `グループ ${index + 1}`;
+                groupDiv.appendChild(groupLabel);
+                
+                const textarea = document.createElement('textarea');
+                textarea.value = formattedChunk;
+                groupDiv.appendChild(textarea);
+
+                const copyButton = document.createElement('button');
+                copyButton.classList.add('copyButton');
+                copyButton.textContent = 'クリップボードにコピー';
+                copyButton.onclick = () => copyToClipboard(textarea);
+                groupDiv.appendChild(copyButton);
+
+                outputContainer.appendChild(groupDiv);
+            });
+            
+            spinner.style.display = 'none';
+        }, 250);
+    }
+
+    function copyToClipboard(textarea) {
+        textarea.select();
+        document.execCommand('copy');
+        alert('クリップボードにコピーしました!');
+    }
+</script>
+
+</body>
+</html>
