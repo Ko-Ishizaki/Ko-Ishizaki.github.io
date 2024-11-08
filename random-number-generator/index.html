@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Number Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #ffffff;
+            color: #000000;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="number"], input[type="checkbox"] {
+            margin-bottom: 15px;
+        }
+        button {
+            margin-top: 15px;
+        }
+        #result {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        /* ダークモードのスタイル */
+        body.dark-mode {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        body.dark-mode #result {
+            background-color: #2c2c2c;
+            border-color: #555;
+        }
+        button.toggle-dark-mode {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* モーダルのスタイル */
+        .modal {
+            display: none; /* 初期は非表示 */
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5); /* モーダルの背景 */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+        }
+
+        /* ダークモード用のモーダルスタイル */
+        body.dark-mode .modal-content {
+            background-color: #2c2c2c;
+            color: #ffffff;
+            border-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>乱数生成器</h1>
+    <p>Ver.1.12</p>
+    <p>数字特化の乱数ジェネレーターです。<br>小数まで設定可能。<br>金融系処理システムのテストにおすすめ。</p>
+    <!-- バージョン情報を表示するボタン -->
+    <button onclick="openModal()">バージョン更新情報</button>
+
+    <!-- モーダルのHTML構造 -->
+    <div id="versionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>バージョン更新情報</h2>
+            <p><strong>バージョン 1.12</strong> (2024-08-26)</p>
+            <ul>
+                <li>値として0、-0を出現させないチェックボックスを追加しました</li>
+                <li>軽微なバグを解消しました。</li>
+            </ul>
+            <p><strong>バージョン 1.11</strong> (2024-08-26)</p>
+            <ul>
+                <li>整数部分を固定し、先頭に0をつけないようにするときに、生成数の桁数が減るバグを解消しました。</li>
+                <li>バージョン更新情報をモーダルで表示できるように変更。</li>
+            </ul>
+            <p><strong>バージョン 1.1</strong> (2024-08-26)</p>
+            <ul>
+                <li>整数部分の先頭に0をつけないオプションを追加</li>
+                <li>ダークモードの切り替え機能を実装</li>
+            </ul>
+            <p><strong>バージョン 1.0</strong> (2024-08-22)</p>
+            <ul>
+                <li>初回リリース</li>
+            </ul>
+        </div>
+    </div>
+
+    <label for="numRecords">生成するレコード数:</label>
+    <input type="number" id="numRecords" value="1000" min="1">
+
+    <label>
+        <input type="checkbox" id="enableIntRange"> 整数部分の桁数を範囲で指定する
+    </label>
+    <div id="intPartContainer">
+        <label for="intPart">整数部分の桁数:</label>
+        <input type="number" id="intPart" value="9" min="1">
+    </div>
+    <div id="intRangeContainer" style="display: none;">
+        <label for="intRangeMin">整数部分の桁数の最小値:</label>
+        <input type="number" id="intRangeMin" value="2">
+        <label for="intRangeMax">整数部分の桁数の最大値:</label>
+        <input type="number" id="intRangeMax" value="9">
+    </div>
+
+    <label>
+        <input type="checkbox" id="enableDecRange"> 小数部分の桁数を範囲で指定する
+    </label>
+    <div id="decPartContainer">
+        <label for="decPart">小数部分の桁数:</label>
+        <input type="number" id="decPart" value="2" min="0">
+    </div>
+    <div id="decRangeContainer" style="display: none;">
+        <label for="decRangeMin">小数部分の桁数の最小値:</label>
+        <input type="number" id="decRangeMin" value="1">
+        <label for="decRangeMax">小数部分の桁数の最大値:</label>
+        <input type="number" id="decRangeMax" value="2">
+    </div>
+
+    <label>
+        <input type="checkbox" id="includePlus" checked> 正の符号を含む
+    </label>
+
+    <label>
+        <input type="checkbox" id="includeMinus" checked> 負の符号を含む
+    </label>
+
+    <!-- 先頭に0を付けないチェックボックス -->
+    <label>
+        <input type="checkbox" id="omitLeadingZeros"> 整数部分先頭に0をつけない
+    </label>
+    
+    <label>
+    <input type="checkbox" id="excludeNegativeZero"> 値としての-0を出現させない
+    </label>
+    <label>
+        <input type="checkbox" id="excludeZero"> 値としての0を出現させない
+    </label>
+
+
+    <button onclick="generateNumbers()">乱数生成</button>
+    <button onclick="copyToClipboard()">コピー</button>
+
+    <div id="result"></div>
+
+    <!-- ダークモード切り替えボタン -->
+    <button class="toggle-dark-mode" onclick="toggleDarkMode()">Dark Mode</button>
+
+    <script>
+        document.getElementById('enableIntRange').addEventListener('change', function() {
+            toggleIntRange(this.checked);
+        });
+
+        document.getElementById('enableDecRange').addEventListener('change', function() {
+            toggleDecRange(this.checked);
+        });
+
+        function toggleIntRange(enable) {
+            document.getElementById('intPartContainer').style.display = enable ? 'none' : 'block';
+            document.getElementById('intRangeContainer').style.display = enable ? 'block' : 'none';
+        }
+
+        function toggleDecRange(enable) {
+            document.getElementById('decPartContainer').style.display = enable ? 'none' : 'block';
+            document.getElementById('decRangeContainer').style.display = enable ? 'block' : 'none';
+        }
+
+        function generateNumbers() {
+            const numRecords = parseInt(document.getElementById('numRecords').value);
+            const intPartEnabled = document.getElementById('enableIntRange').checked;
+            const decPartEnabled = document.getElementById('enableDecRange').checked;
+
+            const intMin = intPartEnabled ? parseInt(document.getElementById('intRangeMin').value) : parseInt(document.getElementById('intPart').value);
+            const intMax = intPartEnabled ? parseInt(document.getElementById('intRangeMax').value) : intMin;
+
+            const decMin = decPartEnabled ? parseInt(document.getElementById('decRangeMin').value) : parseInt(document.getElementById('decPart').value);
+            const decMax = decPartEnabled ? parseInt(document.getElementById('decRangeMax').value) : decMin;
+
+            if (intMin > intMax) {
+                alert('整数部分の桁数の最小値は最大値より小さくする必要があります。');
+                return;
+            }
+            if (decMin > decMax) {
+                alert('小数部分の桁数の最小値は最大値より小さくする必要があります。');
+                return;
+            }
+
+            const includePlus = document.getElementById('includePlus').checked;
+            const includeMinus = document.getElementById('includeMinus').checked;
+            const omitLeadingZeros = document.getElementById('omitLeadingZeros').checked;
+
+            if (numRecords < 1) {
+                alert('レコード数は1以上の数値を入力してください。');
+                return;
+            }
+
+            if (!includePlus && !includeMinus) {
+                alert('符号が必要です。');
+                return;
+            }
+
+            let signOption = '';
+            if (includePlus && includeMinus) {
+                signOption = '+-';
+            } else if (includePlus) {
+                signOption = '+';
+            } else if (includeMinus) {
+                signOption = '-';
+            }
+
+            let result = '';
+            for (let i = 0; i < numRecords; i++) {
+                // レコードごとにランダムな桁数を選択
+                const intDigits = getRandomInt(intMin, intMax);
+                const decDigits = getRandomInt(decMin, decMax);
+                result += generateRandomNumber(intDigits, decDigits, signOption, omitLeadingZeros) + '\n';
+            }
+
+            document.getElementById('result').textContent = result;
+        }
+
+        function generateRandomNumber(intDigits, decDigits, signOpt, omitLeadingZeros) {
+            const excludeNegativeZero = document.getElementById('excludeNegativeZero').checked;
+            const excludeZero = document.getElementById('excludeZero').checked;
+
+            let sign = '';
+            if (signOpt === '+-') {
+                sign = Math.random() < 0.5 ? '-' : '';
+            } else if (signOpt === '-') {
+                sign = '-';
+            }
+
+            let intPart;
+            do {
+                if (omitLeadingZeros && intDigits > 1) {
+                    // 先頭が0で始まらないようにする
+                    do {
+                        intPart = Math.floor(Math.random() * Math.pow(10, intDigits)).toString();
+                    } while (intPart.startsWith('0')); // 0で始まる場合は再生成
+
+                    // 桁数が不足している場合は0を追加する
+                    if (intPart.length < intDigits) {
+                        intPart = intPart.padEnd(intDigits, '0');
+                    }
+                } else {
+                    intPart = Math.floor(Math.random() * Math.pow(10, intDigits)).toString().padStart(intDigits, '0');
+                }
+
+                let decPart = Math.floor(Math.random() * Math.pow(10, decDigits)).toString().padStart(decDigits, '0');
+                let number = sign + intPart + (decDigits > 0 ? '.' + decPart : '');
+
+                // 値としての0や-0を除外するチェック
+                if ((excludeZero && number === '0') || (excludeNegativeZero && Object.is(parseFloat(number), -0))) {
+                    continue; // 再生成
+                }
+
+                return number;
+
+            } while (true);
+        }
+
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function copyToClipboard() {
+            const resultText = document.getElementById('result').textContent;
+            navigator.clipboard.writeText(resultText).then(() => {
+                alert("クリップボードにコピーしました!");
+            }).catch(err => {
+                alert("コピーに失敗しました: " + err);
+            });
+        }
+
+        // ダークモード切り替え機能
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+        
+        // モーダル表示/非表示機能
+        function openModal() {
+            document.getElementById('versionModal').style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById('versionModal').style.display = "none";
+        }
+
+        // モーダル外クリックで閉じる
+        window.onclick = function(event) {
+            const modal = document.getElementById('versionModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+    <footer>
+        <p>© 2024 Koshzk0 </p>
+    </footer>
+</body>
+</html>
