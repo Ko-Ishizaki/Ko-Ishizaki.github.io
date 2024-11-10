@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2048</title>
+    <title>2048 Game</title>
     <style>
         * {
             box-sizing: border-box;
@@ -65,11 +65,15 @@
     </style>
 </head>
 <body>
-    <h1>2048</h1>
+    <h1>2048 Game</h1>
     <div id="score">Score: <span id="scoreValue">0</span></div>
     <div id="game-board">
         <!-- JavaScriptで動的にタイルを生成します -->
     </div>
+
+    <!-- Hammer.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+
     <script>
         const boardSize = 4;
         let board = [];
@@ -135,28 +139,43 @@
             return row;
         }
 
-        function handleKeyPress(event) {
+        function handleMove(direction) {
             let moved = false;
-            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
-                event.preventDefault();
-                switch (event.key) {
-                    case "ArrowUp":
-                        moved = moveUp();
-                        break;
-                    case "ArrowDown":
-                        moved = moveDown();
-                        break;
-                    case "ArrowLeft":
-                        moved = moveLeft();
-                        break;
-                    case "ArrowRight":
-                        moved = moveRight();
-                        break;
-                }
+            switch (direction) {
+                case "up":
+                    moved = moveUp();
+                    break;
+                case "down":
+                    moved = moveDown();
+                    break;
+                case "left":
+                    moved = moveLeft();
+                    break;
+                case "right":
+                    moved = moveRight();
+                    break;
             }
             if (moved) {
                 addNewTile();
                 updateBoard();
+            }
+        }
+
+        function handleKeyPress(event) {
+            event.preventDefault();
+            switch (event.key) {
+                case "ArrowUp":
+                    handleMove("up");
+                    break;
+                case "ArrowDown":
+                    handleMove("down");
+                    break;
+                case "ArrowLeft":
+                    handleMove("left");
+                    break;
+                case "ArrowRight":
+                    handleMove("right");
+                    break;
             }
         }
 
@@ -217,9 +236,19 @@
             return moved;
         }
 
-        // ゲーム開始
         document.addEventListener("keydown", handleKeyPress);
         initBoard();
+
+        // スワイプ入力を追加
+        const gameBoard = document.getElementById("game-board");
+        const hammer = new Hammer(gameBoard);
+
+        hammer.get("swipe").set({ direction: Hammer.DIRECTION_ALL });
+
+        hammer.on("swipeup", () => handleMove("up"));
+        hammer.on("swipedown", () => handleMove("down"));
+        hammer.on("swipeleft", () => handleMove("left"));
+        hammer.on("swiperight", () => handleMove("right"));
     </script>
 </body>
 </html>
