@@ -88,17 +88,11 @@
           margin-bottom: 10px;
       }
 
-      .project .status {
-          font-size: 0.9rem;
-          font-weight: bold;
-          color: #0066cc;
-          margin-bottom: 10px;
-      }
 
       .project a.button {
           display: inline-block;
           color: #ffffff;
-          background-color: #0066cc;
+          background-color: #00a7cc;
           padding: 10px 20px;
           font-size: 0.9rem;
           border-radius: 5px;
@@ -175,6 +169,7 @@
         <p>駆け出しのシステム開発マニア</p>
         <ul>
         	<li>2003年生まれ</li>
+            <li>システム開発(WEB、データベース)</li>
             <li>使用言語：Python、JavaScript、PHP、Ruby(よく使う順)</li>
         </ul>
         <div class="links">
@@ -187,15 +182,20 @@
         <h2>Project</h2>
         <div class="project">
             <h3>乱数生成ジェネレーター</h3>
-            <p class="status">進捗状況：完了(納品済)</p>
-            <p>T様(匿名希望)</p>
+            <p>T様</p>
             <p>フロントエンドだけで出来ている乱数ジェネレーター。<br>何気ない会話から生まれた特定業務特化のジェネレーターです。</p>
             <a href="#" class="button open-modal">詳細を見る(デモ版)</a>
+        </div>
+        
+        <div class="project">
+            <h3>拡張子変換ツール</h3>
+            <p>U様</p>
+            <p>なかなか使わない、TIFFも入っている変換ツール。<br>現場から得られるファイルを変換する、アナログ要素も時には必要。</p>
+            <a href="#" class="button">詳細を見る(別サイト)</a>
         </div>
 <!--
         <div class="project">
             <h3>ERPシステム（WEB）</h3>
-            <p class="status">進捗状況：進行中</p>
             <p>K様(匿名希望)</p>
             <p>元々Accessで管理されていたデータベースを<br>Webシステムに移管。(Flask開発)<br>スマホ対応にもすることで、外部からのアクセスにも対応。</p>
             <a href="/" class="button">詳細を見る</a>
@@ -207,7 +207,7 @@
         </div>
     </section>
     
-    <!-- モーダルウィンドウ構造 -->
+    <!-- モーダルウィンドウ構造 乱数ジェネレーター用-->
     <div id="modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
