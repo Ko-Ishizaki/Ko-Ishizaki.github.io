@@ -1,285 +1,226 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>menu-module</title>
-  <style>
-    /* 基本リセット */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      overflow-x: hidden;
-    }
-
-    /* ハンバーガーメニューアイコン */
-    .hamburger {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      width: 40px;
-      height: 32px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      cursor: pointer;
-      z-index: 1001;
-    }
-
-    /* 各バー */
-    .bar {
-      width: 100%;
-      height: 4px;
-      background-color: black;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-    }
-
-    /* ハンバーガーが「×」に変形 */
-    .hamburger.active .bar1 {
-      transform: rotate(45deg) translate(10px, 10px);
-      background-color: white;
-    }
-
-    .hamburger.active .bar2 {
-      opacity: 0;
-    }
-
-    .hamburger.active .bar3 {
-      transform: rotate(-45deg) translate(10px, -10px);
-      background-color: white;
-    }
-
-    /* サイドメニュー */
-    .menu {
-      position: fixed;
-      top: 0;
-      right: -250px;
-      height: 100%;
-      width: 250px;
-      background-color: #444;
-      color: white;
-      transition: right 0.3s ease;
-      padding-top: 60px;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* メニューが表示された状態 */
-    .menu.show {
-      right: 0;
-    }
-
-    /* サブメニュー */
-    .submenu {
-      position: fixed;
-      top: 0;
-      right: -250px;
-      height: 100%;
-      width: 250px;
-      background-color: #555;
-      color: white;
-      transition: right 0.3s ease;
-      padding-top: 60px;
-      z-index: 999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* サブメニューが表示された状態 */
-    .submenu.show {
-      right: 0;
-    }
-
-    /* トグルダウン用の子メニュー */
-    .dropdown {
-      display: none;
-      flex-direction: column;
-      width: 100%;
-      background-color: #555;
-    }
-
-    /* ドロップダウン表示時 */
-    .dropdown.show {
-      display: flex;
-    }
-
-    /* メニューアイテム */
-    .menu-item, .submenu-item {
-      padding: 15px 0;
-      font-size: 18px;
-      cursor: pointer;
-      width: 100%;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      text-decoration: none;
-    }
-
-    .menu-item:hover, .submenu-item:hover {
-      background-color: #666;
-    }
-
-    /* 画面幅が500px以下の場合のスタイル */
-    @media (max-width: 500px) {
-      .menu, .submenu {
-        width: 100%;
-        right: -100%;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ポートフォリオ</title>
+    <style>
+      /* 基本リセット */
+      * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: Arial, sans-serif;
       }
-      .menu.show, .submenu.show {
-        right: 0;
-      }
-    }
 
-    /* 画面幅が1000px以上の場合のスタイル */
-    @media (min-width: 1000px) {
-      .hamburger {
-        display: none; /* ハンバーガーメニューアイコンを非表示にする */
+      body {
+          background-color: #ffffff;
+          color: #333333;
+          line-height: 1.6;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
       }
-      .menu {
-        position: fixed;  /* 固定位置を設定 */
-        right: 0;         /* 右側に固定 */
-        top: 0;           /* 上部からスタート */
-        height: 100%;     /* 画面の高さに合わせる */
-        width: 250px;     /* 固定幅を維持 */
-        display: flex;    /* メニューを常に表示 */
+
+      h1, h2 {
+          text-align: center;
+          margin-bottom: 20px;
       }
-      .menu.show {
-        right: 0; /* 展開状態を維持 */
+
+      /* 自己紹介セクション */
+      .about {
+          text-align: center;
+          margin: 40px 0;
       }
-    }
 
-    /* サブメニューの戻るボタン */
-    .back-btn {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      width: 40px;
-      height: 40px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+      .about p {
+          font-size: 1rem;
+      }
 
-    /* カスタム矢印アイコン */
-    .back-btn::before {
-      content: '';
-      display: block;
-      width: 24px;
-      height: 3px;
-      background-color: white;
-      position: relative;
-      top: -5px;
-      left: -3px;
-    }
+      .about ul {
+          list-style-type: none;
+          padding: 0;
+          margin: 20px 0;
+      }
 
-    .back-btn::after {
-      content: '';
-      display: block;
-      width: 12px;
-      height: 12px;
-      border-top: 3px solid white;
-      border-right: 3px solid white;
-      position: absolute;
-      transform: rotate(-135deg);
-      left: 6px;
-      top: 8px;
-    }
-  </style>
+      .about li {
+          font-size: 0.9rem;
+          color: #555;
+          padding: 8px 0;
+          border-bottom: 1px solid #ddd;
+      }
+
+      .about .links a {
+          color: #0066cc;
+          text-decoration: none;
+          margin: 0 10px;
+      }
+
+      /* プロジェクトセクション */
+      .projects {
+          margin-top: 40px;
+      }
+
+      .project {
+          margin-bottom: 20px;
+          text-align: center;
+      }
+
+      .project h3 {
+          font-size: 1.2rem;
+          margin: 10px 0;
+      }
+
+      .project p {
+          color: #666666;
+      }
+
+      .project a {
+          color: #0066cc;
+          text-decoration: none;
+          font-size: 0.9rem;
+      }
+
+      /* フッターセクション */
+      .contact {
+          text-align: center;
+          margin-top: 40px;
+          padding-top: 20px;
+          border-top: 1px solid #dddddd;
+      }
+
+      .contact p {
+          margin-bottom: 10px;
+      }
+
+      .social-links a {
+          color: #0066cc;
+          text-decoration: none;
+          margin: 0 5px;
+      }
+
+      /* モーダルウィンドウのスタイル */
+      .modal {
+          display: none;
+          position: fixed;
+          z-index: 1;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          overflow: auto;
+          background-color: rgba(0, 0, 0, 0.7);
+      }
+
+      .modal-content {
+          position: relative;
+          background-color: #fefefe;
+          margin: 10% auto;
+          padding: 20px;
+          width: 90%;
+          max-width: 600px;
+          border-radius: 8px;
+      }
+
+      .close {
+          position: absolute;
+          top: 10px;
+          right: 20px;
+          color: #aaa;
+          font-size: 28px;
+          font-weight: bold;
+          cursor: pointer;
+      }
+
+      .close:hover,
+      .close:focus {
+          color: #000;
+          text-decoration: none;
+          cursor: pointer;
+      }
+    </style>
 </head>
 <body>
+    <!-- 自己紹介セクション -->
+    <section class="about">
+        <p>駆け出しのシステム開発マニア</p>
+        <ul>
+        	<li>2003年生まれ</li>
+            <li>使用言語：Python、JavaScript、PHP、Ruby(よく使う順)</li>
+        </ul>
+        <div class="links">
+            <a href="https://github.com/Ko-Ishizaki">GitHub</a>
+        </div>
+    </section>
 
-  <!-- ハンバーガーメニューアイコン -->
-  <div class="hamburger" onclick="toggleMenu()">
-    <div class="bar bar1"></div>
-    <div class="bar bar2"></div>
-    <div class="bar bar3"></div>
-  </div>
-
-  <!-- メインメニュー -->
-  <div class="menu" id="sideMenu">
-    <div class="menu-item">Home</div>
-    <div class="menu-item">Resume</div>
+    <!-- プロジェクトセクション -->
+    <section class="projects">
+        <h2>Project</h2>
+        <div class="project">
+            <h3>乱数生成ジェネレーター</h3>
+            <p>進捗状況：完了(納品済)</p>
+            <p>T様(匿名希望)</p>
+            <p>フロントエンドだけで出来ている乱数ジェネレーター。</p>
+            <p>何気ない会話から生まれた特定業務特化のジェネレーターです。</p>
+            <a href="#" class="open-modal">詳細を見る(デモ版)</a>
+        </div>
+        <div class="project">
+            <h3>ERPシステム（WEB）</h3>
+            <p>進捗状況：進行中</p>
+            <p>K様(匿名希望)</p>
+            <p>元々Accessで管理されていたデータベースを<br>Webシステムに移管。(Flask開発)<br>スマホ対応にもすることで、外部からのアクセスにも対応。</p>
+            <a href="#">詳細を見る</a>
+        </div>
+        <div class="project">
+            <h3>ポートフォリオ作成(Self-Project)</h3>
+            <p>このポートフォリオの制作。<br>凝ったデザインを考えに考えた結果<br>このようなデザインに。</p>
+        </div>
+    </section>
     
-    <!-- Productメニュー：1000px以上でトグル、1000px以下でスライドメニュー -->
-    <div class="menu-item" onclick="handleProductClick()">Product</div>
-    <div class="dropdown" id="productDropdown">
-      <a href="#color-check" class="submenu-item">カラーコード確認</a>
-      <a href="#postal-address" class="submenu-item">郵便番号から住所</a>
+    <!-- モーダルウィンドウ構造 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <iframe src="https://ko-ishizaki.github.io/random-number-generator/" width="100%" height="500px" frameborder="0"></iframe>
+        </div>
     </div>
 
-    <!-- Design_Researchのトグルダウンメニュー -->
-    <div class="menu-item" onclick="toggleDropdown('designDropdown')">Design_Research</div>
-    <div class="dropdown" id="designDropdown">
-      <a href="#research-methods" class="submenu-item">Research Methods</a>
-      <a href="#case-studies" class="submenu-item">Case Studies</a>
-      <a href="#publications" class="submenu-item">Publications</a>
-    </div>
-    
-    <div class="menu-item">Blog</div>
-    <div class="menu-item">Request_Form</div>
-  </div>
+    <!-- フッター/連絡先セクション -->
+    <footer class="contact">
+        <p>ご連絡はこちらまで：<a href="mailto:koo-development-field@gmail.com">ここをクリック</a></p>
+        <div class="social-links">
+            <a href="#">Twitter</a> | <a href="https://www.instagram.com/koshzk0">Instagram</a>
+        </div>
+    </footer>
 
-  <!-- Productのサブメニュー（1000px以下のスライド用） -->
-  <div class="submenu" id="productSubmenu">
-    <div class="back-btn" onclick="closeSubmenu('productSubmenu')"></div>
-    <div class="submenu-item">カラーコード確認</div>
-    <div class="submenu-item">郵便番号から住所</div>
-  </div>
+    <!-- JavaScriptコード -->
+    <script>
+        // モーダルウィンドウの取得
+        var modal = document.getElementById("modal");
 
-  <script>
-    function toggleMenu() {
-      if (window.innerWidth < 1000) {
-        const menu = document.getElementById("sideMenu");
-        const hamburger = document.querySelector(".hamburger");
-        const submenus = document.querySelectorAll(".submenu");
+        // モーダルを開くリンクの取得
+        var link = document.querySelector(".projects .project .open-modal");
 
-        hamburger.classList.toggle("active");
+        // モーダルを閉じるための<span>を取得
+        var closeBtn = document.getElementsByClassName("close")[0];
 
-        if (menu.classList.contains("show") || Array.from(submenus).some(submenu => submenu.classList.contains("show"))) {
-          menu.classList.remove("show");
-          submenus.forEach(submenu => submenu.classList.remove("show"));
-        } else {
-          menu.classList.add("show");
+        // リンクをクリックしたときにモーダルを表示
+        link.onclick = function(event) {
+            event.preventDefault(); // デフォルトのリンク動作を無効化
+            modal.style.display = "block";
         }
-      }
-    }
 
-    function handleProductClick() {
-      if (window.innerWidth >= 1000) {
-        // 1000px以上ではドロップダウンをトグル
-        toggleDropdown('productDropdown');
-      } else {
-        // 1000px以下ではサブメニューをスライド表示
-        openSubmenu('productSubmenu');
-      }
-    }
+        // <span> (x) をクリックしたときにモーダルを閉じる
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
 
-    function toggleDropdown(dropdownId) {
-      const dropdown = document.getElementById(dropdownId);
-      dropdown.classList.toggle("show");
-    }
-
-    function openSubmenu(submenuId) {
-      document.getElementById("sideMenu").classList.remove("show");
-      document.getElementById(submenuId).classList.add("show");
-    }
-
-    function closeSubmenu(submenuId) {
-      document.getElementById(submenuId).classList.remove("show");
-      document.getElementById("sideMenu").classList.add("show");
-    }
-  </script>
-
+        // モーダル外部をクリックしたときにモーダルを閉じる
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>
