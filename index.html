@@ -62,23 +62,51 @@
       }
 
       .project {
+          background-color: #f9f9f9;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          padding: 20px;
           margin-bottom: 20px;
           text-align: center;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          transition: transform 0.3s;
+      }
+
+      .project:hover {
+          transform: scale(1.02);
       }
 
       .project h3 {
           font-size: 1.2rem;
-          margin: 10px 0;
+          margin-bottom: 10px;
+          color: #333;
       }
 
       .project p {
           color: #666666;
+          margin-bottom: 10px;
       }
 
-      .project a {
-          color: #0066cc;
-          text-decoration: none;
+      .project .status {
           font-size: 0.9rem;
+          font-weight: bold;
+          color: #0066cc;
+          margin-bottom: 10px;
+      }
+
+      .project a.button {
+          display: inline-block;
+          color: #ffffff;
+          background-color: #0066cc;
+          padding: 10px 20px;
+          font-size: 0.9rem;
+          border-radius: 5px;
+          text-decoration: none;
+          transition: background-color 0.3s;
+      }
+
+      .project a.button:hover {
+          background-color: #005bb5;
       }
 
       /* フッターセクション */
@@ -158,18 +186,17 @@
         <h2>Project</h2>
         <div class="project">
             <h3>乱数生成ジェネレーター</h3>
-            <p>進捗状況：完了(納品済)</p>
+            <p class="status">進捗状況：完了(納品済)</p>
             <p>T様(匿名希望)</p>
-            <p>フロントエンドだけで出来ている乱数ジェネレーター。</p>
-            <p>何気ない会話から生まれた特定業務特化のジェネレーターです。</p>
-            <a href="#" class="open-modal">詳細を見る(デモ版)</a>
+            <p>フロントエンドだけで出来ている乱数ジェネレーター。<br>何気ない会話から生まれた特定業務特化のジェネレーターです。</p>
+            <a href="#" class="button open-modal">詳細を見る(デモ版)</a>
         </div>
         <div class="project">
             <h3>ERPシステム（WEB）</h3>
-            <p>進捗状況：進行中</p>
+            <p class="status">進捗状況：進行中</p>
             <p>K様(匿名希望)</p>
             <p>元々Accessで管理されていたデータベースを<br>Webシステムに移管。(Flask開発)<br>スマホ対応にもすることで、外部からのアクセスにも対応。</p>
-            <a href="/">詳細を見る</a>
+            <a href="/" class="button">詳細を見る</a>
         </div>
         <div class="project">
             <h3>ポートフォリオ作成(Self-Project)</h3>
