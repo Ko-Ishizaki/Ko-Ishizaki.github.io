@@ -59,7 +59,14 @@
 
       /* プロジェクトセクション */
       .projects {
-          margin-top: 40px;
+          margin-top: 20px;
+          display: none; /* 初期状態は非表示 */
+      }
+      
+      .projects h2{
+          color: #0066cc;
+          text-decoration: none;
+          margin: 0 10px;
       }
 
       .project {
@@ -79,15 +86,8 @@
 
       .project h3 {
           font-size: 1.2rem;
-          margin-bottom: 10px;
           color: #333;
       }
-
-      .project p {
-          color: #666666;
-          margin-bottom: 10px;
-      }
-
 
       .project a.button {
           display: inline-block;
@@ -122,6 +122,18 @@
           margin: 0 5px;
       }
 
+      /* Projectセクションのトグルボタン */
+      .toggle-projects-button {
+          display: block;
+          margin: 0 auto 20px;
+          color: #00a7cc;
+          font-size: 1rem;
+          border: none;
+          background: none;
+          cursor: pointer;
+          text-align: center;
+      }
+      
       /* モーダルウィンドウのスタイル */
       .modal {
           display: none;
@@ -177,30 +189,28 @@
         </div>
     </section>
 
+    <!-- プロジェクトセクション全体をトグルで表示/非表示にするボタン -->
+    <button class="toggle-projects-button">Project</button>
+
     <!-- プロジェクトセクション -->
     <section class="projects">
         <h2>Project</h2>
+
         <div class="project">
             <h3>乱数生成ジェネレーター</h3>
             <p>T様</p>
-            <p>フロントエンドだけで出来ている乱数ジェネレーター。<br>何気ない会話から生まれた特定業務特化のジェネレーターです。</p>
+            <p>フロントエンドだけで出来ている<br>乱数ジェネレーター。<br>何気ない会話から生まれた特定業務特化のジェネレーターです。</p>
             <a href="#" class="button open-modal">詳細を見る(デモ版)</a>
         </div>
-        
+
         <div class="project">
             <h3>拡張子変換ツール</h3>
             <p>U様</p>
             <p>なかなか使わない、TIFFも入っている変換ツール。<br>現場から得られるファイルを直接変換する<br>アナログ要素も時には必要。</p>
-            <a href="http://koishizaki.pythonanywhere.com/" class="button">詳細を見る(別サイト)</a>
+            <a href="http://koishizaki.pythonanywhere.com/" class="button open-modal-pythonanywhere">詳細を見る(デモ版)</a>
+
         </div>
-<!--
-        <div class="project">
-            <h3>ERPシステム（WEB）</h3>
-            <p>K様(匿名希望)</p>
-            <p>元々Accessで管理されていたデータベースを<br>Webシステムに移管。(Flask開発)<br>スマホ対応にもすることで、外部からのアクセスにも対応。</p>
-            <a href="/" class="button">詳細を見る</a>
-        </div>
--->
+
         <div class="project">
             <h3>ポートフォリオ作成(Self-Project)</h3>
             <p>このポートフォリオの制作。<br>凝ったデザインを考えに考えた結果<br>このようなデザインに。</p>
@@ -214,6 +224,14 @@
             <iframe src="https://ko-ishizaki.github.io/project/demo/rng" width="100%" height="500px" frameborder="0"></iframe>
         </div>
     </div>
+    
+    <!-- モーダルウィンドウ構造 拡張子変換ツール用-->
+    <div id="modal-pythonanywhere" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <iframe src="https://koishizaki.pythonanywhere.com/" width="100%" height="500px" frameborder="0"></iframe>
+        </div>
+    </div>
 
     <!-- フッター/連絡先セクション -->
     <footer class="contact">
@@ -225,32 +243,59 @@
 
     <!-- JavaScriptコード -->
     <script>
-        // モーダルウィンドウの取得
-        var modal = document.getElementById("modal");
+        // プロジェクトセクションをトグルする機能
+        const toggleButton = document.querySelector('.toggle-projects-button');
+        const projectsSection = document.querySelector('.projects');
 
-        // モーダルを開くリンクの取得
-        var link = document.querySelector(".projects .project .open-modal");
-
-        // モーダルを閉じるための<span>を取得
-        var closeBtn = document.getElementsByClassName("close")[0];
-
-        // リンクをクリックしたときにモーダルを表示
-        link.onclick = function(event) {
-            event.preventDefault(); // デフォルトのリンク動作を無効化
-            modal.style.display = "block";
-        }
-
-        // <span> (x) をクリックしたときにモーダルを閉じる
-        closeBtn.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        // モーダル外部をクリックしたときにモーダルを閉じる
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
+        toggleButton.addEventListener('click', () => {
+            if (projectsSection.style.display === 'none') {
+                projectsSection.style.display = 'block';
+                toggleButton.textContent = 'プロジェクトを折りたたむ';
+            } else {
+                projectsSection.style.display = 'none';
+                toggleButton.textContent = 'Project';
             }
-        }
+        });
     </script>
+    
+    <script>
+      // 乱数ジェネレーターのモーダル
+      var modal = document.getElementById("modal");
+      var link = document.querySelector(".projects .project .open-modal");
+      var closeBtn = modal.querySelector(".close");
+
+      link.onclick = function(event) {
+          event.preventDefault();
+          modal.style.display = "block";
+      }
+
+      closeBtn.onclick = function() {
+          modal.style.display = "none";
+      }
+
+      // PythonAnywhereのモーダル
+      var modalPythonAnywhere = document.getElementById("modal-pythonanywhere");
+      var linkPythonAnywhere = document.querySelector(".projects .project .open-modal-pythonanywhere");
+      var closeBtnPythonAnywhere = modalPythonAnywhere.querySelector(".close");
+
+      linkPythonAnywhere.onclick = function(event) {
+          event.preventDefault();
+          modalPythonAnywhere.style.display = "block";
+      }
+
+      closeBtnPythonAnywhere.onclick = function() {
+          modalPythonAnywhere.style.display = "none";
+      }
+
+      // モーダル外部クリックで閉じる
+      window.onclick = function(event) {
+          if (event.target == modal) {
+              modal.style.display = "none";
+          } else if (event.target == modalPythonAnywhere) {
+              modalPythonAnywhere.style.display = "none";
+          }
+      }
+    </script>
+    
 </body>
 </html>
