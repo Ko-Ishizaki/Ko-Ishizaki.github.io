@@ -45,7 +45,7 @@ SOFTWARE.
         }
         form {
             width: 100%;
-            max-width: 600px; /* フォーム幅を広げました */
+            max-width: 600px;
             background-color: #fff;
             border: 1px solid #ddd;
             border-radius: 8px;
@@ -57,7 +57,7 @@ SOFTWARE.
             margin-bottom: 5px;
             display: inline-block;
         }
-        textarea, input[type="number"] {
+        textarea, input[type="number"], input[type="text"] {
             width: 100%;
             padding: 10px;
             margin: 8px 0 20px;
@@ -66,7 +66,7 @@ SOFTWARE.
             box-sizing: border-box;
         }
         textarea {
-            height: 200px; /* テキストエリアの縦幅を調整 */
+            height: 200px;
         }
         .output-group {
             white-space: pre-wrap;
@@ -75,17 +75,17 @@ SOFTWARE.
             margin-top: 20px;
             border-radius: 4px;
             border: 1px solid #ddd;
-            max-width: 600px; /* 出力コンテナ幅を調整 */
+            max-width: 600px;
             width: 100%;
         }
         .output-group textarea {
-            height: 200px; /* 出力用テキストエリアの縦幅も調整 */
+            height: 200px;
         }
         .formatButton {
             display: inline-block;
             margin-bottom: 20px;
             padding: 10px 20px;
-            background-color: #007BFF; /* ボタンの背景色を青に */
+            background-color: #007BFF;
             color: white;
             border: none;
             border-radius: 5px;
@@ -93,7 +93,7 @@ SOFTWARE.
             transition: background-color 0.3s ease;
         }
         .formatButton:hover {
-            background-color: #0056b3; /* ホバー時の色 */
+            background-color: #0056b3;
         }
         .copyButton {
             display: inline-block;
@@ -118,7 +118,7 @@ SOFTWARE.
             display: none;
             margin: 20px auto;
             border: 6px solid #f3f3f3;
-            border-top: 6px solid #007BFF; /* スピナーも青色に合わせて調整 */
+            border-top: 6px solid #007BFF;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -141,6 +141,12 @@ SOFTWARE.
     <label for="splitSize">一括処理件数（例: 20000件）:</label>
     <input type="number" id="splitSize" value="20000">
     
+    <label for="delimiter">区切り文字（例: `,`）:</label>
+    <input type="text" id="delimiter" placeholder="," value=",">
+    
+    <label for="quoteChar">囲み文字（例: `'`）:</label>
+    <input type="text" id="quoteChar" placeholder="'" value="'">
+    
     <button type="button" class="formatButton" onclick="formatList()">フォーマット</button>
 </form>
 
@@ -151,6 +157,8 @@ SOFTWARE.
     function formatList() {
         const input = document.getElementById('inputList').value;
         const splitSize = parseInt(document.getElementById('splitSize').value);
+        const delimiter = document.getElementById('delimiter').value;
+        const quoteChar = document.getElementById('quoteChar').value;
         const outputContainer = document.getElementById('outputContainer');
         const spinner = document.getElementById('loadingSpinner');
         
@@ -172,7 +180,7 @@ SOFTWARE.
             }
             
             chunks.forEach((chunk, index) => {
-                const formattedChunk = chunk.map(line => `'${line}'`).join(',\n');
+                const formattedChunk = chunk.map(line => `${quoteChar}${line}${quoteChar}`).join(`${delimiter}\n`);
                 const groupDiv = document.createElement('div');
                 groupDiv.classList.add('output-group');
                 
