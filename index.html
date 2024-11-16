@@ -227,6 +227,12 @@
             <h3>WebベースERPシステム基盤開発(Self-Project)</h3>
             <p>最近需要多すぎません？<br>あまりにも多すぎるんで、Flaskで基盤を開発しております。<br>JavaScirptライブラリが増えに増えているので<br>近日中に公開</p>
         </div>
+
+        <div class="project">
+            <h3>SQL_List_Formatter(Self-Project)</h3>
+            <p>当初、SQLのINの中でシングルクオーテーションで囲う機会が増え<br>そのとき用に作成。まじで俺が使いたくて作った。<br>Python等でも使えるように、囲い文字と区切り文字を選べるように。</p>
+            <a href="https://ko-ishizaki.github.io/sqllistformatter/" class="button open-modal-sqllistformatter">詳細を見る(デモ版)</a>
+        </div>
         
     </section>
     
@@ -243,6 +249,14 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <iframe src="https://koishizaki.pythonanywhere.com/" width="100%" height="500px" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <!-- モーダルウィンドウ構造 SQLリストフォーマッター用-->
+    <div id="modal-sqllistformatter" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <iframe src="https://ko-ishizaki.github.io/sqllistformatter/" width="100%" height="500px" frameborder="0"></iframe>
         </div>
     </div>
 
@@ -287,6 +301,20 @@
       }
 
       // PythonAnywhereのモーダル
+      var modalPythonAnywhere = document.getElementById("modal-pythonanywhere");
+      var linkPythonAnywhere = document.querySelector(".projects .project .open-modal-pythonanywhere");
+      var closeBtnPythonAnywhere = modalPythonAnywhere.querySelector(".close");
+
+      linkPythonAnywhere.onclick = function(event) {
+          event.preventDefault();
+          modalPythonAnywhere.style.display = "block";
+      }
+
+      closeBtnPythonAnywhere.onclick = function() {
+          modalPythonAnywhere.style.display = "none";
+      }
+
+      // SQLListFomatterのモーダル
       var modalPythonAnywhere = document.getElementById("modal-pythonanywhere");
       var linkPythonAnywhere = document.querySelector(".projects .project .open-modal-pythonanywhere");
       var closeBtnPythonAnywhere = modalPythonAnywhere.querySelector(".close");
