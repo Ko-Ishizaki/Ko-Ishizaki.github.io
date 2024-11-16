@@ -286,56 +286,58 @@
     </script>
     
     <script>
-      // 乱数ジェネレーターのモーダル
-      var modal = document.getElementById("modal");
-      var link = document.querySelector(".projects .project .open-modal");
-      var closeBtn = modal.querySelector(".close");
-
-      link.onclick = function(event) {
-          event.preventDefault();
-          modal.style.display = "block";
-      }
-
-      closeBtn.onclick = function() {
-          modal.style.display = "none";
-      }
-
-      // PythonAnywhereのモーダル
-      var modalPythonAnywhere = document.getElementById("modal-pythonanywhere");
-      var linkPythonAnywhere = document.querySelector(".projects .project .open-modal-pythonanywhere");
-      var closeBtnPythonAnywhere = modalPythonAnywhere.querySelector(".close");
-
-      linkPythonAnywhere.onclick = function(event) {
-          event.preventDefault();
-          modalPythonAnywhere.style.display = "block";
-      }
-
-      closeBtnPythonAnywhere.onclick = function() {
-          modalPythonAnywhere.style.display = "none";
-      }
-
-      // SQLListFomatterのモーダル
-      var modalPythonAnywhere = document.getElementById("modal-pythonanywhere");
-      var linkPythonAnywhere = document.querySelector(".projects .project .open-modal-pythonanywhere");
-      var closeBtnPythonAnywhere = modalPythonAnywhere.querySelector(".close");
-
-      linkPythonAnywhere.onclick = function(event) {
-          event.preventDefault();
-          modalPythonAnywhere.style.display = "block";
-      }
-
-      closeBtnPythonAnywhere.onclick = function() {
-          modalPythonAnywhere.style.display = "none";
-      }
-
-      // モーダル外部クリックで閉じる
-      window.onclick = function(event) {
-          if (event.target == modal) {
-              modal.style.display = "none";
-          } else if (event.target == modalPythonAnywhere) {
-              modalPythonAnywhere.style.display = "none";
-          }
-      }
+        // 乱数ジェネレーターのモーダル
+        var modal = document.getElementById("modal");
+        var link = document.querySelector(".projects .project .open-modal");
+        var closeBtn = modal.querySelector(".close");
+        
+        link.onclick = function(event) {
+            event.preventDefault();
+            modal.style.display = "block";
+        }
+        
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+        
+        // PythonAnywhereのモーダル
+        var modalPythonAnywhere = document.getElementById("modal-pythonanywhere");
+        var linkPythonAnywhere = document.querySelector(".projects .project .open-modal-pythonanywhere");
+        var closeBtnPythonAnywhere = modalPythonAnywhere.querySelector(".close");
+        
+        linkPythonAnywhere.onclick = function(event) {
+            event.preventDefault();
+            modalPythonAnywhere.style.display = "block";
+        }
+        
+        closeBtnPythonAnywhere.onclick = function() {
+            modalPythonAnywhere.style.display = "none";
+        }
+        
+        // SQLListFormatterのモーダル
+        var modalSQLListFormatter = document.getElementById("modal-sqllistformatter");
+        var linkSQLListFormatter = document.querySelector(".projects .project .open-modal-sqllistformatter");
+        var closeBtnSQLListFormatter = modalSQLListFormatter.querySelector(".close");
+        
+        linkSQLListFormatter.onclick = function(event) {
+            event.preventDefault();
+            modalSQLListFormatter.style.display = "block";
+        }
+        
+        closeBtnSQLListFormatter.onclick = function() {
+            modalSQLListFormatter.style.display = "none";
+        }
+        
+        // モーダル外部クリックで閉じる
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            } else if (event.target == modalPythonAnywhere) {
+                modalPythonAnywhere.style.display = "none";
+            } else if (event.target == modalSQLListFormatter) {
+                modalSQLListFormatter.style.display = "none";
+            }
+        }
     </script>
     
 </body>
