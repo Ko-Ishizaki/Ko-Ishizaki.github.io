@@ -1,79 +1,121 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Website</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        header {
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-        }
-        nav {
-            margin: 10px 0;
-            text-align: center;
-        }
-        nav a {
-            color: #333;
-            text-decoration: none;
-            margin: 0 10px;
-            padding: 5px 10px;
-            border: 1px solid #333;
-            border-radius: 5px;
-        }
-        nav a:hover {
-            background-color: #333;
-            color: white;
-        }
-        main {
-            padding: 20px;
-            text-align: center;
-        }
-        footer {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 10px 0;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Merger</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    #fileInput {
+      margin-bottom: 20px;
+    }
+    #preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .pdf-page {
+      border: 1px solid #ccc;
+      padding: 5px;
+      cursor: grab;
+      position: relative;
+      background-color: white;
+    }
+    .pdf-page img {
+      max-width: 100px;
+      max-height: 140px;
+    }
+    #mergeBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Welcome to My Website</h1>
-    </header>
-    <nav>
-        <a href="#about">About</a>
-        <a href="#services">Services</a>
-        <a href="#contact">Contact</a>
-    </nav>
-    <main>
-        <section id="about">
-            <h2>About Us</h2>
-            <p>This is a simple example of a homepage. You can add more content here!</p>
-        </section>
-        <section id="services">
-            <h2>Our Services</h2>
-            <p>We provide a range of amazing services to our customers.</p>
-        </section>
-        <section id="contact">
-            <h2>Contact</h2>
-            <p>Email: example@example.com</p>
-            <p>Phone: 123-456-7890</p>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2024 My Website. All Rights Reserved.</p>
-    </footer>
+  <h1>PDF Merger</h1>
+  <input type="file" id="fileInput" multiple accept=".pdf">
+  <div id="preview"></div>
+  <button id="mergeBtn">Merge PDFs</button>
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const mergeBtn = document.getElementById('mergeBtn');
+    let pdfPages = [];
+
+    // PDF.jsでサムネイルを生成
+    async function generateThumbnail(pdfData, fileIndex) {
+      const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+      for (let i = 0; i < pdf.numPages; i++) {
+        const page = await pdf.getPage(i + 1);
+        const viewport = page.getViewport({ scale: 0.3 });
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        const thumbnail = document.createElement('div');
+        thumbnail.classList.add('pdf-page');
+        thumbnail.setAttribute('data-index', `${fileIndex}-${i}`);
+        thumbnail.draggable = true;
+
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL(); // Canvasを画像化
+        thumbnail.appendChild(img);
+        preview.appendChild(thumbnail);
+
+        pdfPages.push({ fileIndex, pageIndex: i, pdfDoc: pdf });
+      }
+    }
+
+    // ファイル選択イベント
+    fileInput.addEventListener('change', async (event) => {
+      const files = event.target.files;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const arrayBuffer = await file.arrayBuffer();
+        await generateThumbnail(arrayBuffer, i);
+      }
+    });
+
+    // SortableJSを使用して並び替え機能を有効化
+    const sortable = new Sortable(preview, {
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+    });
+
+    // Merge PDFs with pdf-lib
+    mergeBtn.addEventListener('click', async () => {
+      const pdfDoc = await PDFLib.PDFDocument.create();
+      const sortedPages = Array.from(preview.querySelectorAll('.pdf-page'));
+
+      for (const page of sortedPages) {
+        const [fileIndex, pageIndex] = page.dataset.index.split('-').map(Number);
+        const sourcePdf = pdfPages.find((p) => p.fileIndex === fileIndex).pdfDoc;
+        const [copiedPage] = await pdfDoc.copyPages(sourcePdf, [pageIndex]);
+        pdfDoc.addPage(copiedPage);
+      }
+
+      const mergedPdfBytes = await pdfDoc.save();
+      const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'merged.pdf';
+      a.click();
+    });
+  </script>
 </body>
 </html>
