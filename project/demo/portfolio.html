@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>https://ko-ishizaki.github.io/</title>
+    <meta name="description" content="Ko ISHIZAKIのポートフォリオ">
+    <style>
+        /* 基本リセット */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #333333;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* 自己紹介セクション */
+        .about {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .about p {
+            font-size: 1rem;
+        }
+
+        .about ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .about li {
+            font-size: 0.9rem;
+            color: #555;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* リンクセクション */
+        .links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-evenly; /* 均等配置 */
+            align-items: center; /* 縦方向の中央揃え */
+        }
+
+        .links a {
+            color: #0066cc;
+            text-decoration: none;
+            padding: 5px 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .links a:hover {
+            color: #004499;
+            border: 1px solid #0066cc;
+            border-radius: 5px;
+            background-color: #f0f8ff;
+        }
+
+        /* プロジェクトセクション */
+        .projects {
+            margin-top: 20px;
+            display: none; /* 初期状態は非表示 */
+        }
+
+        .projects h2 {
+            color: #0066cc;
+            text-decoration: none;
+            margin-bottom: 10px;
+        }
+
+        .project {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .project:hover {
+            transform: scale(1.02);
+        }
+
+        .project h3 {
+            font-size: 1.2rem;
+            color: #555555;
+            font-weight: 500;
+        }
+
+        .project p {
+            font-size: 14.4px;
+            color: #555;
+            font-weight: 400;
+        }
+
+        .project a.button {
+            display: inline-block;
+            color: #ffffff;
+            background-color: #00a7cc;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .project a.button:hover {
+            background-color: #005bb5;
+        }
+ 
+ 
+        /* フッターセクション */
+        .contact {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #dddddd;
+        }
+
+        .contact p {
+            margin-bottom: 10px;
+        }
+
+        .social-links a {
+            color: #0066cc;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+
+        /* モーダルウィンドウのスタイル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- 自己紹介セクション -->
+    <section class="about">
+        <p>駆け出しのシステム開発マニア</p>
+        <ul>
+            <li>2003年生まれ</li>
+            <li>システム開発(WEB、データベース)</li>
+            <li>使用言語：Python、JavaScript、PHP、Ruby(よく使う順)</li>
+        </ul>
+        <!-- GitHub、Project、Service、Blogを並べるリンク -->
+        <div class="links">
+            <a href="https://github.com/Ko-Ishizaki">GitHub</a>
+            <a href="#projects">Project</a>
+            <a href="#services">Service</a>
+            <a href="#blog">Blog</a>
+        </div>
+    </section>
+
+    <!-- プロジェクトセクション -->
+    <section id="projects" class="projects">
+        <h2>Project</h2>
+
+        <div class="project">
+            <h3>乱数生成ジェネレーター</h3>
+            <p>T様</p>
+            <p>フロントエンドだけで出来ている<br>乱数ジェネレーター。<br>何気ない会話から生まれた特定業務特化のジェネレーターです。</p>
+            <a href="#" class="button open-modal" data-modal="modal-rng">詳細を見る(デモ版)</a>
+        </div>
+
+        <div class="project">
+            <h3>拡張子変換ツール</h3>
+            <p>U様</p>
+            <p>なかなか使わない、TIFFも入っている変換ツール。<br>現場から得られるファイルを直接変換する<br>アナログ要素も時には必要。</p>
+            <a href="#" class="button open-modal" data-modal="modal-converter">詳細を見る(デモ版)</a>
+        </div>
+
+        <div class="project">
+            <h3>ポートフォリオ作成(Self-Project)</h3>
+            <p>このポートフォリオの制作。<br>凝ったデザインを考えに考えた結果<br>このようなデザインに。</p>
+        </div>
+
+        <div class="project">
+            <h3>WebベースERPシステム基盤開発(Self-Project)</h3>
+            <p>最近需要多すぎません？<br>あまりにも多すぎるんで、Flaskで基盤を開発しております。<br>JavaScirptライブラリが増えに増えているので<br>近日中に公開</p>
+        </div>
+
+        <div class="project">
+            <h3>SQL_List_Formatter(Self-Project)</h3>
+            <p>当初、SQLのINの中でシングルクオーテーションで囲う機会が増え<br>そのとき用に作成。まじで俺が使いたくて作った。<br>Python等でも使えるように、囲い文字と区切り文字を選べるように。</p>
+            <a href="#" class="button open-modal" data-modal='modal-listformatter'>詳細を見る(デモ版)</a>
+        </div>
+  
+    </section>
+    
+    <!-- フッター/連絡先セクション -->
+    <footer class="contact">
+        <p>ご連絡はこちらまで：<a href="mailto:koodevelopmentfield@gmail.com">ここをクリック</a></p>
+        <div class="social-links">
+            <a href="https://www.facebook.com/profile.php?id=61561445186475">Facebook</a>/<a href="https://www.instagram.com/koshzk0">Instagram</a>
+        </div>
+    </footer>
+   
+    <!-- モーダルウィンドウ -->
+    <div id="modal-rng" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <iframe src="https://ko-ishizaki.github.io/random-number-generator" width="100%" height="500px" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <div id="modal-converter" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <iframe src="https://koishizaki.pythonanywhere.com/" width="100%" height="500px" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <div id="modal-listformatter" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <iframe src="https://ko-ishizaki.github.io/sqllistformatter" width="100%" height="500px" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <!-- JavaScriptコード -->
+    <script>
+        // Projectセクションをトグルで表示/非表示
+        document.querySelector('a[href="#projects"]').addEventListener('click', (event) => {
+            event.preventDefault();
+            const projectsSection = document.getElementById('projects');
+            projectsSection.style.display =
+                projectsSection.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // モーダルウィンドウの操作
+        document.querySelectorAll('.open-modal').forEach(button => {
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                const modalId = button.dataset.modal;
+                document.getElementById(modalId).style.display = 'block';
+            });
+        });
+
+        document.querySelectorAll('.modal .close').forEach(closeBtn => {
+            closeBtn.addEventListener('click', () => {
+                closeBtn.closest('.modal').style.display = 'none';
+            });
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
