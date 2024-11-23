@@ -1,1 +1,1 @@
-'Once you have a proper portfolio, delete the project directory.'
+`Once you have a proper portfolio, delete the project directory.`
