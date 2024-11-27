@@ -144,8 +144,17 @@ SOFTWARE.
     <label for="delimiter">区切り文字（例: `,`）:</label>
     <input type="text" id="delimiter" placeholder="," value=",">
     
-    <label for="quoteChar">囲み文字（例: `'`）:</label>
+    <label for="quoteChar">囲み文字（開始文字例: `'`）:</label>
     <input type="text" id="quoteChar" placeholder="'" value="'">
+    
+    <label>
+        <input type="checkbox" id="separateQuoteToggle" onclick="toggleSeparateQuotes()"> 終わり文字を別に設定する
+    </label>
+    
+    <div id="endQuoteContainer" style="display: none;">
+        <label for="endQuoteChar">囲み文字（終了文字例: `"`）:</label>
+        <input type="text" id="endQuoteChar" placeholder="'" value="'">
+    </div>
     
     <button type="button" class="formatButton" onclick="formatList()">フォーマット</button>
 </form>
@@ -154,11 +163,23 @@ SOFTWARE.
 <div id="outputContainer"></div>
 
 <script>
+    function toggleSeparateQuotes() {
+        const separateQuoteToggle = document.getElementById('separateQuoteToggle');
+        const endQuoteContainer = document.getElementById('endQuoteContainer');
+        if (separateQuoteToggle.checked) {
+            endQuoteContainer.style.display = 'block';
+        } else {
+            endQuoteContainer.style.display = 'none';
+        }
+    }
+
     function formatList() {
         const input = document.getElementById('inputList').value;
         const splitSize = parseInt(document.getElementById('splitSize').value);
         const delimiter = document.getElementById('delimiter').value;
         const quoteChar = document.getElementById('quoteChar').value;
+        const separateQuoteToggle = document.getElementById('separateQuoteToggle').checked;
+        const endQuoteChar = separateQuoteToggle ? document.getElementById('endQuoteChar').value : quoteChar;
         const outputContainer = document.getElementById('outputContainer');
         const spinner = document.getElementById('loadingSpinner');
         
@@ -180,7 +201,7 @@ SOFTWARE.
             }
             
             chunks.forEach((chunk, index) => {
-                const formattedChunk = chunk.map(line => `${quoteChar}${line}${quoteChar}`).join(`${delimiter}\n`);
+                const formattedChunk = chunk.map(line => `${quoteChar}${line}${endQuoteChar}`).join(`${delimiter}\n`);
                 const groupDiv = document.createElement('div');
                 groupDiv.classList.add('output-group');
                 
