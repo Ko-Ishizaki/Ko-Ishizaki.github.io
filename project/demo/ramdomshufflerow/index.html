@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ramdom_Shuffle_Row</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    textarea { width: 100%; height: 150px; margin: 10px 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    button { margin: 10px 5px; padding: 10px; cursor: pointer; }
+    #copyButton { display: none; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<h1>Ramdom_Shuffle_Row</h1>
+<p>元データをランダムに割り当てるマスタデータを指定してください。</p>
+
+<h3>元データ</h3>
+<textarea id="original" placeholder="元データ（1行ずつ）を入力"></textarea>
+
+<h3>マスタデータ</h3>
+<textarea id="master" placeholder="マスタデータ（1行ずつ）を入力"></textarea>
+
+<button id="processButton">処理開始</button>
+<button id="copyButton">割り当てられたマスタをコピー</button>
+
+<table id="resultTable">
+  <thead>
+    <tr>
+      <th>元データ</th>
+      <th>割り当てられたマスタ</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+document.getElementById('processButton').addEventListener('click', () => {
+    const originalText = document.getElementById('original').value.split('\n').filter(line => line.trim() !== '');
+    const masterText = document.getElementById('master').value.split('\n').filter(line => line.trim() !== '');
+
+    if (originalText.length === 0 || masterText.length === 0) {
+        alert("データを入力してください。");
+        return;
+    }
+
+    const resultTable = document.getElementById('resultTable').querySelector('tbody');
+    resultTable.innerHTML = '';
+
+    const masterPool = [];
+    const repeats = Math.ceil(originalText.length / masterText.length);
+    for (let i = 0; i < repeats; i++) {
+        masterPool.push(...masterText);
+    }
+
+    for (let i = masterPool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [masterPool[i], masterPool[j]] = [masterPool[j], masterPool[i]];
+    }
+
+    const assignedMasters = [];
+    originalText.forEach((original, index) => {
+        let assignedMaster = masterPool[index];
+
+        let retryCount = 0;
+        while (original === assignedMaster && retryCount < masterPool.length) {
+            retryCount++;
+            assignedMaster = masterPool[(index + retryCount) % masterPool.length];
+        }
+
+        assignedMasters.push(assignedMaster);
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${original}</td>
+            <td>${assignedMaster}</td>
+        `;
+        resultTable.appendChild(row);
+    });
+
+    // コピー用ボタンを表示
+    const copyButton = document.getElementById('copyButton');
+    copyButton.style.display = 'inline-block';
+
+    // クリップボードコピーの処理を設定
+    copyButton.onclick = () => {
+        const textToCopy = assignedMasters.join('\n');
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            alert("割り当てられたマスタ列をクリップボードにコピーしました！");
+        }).catch(err => {
+            alert("コピーに失敗しました: " + err);
+        });
+    };
+
+    alert("処理が完了しました！");
+});
+</script>
+
+</body>
+</html>
