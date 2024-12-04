@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>synthesis_tools</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .tabs {
+            display: flex;
+            cursor: pointer;
+            margin-bottom: 10px;
+            background: #f0f0f0;
+        }
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+        }
+        .tab.active {
+            background: #fff;
+            border-bottom: 2px solid black;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+        .chunk-container {
+            margin-bottom: 20px;
+        }
+        .chunk-textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="tabs">
+        <div class="tab active" data-tab="tool1">行数カウント</div>
+        <div class="tab" data-tab="tool2">順不同行差分比較</div>
+        <div class="tab" data-tab="tool3">行数分割</div>
+    </div>
+
+    <!-- Tool 1: 行数カウント -->
+    <div id="tool1" class="tab-content active">
+        <h2>行数カウント</h2>
+        <textarea id="textArea" placeholder="ここにテキストを入力してください"></textarea>
+        <div>行数: <span id="lineCount">1</span></div>
+    </div>
+
+    <!-- Tool 2: 順不同カラム差分比較 -->
+    <div id="tool2" class="tab-content">
+        <h2>順不同行差分比較</h2>
+        <p>2つの行列データを順不同で差分を比較します。</p>
+        <textarea id="input1" placeholder="行列1をここに貼り付け"></textarea>
+        <textarea id="input2" placeholder="行列2をここに貼り付け"></textarea>
+        <button onclick="compareColumns()">比較する</button>
+        <div class="result">
+            <h2>差分結果</h2>
+            <pre id="result"></pre>
+        </div>
+    </div>
+
+    <!-- Tool 3: 行数分割 -->
+    <div id="tool3" class="tab-content">
+        <h2>行数分割</h2>
+        <textarea id="inputText" placeholder="ここにテキストを入力してください"></textarea>
+        <label for="lineCountInput">分割する行数:</label>
+        <input type="number" id="lineCountInput" value="4096" min="1">
+        <button onclick="splitText()">分割する</button>
+        <div id="splitResult"></div>
+    </div>
+
+    <script>
+        // タブ切り替え機能
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.getAttribute('data-tab')).classList.add('active');
+            });
+        });
+
+        // Tool 1: 行数カウント
+        const textArea = document.getElementById('textArea');
+        const lineCount = document.getElementById('lineCount');
+        textArea.addEventListener('input', () => {
+            lineCount.textContent = textArea.value.split('\n').length;
+        });
+
+        // Tool 2: 順不同行差分比較
+        function compareColumns() {
+            const input1 = document.getElementById("input1").value.trim().split("\n").map(line => line.trim());
+            const input2 = document.getElementById("input2").value.trim().split("\n").map(line => line.trim());
+            const set1 = new Set(input1);
+            const set2 = new Set(input2);
+            const onlyInInput1 = Array.from(set1).filter(line => !set2.has(line));
+            const onlyInInput2 = Array.from(set2).filter(line => !set1.has(line));
+            const resultBox = document.getElementById("result");
+            if (onlyInInput1.length === 0 && onlyInInput2.length === 0) {
+                resultBox.textContent = "差分なし: 両方のカラムは同じ内容を持っています。";
+            } else {
+                let resultText = "";
+                if (onlyInInput1.length > 0) {
+                    resultText += "[カラム1にのみ存在する行]\n" + onlyInInput1.join("\n") + "\n\n";
+                }
+                if (onlyInInput2.length > 0) {
+                    resultText += "[カラム2にのみ存在する行]\n" + onlyInInput2.join("\n");
+                }
+                resultBox.textContent = resultText;
+            }
+        }
+
+        // Tool 3: 行数分割
+        function splitText() {
+            const inputText = document.getElementById('inputText').value;
+            const lines = inputText.split('\n');
+            const chunkSize = parseInt(document.getElementById('lineCountInput').value, 10);
+            const resultContainer = document.getElementById('splitResult');
+            resultContainer.innerHTML = '';
+            if (chunkSize < 1) {
+                alert('行数は1以上を指定してください。');
+                return;
+            }
+            for (let i = 0; i < lines.length; i += chunkSize) {
+                const chunk = lines.slice(i, i + chunkSize).join('\n');
+                const chunkDiv = document.createElement('div');
+                chunkDiv.classList.add('chunk-container');
+                const textArea = document.createElement('textarea');
+                textArea.classList.add('chunk-textarea');
+                textArea.value = chunk;
+                textArea.readOnly = true;
+                const copyButton = document.createElement('button');
+                copyButton.innerText = `コピー (${i + 1} - ${Math.min(i + chunkSize, lines.length)}行)`;
+                copyButton.onclick = () => copyToClipboard(chunk);
+                chunkDiv.appendChild(textArea);
+                chunkDiv.appendChild(copyButton);
+                resultContainer.appendChild(chunkDiv);
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('コピーしました！');
+            }).catch(err => {
+                console.error('コピーに失敗しました:', err);
+            });
+        }
+    </script>
+</body>
+</html>
