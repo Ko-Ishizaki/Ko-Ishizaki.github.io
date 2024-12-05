@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -179,6 +180,85 @@
                 }
                 resultBox.textContent = resultText;
             }
+        }
+
+        // Tool 3: 行数分割
+        function splitText() {
+            const inputText = document.getElementById('inputText').value;
+            const lines = inputText.split('\n');
+            const chunkSize = parseInt(document.getElementById('lineCountInput').value, 10); // 修正点
+            const resultContainer = document.getElementById('splitResult');
+            resultContainer.innerHTML = '';
+
+            if (chunkSize < 1 || isNaN(chunkSize)) {
+                alert('行数は1以上を指定してください。');
+                return;
+            }
+
+            // 分割処理
+            for (let i = 0; i < lines.length; i += chunkSize) {
+                const chunk = lines.slice(i, i + chunkSize).join('\n');
+                const chunkDiv = document.createElement('div');
+                chunkDiv.classList.add('chunk-container');
+
+                const textArea = document.createElement('textarea');
+                textArea.classList.add('chunk-textarea');
+                textArea.value = chunk;
+                textArea.readOnly = true;
+
+                const copyButton = document.createElement('button');
+                copyButton.innerText = `コピー (${i + 1} - ${Math.min(i + chunkSize, lines.length)}行)`;
+                copyButton.onclick = () => copyToClipboard(chunk);
+
+                chunkDiv.appendChild(textArea);
+                chunkDiv.appendChild(copyButton);
+                resultContainer.appendChild(chunkDiv);
+            }
+        }
+
+        // クリップボードにコピー
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('コピーしました！');
+            }).catch(err => {
+                console.error('コピーに失敗しました:', err);
+            });
+        }
+
+        // Tool 4: 行シャッフル
+        function shuffleData() {
+            const inputData = document.getElementById("inputData").value.trim();
+            const lines = inputData.split("\n");
+            const resultContainer = document.getElementById("resultContainer");
+
+            if (lines.length === 0) {
+                resultContainer.textContent = "データを入力してください。";
+                return;
+            }
+
+            // シャッフルアルゴリズム (Fisher-Yates)
+            for (let i = lines.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [lines[i], lines[j]] = [lines[j], lines[i]];
+            }
+
+            // 結果表示とコピー機能の追加
+            resultContainer.innerHTML = `
+                <h2>シャッフル結果</h2>
+            `;
+
+            const shuffledText = lines.join("\n");
+            const textArea = document.createElement("textarea");
+            textArea.classList.add("chunk-textarea");
+            textArea.value = shuffledText;
+            textArea.readOnly = true;
+
+            const copyButton = document.createElement("button");
+            copyButton.innerText = "結果をコピー";
+            copyButton.onclick = () => copyToClipboard(shuffledText);
+
+            resultContainer.appendChild(textArea);
+            resultContainer.appendChild(copyButton);
         }
 
         // Tool 5: URL Encode
