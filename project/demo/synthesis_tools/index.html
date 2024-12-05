@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -10,25 +9,37 @@
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-        .tabs {
-            display: flex;
+        /* ハンバーガーメニューのスタイル */
+        .menu-icon {
+            font-size: 30px;
             cursor: pointer;
-            margin-bottom: 10px;
-            background: #f0f0f0;
+            user-select: none;
         }
-        .tab {
-            flex: 1;
-            padding: 10px;
-            text-align: center;
-            border: 1px solid #ccc;
+        .nav-menu {
+            display: none;
+            position: absolute;
             background: #f9f9f9;
+            width: 200px;
+            top: 50px;
+            left: 20px;
+            border: 1px solid #ccc;
+            z-index: 1000;
+        }
+        .nav-menu ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-menu li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
             -webkit-tap-highlight-color: transparent; /* タッチ時のハイライトを無効化 */
         }
-        .tab.active {
-            background: #fff;
-            border-bottom: 2px solid black;
+        .nav-menu li:hover {
+            background: #eee;
         }
-        .tab:focus {
+        .nav-menu li:focus {
             outline: none; /* フォーカス時のスタイルを無効化 */
         }
         .tab-content {
@@ -66,14 +77,21 @@
     </style>
 </head>
 <body>
-    <div class="tabs">
-        <div class="tab active" data-tab="tool1">行数カウント</div>
-        <div class="tab" data-tab="tool2">順不同行差分比較</div>
-        <div class="tab" data-tab="tool3">行数分割</div>
-        <div class="tab" data-tab="tool4">行シャッフル</div>
-        <div class="tab" data-tab="tool5">URLエンコード</div>
-        <div class="tab" data-tab="tool6">URLデコード</div>
-    </div>
+    <header>
+        <div class="menu-icon" id="menu-icon">
+            ☰
+        </div>
+        <nav id="nav-menu" class="nav-menu">
+            <ul>
+                <li data-tab="tool1">行数カウント</li>
+                <li data-tab="tool2">順不同行差分比較</li>
+                <li data-tab="tool3">行数分割</li>
+                <li data-tab="tool4">行シャッフル</li>
+                <li data-tab="tool5">URLエンコード</li>
+                <li data-tab="tool6">URLデコード</li>
+            </ul>
+        </nav>
+    </header>
 
     <!-- Tool 1: 行数カウント -->
     <div id="tool1" class="tab-content active">
@@ -116,7 +134,7 @@
         <div id="resultContainer"></div>
     </div>
 
-    <!-- Tool 5: URL Encode -->
+    <!-- Tool 5: URLエンコード -->
     <div id="tool5" class="tab-content">
         <h2>URLエンコード</h2>
         <textarea id="encodeInput" rows="10" cols="50" placeholder="エンコードするURLを入力してください"></textarea>
@@ -126,7 +144,7 @@
         <p id="encodedOutput" style="font-weight: bold; color: blue;"></p>
     </div>
 
-    <!-- Tool 6: URL Decode -->
+    <!-- Tool 6: URLデコード -->
     <div id="tool6" class="tab-content">
         <h2>URLデコード</h2>
         <textarea id="decodeInput" rows="10" cols="50" placeholder="デコードするURLを入力してください"></textarea>
@@ -137,19 +155,31 @@
     </div>
 
     <script>
-        // タブ切り替え機能
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(tab.getAttribute('data-tab')).classList.add('active');
-            });
+        // ハンバーガーメニューの機能
+        const menuIcon = document.getElementById('menu-icon');
+        const navMenu = document.getElementById('nav-menu');
 
-            tab.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                tab.click();
-            });
+        menuIcon.addEventListener('click', () => {
+            if (navMenu.style.display === 'block') {
+                navMenu.style.display = 'none';
+            } else {
+                navMenu.style.display = 'block';
+            }
+        });
+
+        navMenu.addEventListener('click', (event) => {
+            if (event.target.tagName === 'LI') {
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                document.getElementById(event.target.getAttribute('data-tab')).classList.add('active');
+                navMenu.style.display = 'none';
+            }
+        });
+
+        // メニュー外をクリックしたらメニューを閉じる
+        document.addEventListener('click', function(event) {
+            if (!navMenu.contains(event.target) && !menuIcon.contains(event.target)) {
+                navMenu.style.display = 'none';
+            }
         });
 
         // Tool 1: 行数カウント
@@ -186,7 +216,7 @@
         function splitText() {
             const inputText = document.getElementById('inputText').value;
             const lines = inputText.split('\n');
-            const chunkSize = parseInt(document.getElementById('lineCountInput').value, 10); // 修正点
+            const chunkSize = parseInt(document.getElementById('lineCountInput').value, 10);
             const resultContainer = document.getElementById('splitResult');
             resultContainer.innerHTML = '';
 
@@ -261,14 +291,14 @@
             resultContainer.appendChild(copyButton);
         }
 
-        // Tool 5: URL Encode
+        // Tool 5: URLエンコード
         document.getElementById('encodeButton').addEventListener('click', function () {
             const input = document.getElementById('encodeInput').value;
             const lines = input.split('\n'); // 複数行対応
             const encodedLines = lines.map(line => {
                 if (line.startsWith('https://') || line.startsWith('http://')) {
                     // プロトコル部分を分離し、後続をエンコード
-                    const [protocol, rest] = line.split(/:\/\/(.*)/, 2);
+                    const [protocol, rest] = line.split('://');
                     return `${protocol}://${encodeURIComponent(rest)}`;
                 } else {
                     return encodeURIComponent(line); // 通常エンコード
@@ -277,7 +307,7 @@
             document.getElementById('encodedOutput').textContent = encodedLines.join('\n');
         });
 
-        // Tool 6: URL Decode
+        // Tool 6: URLデコード
         document.getElementById('decodeButton').addEventListener('click', function () {
             const input = document.getElementById('decodeInput').value;
             const lines = input.split('\n'); // 複数行対応
