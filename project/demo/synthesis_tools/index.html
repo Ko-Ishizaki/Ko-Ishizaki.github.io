@@ -194,6 +194,7 @@
                     <li data-tab="tool2">順不同行差分比較</li>
                     <li data-tab="tool3">行数分割</li>
                     <li data-tab="tool4">リストフォーマッター</li>
+                    <li data-tab="tool9">テキストデータカウント</li>
                     <li data-tab="tool5">行シャッフル</li>
                     <li data-tab="tool6">URLエンコード</li>
                     <li data-tab="tool7">URLデコード</li>
@@ -267,6 +268,17 @@
             </form>
             <div class="spinner" id="loadingSpinner"></div>
             <div id="outputContainer"></div>
+        </div>
+
+        <!-- Tool 9: テキストデータカウント -->
+        <div id="tool9" class="tab-content">
+            <h2>テキストデータカウント</h2>
+            <textarea id="inputText9" rows="10" cols="50" placeholder="ここにテキストデータを入力してください（1行ごと）"></textarea>
+            <br>
+            <button onclick="countOccurrences()">カウント</button>
+            <h2>結果</h2>
+            <div id="summary9"></div>
+            <div id="output9"></div>
         </div>
 
         <!-- Tool 5: 行シャッフル -->
@@ -350,7 +362,7 @@
             // URLのハッシュに応じて表示するタブを切り替える関数
             function showTabFromHash() {
                 const hash = window.location.hash.substring(1); // '#'を除去
-                const validTabs = ['home', 'tool1', 'tool2', 'tool3', 'tool4', 'tool5', 'tool6', 'tool7', 'tool8'];
+                const validTabs = ['home', 'tool1', 'tool2', 'tool3', 'tool4', 'tool5', 'tool6', 'tool7', 'tool8', 'tool9'];
                 const tabToShow = validTabs.includes(hash) ? hash : 'home';
                 document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
                 document.getElementById(tabToShow).classList.add('active');
@@ -503,6 +515,55 @@
                     
                     spinner.style.display = 'none';
                 }, 250);
+            }
+
+            // Tool 9: テキストデータカウント
+            function countOccurrences() {
+                const inputText = document.getElementById("inputText9").value;
+                const lines = inputText.split("\n").map(line => line.trim()).filter(line => line !== ""); // 空行を除去
+                const totalLines = lines.length;
+                const counts = {};
+
+                lines.forEach(line => {
+                    counts[line] = (counts[line] || 0) + 1;
+                });
+
+                const uniqueLinesCount = Object.keys(counts).length; // ユニークな行の数
+
+                const summaryDiv = document.getElementById("summary9");
+                const outputDiv = document.getElementById("output9");
+
+                summaryDiv.innerHTML = ""; // 概要をクリア
+                outputDiv.innerHTML = ""; // 結果をクリア
+
+                if (totalLines === 0) {
+                    summaryDiv.innerText = "入力データがありません。";
+                    return;
+                }
+
+                // 概要の表示
+                summaryDiv.innerHTML = `
+                    <p><strong>総行数:</strong> ${totalLines}</p>
+                    <p><strong>ユニークな行数:</strong> ${uniqueLinesCount}</p>
+                `;
+
+                // テーブルの作成
+                const resultTable = document.createElement("table");
+                resultTable.border = "1";
+
+                const headerRow = resultTable.insertRow();
+                headerRow.insertCell().innerText = "行の内容";
+                headerRow.insertCell().innerText = "出現回数";
+                headerRow.insertCell().innerText = "割合 (%)";
+
+                for (const [line, count] of Object.entries(counts)) {
+                    const row = resultTable.insertRow();
+                    row.insertCell().innerText = line;
+                    row.insertCell().innerText = count;
+                    row.insertCell().innerText = ((count / totalLines) * 100).toFixed(2); // パーセンテージ計算
+                }
+
+                outputDiv.appendChild(resultTable);
             }
 
             // Tool 5: 行シャッフル
