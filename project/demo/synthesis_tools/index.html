@@ -21,10 +21,14 @@
             text-align: center;
             border: 1px solid #ccc;
             background: #f9f9f9;
+            -webkit-tap-highlight-color: transparent; /* タッチ時のハイライトを無効化 */
         }
         .tab.active {
             background: #fff;
             border-bottom: 2px solid black;
+        }
+        .tab:focus {
+            outline: none; /* フォーカス時のスタイルを無効化 */
         }
         .tab-content {
             display: none;
@@ -105,6 +109,12 @@
                 document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
                 tab.classList.add('active');
                 document.getElementById(tab.getAttribute('data-tab')).classList.add('active');
+            });
+
+            // タッチイベントのサポートを追加
+            tab.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // タッチデバイスでのクリック誤作動を防ぐ
+                tab.click(); // タッチでクリックをエミュレート
             });
         });
 
