@@ -70,6 +70,8 @@
         <div class="tab" data-tab="tool2">順不同行差分比較</div>
         <div class="tab" data-tab="tool3">行数分割</div>
         <div class="tab" data-tab="tool4">行シャッフル</div>
+        <div class="tab" data-tab="tool5">URLエンコード</div>
+        <div class="tab" data-tab="tool6">URLデコード</div>
     </div>
 
     <!-- Tool 1: 行数カウント -->
@@ -113,6 +115,26 @@
         <div id="resultContainer"></div>
     </div>
 
+    <!-- Tool 5: URL Encode -->
+    <div id="tool5" class="tab-content">
+        <h2>URLエンコード</h2>
+        <textarea id="encodeInput" rows="10" cols="50" placeholder="エンコードするURLを入力してください"></textarea>
+        <br>
+        <button id="encodeButton">エンコード</button>
+        <h2>エンコード結果</h2>
+        <p id="encodedOutput" style="font-weight: bold; color: blue;"></p>
+    </div>
+
+    <!-- Tool 6: URL Decode -->
+    <div id="tool6" class="tab-content">
+        <h2>URLデコード</h2>
+        <textarea id="decodeInput" rows="10" cols="50" placeholder="デコードするURLを入力してください"></textarea>
+        <br>
+        <button id="decodeButton">デコード</button>
+        <h2>デコード結果</h2>
+        <p id="decodedOutput" style="font-weight: bold; color: blue;"></p>
+    </div>
+
     <script>
         // タブ切り替え機能
         document.querySelectorAll('.tab').forEach(tab => {
@@ -123,10 +145,9 @@
                 document.getElementById(tab.getAttribute('data-tab')).classList.add('active');
             });
 
-            // タッチイベントのサポートを追加
             tab.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // タッチデバイスでのクリック誤作動を防ぐ
-                tab.click(); // タッチでクリックをエミュレート
+                e.preventDefault();
+                tab.click();
             });
         });
 
@@ -160,62 +181,35 @@
             }
         }
 
-        // Tool 3: 行数分割
-        function splitText() {
-            const inputText = document.getElementById('inputText').value;
-            const lines = inputText.split('\n');
-            const chunkSize = parseInt(document.getElementById('lineCountInput').value, 10);
-            const resultContainer = document.getElementById('splitResult');
-            resultContainer.innerHTML = '';
-            if (chunkSize < 1) {
-                alert('行数は1以上を指定してください。');
-                return;
-            }
-            for (let i = 0; i < lines.length; i += chunkSize) {
-                const chunk = lines.slice(i, i + chunkSize).join('\n');
-                const chunkDiv = document.createElement('div');
-                chunkDiv.classList.add('chunk-container');
-                const textArea = document.createElement('textarea');
-                textArea.classList.add('chunk-textarea');
-                textArea.value = chunk;
-                textArea.readOnly = true;
-                const copyButton = document.createElement('button');
-                copyButton.innerText = `コピー (${i + 1} - ${Math.min(i + chunkSize, lines.length)}行)`; 
-                copyButton.onclick = () => copyToClipboard(chunk);
-                chunkDiv.appendChild(textArea);
-                chunkDiv.appendChild(copyButton);
-                resultContainer.appendChild(chunkDiv);
-            }
-        }
+        // Tool 5: URL Encode
+        document.getElementById('encodeButton').addEventListener('click', function () {
+            const input = document.getElementById('encodeInput').value;
+            const lines = input.split('\n'); // 複数行対応
+            const encodedLines = lines.map(line => {
+                if (line.startsWith('https://') || line.startsWith('http://')) {
+                    // プロトコル部分を分離し、後続をエンコード
+                    const [protocol, rest] = line.split(/:\/\/(.*)/, 2);
+                    return `${protocol}://${encodeURIComponent(rest)}`;
+                } else {
+                    return encodeURIComponent(line); // 通常エンコード
+                }
+            });
+            document.getElementById('encodedOutput').textContent = encodedLines.join('\n');
+        });
 
-        // Tool 4: 行シャッフル
-        function shuffleData() {
-            const input = document.getElementById("inputData").value.split("\n").filter(line => line.trim() !== "");
-            for (let i = input.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [input[i], input[j]] = [input[j], input[i]];
-            }
-            const resultDiv = document.getElementById("resultContainer");
-            resultDiv.innerHTML = "";
-            const textarea = document.createElement("textarea");
-            textarea.rows = 10;
-            textarea.cols = 30;
-            textarea.value = input.join("\n");
-            textarea.id = "shuffledData";
-            resultDiv.appendChild(textarea);
-            const copyButton = document.createElement("button");
-            copyButton.textContent = "クリップボードにコピー";
-            copyButton.onclick = copyToClipboard;
-            resultDiv.appendChild(document.createElement("br"));
-            resultDiv.appendChild(copyButton);
-        }
-
-        function copyToClipboard() {
-            const shuffledData = document.getElementById("shuffledData");
-            shuffledData.select();
-            document.execCommand("copy");
-            alert("シャッフルされたデータをクリップボードにコピーしました！");
-        }
+        // Tool 6: URL Decode
+        document.getElementById('decodeButton').addEventListener('click', function () {
+            const input = document.getElementById('decodeInput').value;
+            const lines = input.split('\n'); // 複数行対応
+            const decodedLines = lines.map(line => {
+                try {
+                    return decodeURIComponent(line.trim());
+                } catch (e) {
+                    return `デコードエラー: ${line}`;
+                }
+            });
+            document.getElementById('decodedOutput').textContent = decodedLines.join('\n');
+        });
     </script>
 </body>
 </html>
