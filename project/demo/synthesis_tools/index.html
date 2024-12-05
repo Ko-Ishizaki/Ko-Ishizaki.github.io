@@ -89,6 +89,97 @@
             display: none;
             margin-top: 10px;
         }
+        /* リストフォーマッターのスタイル */
+        .list-formatter h2 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .list-formatter form {
+            width: 100%;
+            max-width: 600px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .list-formatter label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+        .list-formatter textarea, .list-formatter input[type="number"], .list-formatter input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .list-formatter textarea {
+            height: 200px;
+        }
+        .list-formatter .output-group {
+            white-space: pre-wrap;
+            background-color: #f1f1f1;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            max-width: 600px;
+            width: 100%;
+        }
+        .list-formatter .output-group textarea {
+            height: 200px;
+        }
+        .list-formatter .formatButton {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .list-formatter .formatButton:hover {
+            background-color: #0056b3;
+        }
+        .list-formatter .copyButton {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .list-formatter .copyButton:hover {
+            background-color: #45a049;
+        }
+        .list-formatter .group-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .list-formatter .spinner {
+            display: none;
+            margin: 20px auto;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #007BFF;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
       </style>
     </head>
     <body>
@@ -102,10 +193,11 @@
                     <li data-tab="tool1">行数カウント</li>
                     <li data-tab="tool2">順不同行差分比較</li>
                     <li data-tab="tool3">行数分割</li>
-                    <li data-tab="tool4">行シャッフル</li>
-                    <li data-tab="tool5">URLエンコード</li>
-                    <li data-tab="tool6">URLデコード</li>
-                    <li data-tab="tool7">ランダム割り当て</li>
+                    <li data-tab="tool4">リストフォーマッター</li>
+                    <li data-tab="tool5">行シャッフル</li>
+                    <li data-tab="tool6">URLエンコード</li>
+                    <li data-tab="tool7">URLデコード</li>
+                    <li data-tab="tool8">ランダム割り当て</li>
                 </ul>
             </nav>
         </header>
@@ -146,8 +238,39 @@
             <div id="splitResult"></div>
         </div>
 
-        <!-- Tool 4: 行シャッフル -->
-        <div id="tool4" class="tab-content">
+        <!-- Tool 4: リストフォーマッター -->
+        <div id="tool4" class="tab-content list-formatter">
+            <h2>リストフォーマッター</h2>
+            <form id="formatForm">
+                <label for="inputList">アイテムを入力してください（一行ごとに）:</label>
+                <textarea id="inputList" placeholder="SAMPLE1&#10;SAMPLE2&#10;SAMPLE3&#10;SAMPLE4"></textarea>
+                
+                <label for="splitSize">一括処理件数（例: 20000件）:</label>
+                <input type="number" id="splitSize" value="20000">
+                
+                <label for="delimiter">区切り文字（例: `,`）:</label>
+                <input type="text" id="delimiter" placeholder="," value=",">
+                
+                <label for="quoteChar">囲み文字（開始文字例: `'`）:</label>
+                <input type="text" id="quoteChar" placeholder="'" value="'">
+                
+                <label>
+                    <input type="checkbox" id="separateQuoteToggle" onclick="toggleSeparateQuotes()"> 終わり文字を別に設定する
+                </label>
+                
+                <div id="endQuoteContainer" style="display: none;">
+                    <label for="endQuoteChar">囲み文字（終了文字例: `"`）:</label>
+                    <input type="text" id="endQuoteChar" placeholder="'" value="'">
+                </div>
+                
+                <button type="button" class="formatButton" onclick="formatList()">フォーマット</button>
+            </form>
+            <div class="spinner" id="loadingSpinner"></div>
+            <div id="outputContainer"></div>
+        </div>
+
+        <!-- Tool 5: 行シャッフル -->
+        <div id="tool5" class="tab-content">
             <h2>行シャッフル</h2>
             <p>貼り付けた列の順番をシャッフルします。</p>
             <textarea id="inputData" rows="10" cols="30" placeholder="ここにデータをペースト"></textarea>
@@ -157,8 +280,8 @@
             <div id="resultContainer"></div>
         </div>
 
-        <!-- Tool 5: URLエンコード -->
-        <div id="tool5" class="tab-content">
+        <!-- Tool 6: URLエンコード -->
+        <div id="tool6" class="tab-content">
             <h2>URLエンコード</h2>
             <textarea id="encodeInput" rows="10" cols="50" placeholder="エンコードするURLを入力してください"></textarea>
             <br>
@@ -167,8 +290,8 @@
             <p id="encodedOutput" style="font-weight: bold; color: blue;"></p>
         </div>
 
-        <!-- Tool 6: URLデコード -->
-        <div id="tool6" class="tab-content">
+        <!-- Tool 7: URLデコード -->
+        <div id="tool7" class="tab-content">
             <h2>URLデコード</h2>
             <textarea id="decodeInput" rows="10" cols="50" placeholder="デコードするURLを入力してください"></textarea>
             <br>
@@ -177,8 +300,8 @@
             <p id="decodedOutput" style="font-weight: bold; color: blue;"></p>
         </div>
 
-        <!-- Tool 7: ランダム割り当て -->
-        <div id="tool7" class="tab-content">
+        <!-- Tool 8: ランダム割り当て -->
+        <div id="tool8" class="tab-content">
             <h2>ランダム割り当て</h2>
             <p>元データに対してランダムに割り当てるマスタデータを指定してください。</p>
 
@@ -227,7 +350,7 @@
             // URLのハッシュに応じて表示するタブを切り替える関数
             function showTabFromHash() {
                 const hash = window.location.hash.substring(1); // '#'を除去
-                const validTabs = ['home', 'tool1', 'tool2', 'tool3', 'tool4', 'tool5', 'tool6', 'tool7'];
+                const validTabs = ['home', 'tool1', 'tool2', 'tool3', 'tool4', 'tool5', 'tool6', 'tool7', 'tool8'];
                 const tabToShow = validTabs.includes(hash) ? hash : 'home';
                 document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
                 document.getElementById(tabToShow).classList.add('active');
@@ -317,7 +440,72 @@
                 });
             }
 
-            // Tool 4: 行シャッフル
+            // Tool 4: リストフォーマッター
+            function toggleSeparateQuotes() {
+                const separateQuoteToggle = document.getElementById('separateQuoteToggle');
+                const endQuoteContainer = document.getElementById('endQuoteContainer');
+                if (separateQuoteToggle.checked) {
+                    endQuoteContainer.style.display = 'block';
+                } else {
+                    endQuoteContainer.style.display = 'none';
+                }
+            }
+
+            function formatList() {
+                const input = document.getElementById('inputList').value;
+                const splitSize = parseInt(document.getElementById('splitSize').value);
+                const delimiter = document.getElementById('delimiter').value;
+                const quoteChar = document.getElementById('quoteChar').value;
+                const separateQuoteToggle = document.getElementById('separateQuoteToggle').checked;
+                const endQuoteChar = separateQuoteToggle ? document.getElementById('endQuoteChar').value : quoteChar;
+                const outputContainer = document.getElementById('outputContainer');
+                const spinner = document.getElementById('loadingSpinner');
+                
+                outputContainer.innerHTML = '';
+                spinner.style.display = 'block';
+                
+                setTimeout(() => {
+                    const lines = input.split('\n').map(line => line.trim()).filter(line => line !== '');
+                    
+                    if (lines.length === 0) {
+                        alert("リストが空です。");
+                        spinner.style.display = 'none';
+                        return;
+                    }
+                    
+                    const chunks = [];
+                    for (let i = 0; i < lines.length; i += splitSize) {
+                        chunks.push(lines.slice(i, i + splitSize));
+                    }
+                    
+                    chunks.forEach((chunk, index) => {
+                        const formattedChunk = chunk.map(line => `${quoteChar}${line}${endQuoteChar}`).join(`${delimiter}\n`);
+                        const groupDiv = document.createElement('div');
+                        groupDiv.classList.add('output-group');
+                        
+                        const groupLabel = document.createElement('div');
+                        groupLabel.classList.add('group-label');
+                        groupLabel.textContent = `グループ ${index + 1}`;
+                        groupDiv.appendChild(groupLabel);
+                        
+                        const textarea = document.createElement('textarea');
+                        textarea.value = formattedChunk;
+                        groupDiv.appendChild(textarea);
+
+                        const copyButton = document.createElement('button');
+                        copyButton.classList.add('copyButton');
+                        copyButton.textContent = 'クリップボードにコピー';
+                        copyButton.onclick = () => copyToClipboard(textarea.value);
+                        groupDiv.appendChild(copyButton);
+
+                        outputContainer.appendChild(groupDiv);
+                    });
+                    
+                    spinner.style.display = 'none';
+                }, 250);
+            }
+
+            // Tool 5: 行シャッフル
             function shuffleData() {
                 const inputData = document.getElementById("inputData").value.trim();
                 const lines = inputData.split("\n");
@@ -353,7 +541,7 @@
                 resultContainer.appendChild(copyButton);
             }
 
-            // Tool 5: URLエンコード
+            // Tool 6: URLエンコード
             document.getElementById('encodeButton').addEventListener('click', function () {
                 const input = document.getElementById('encodeInput').value;
                 const lines = input.split('\n'); // 複数行対応
@@ -369,7 +557,7 @@
                 document.getElementById('encodedOutput').textContent = encodedLines.join('\n');
             });
 
-            // Tool 6: URLデコード
+            // Tool 7: URLデコード
             document.getElementById('decodeButton').addEventListener('click', function () {
                 const input = document.getElementById('decodeInput').value;
                 const lines = input.split('\n'); // 複数行対応
@@ -383,7 +571,7 @@
                 document.getElementById('decodedOutput').textContent = decodedLines.join('\n');
             });
 
-            // Tool 7: ランダム割り当て
+            // Tool 8: ランダム割り当て
             document.getElementById('processButton').addEventListener('click', () => {
                 const originalText = document.getElementById('originalData').value.split('\n').filter(line => line.trim() !== '');
                 const masterText = document.getElementById('masterData').value.split('\n').filter(line => line.trim() !== '');
