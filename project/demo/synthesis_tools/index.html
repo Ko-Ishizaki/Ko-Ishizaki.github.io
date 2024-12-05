@@ -69,6 +69,7 @@
         <div class="tab active" data-tab="tool1">行数カウント</div>
         <div class="tab" data-tab="tool2">順不同行差分比較</div>
         <div class="tab" data-tab="tool3">行数分割</div>
+        <div class="tab" data-tab="tool4">行シャッフル</div>
     </div>
 
     <!-- Tool 1: 行数カウント -->
@@ -78,7 +79,7 @@
         <div>行数: <span id="lineCount">1</span></div>
     </div>
 
-    <!-- Tool 2: 順不同カラム差分比較 -->
+    <!-- Tool 2: 順不同行差分比較 -->
     <div id="tool2" class="tab-content">
         <h2>順不同行差分比較</h2>
         <p>2つの行列データを順不同で差分を比較します。</p>
@@ -99,6 +100,17 @@
         <input type="number" id="lineCountInput" value="4096" min="1">
         <button onclick="splitText()">分割する</button>
         <div id="splitResult"></div>
+    </div>
+
+    <!-- Tool 4: 行シャッフル -->
+    <div id="tool4" class="tab-content">
+        <h2>行シャッフル</h2>
+        <p>貼り付けた列の順番をシャッフルします。</p>
+        <textarea id="inputData" rows="10" cols="30" placeholder="ここにデータをペースト"></textarea>
+        <br>
+        <button onclick="shuffleData()">シャッフル</button>
+        <br><br>
+        <div id="resultContainer"></div>
     </div>
 
     <script>
@@ -168,7 +180,7 @@
                 textArea.value = chunk;
                 textArea.readOnly = true;
                 const copyButton = document.createElement('button');
-                copyButton.innerText = `コピー (${i + 1} - ${Math.min(i + chunkSize, lines.length)}行)`;
+                copyButton.innerText = `コピー (${i + 1} - ${Math.min(i + chunkSize, lines.length)}行)`; 
                 copyButton.onclick = () => copyToClipboard(chunk);
                 chunkDiv.appendChild(textArea);
                 chunkDiv.appendChild(copyButton);
@@ -176,12 +188,33 @@
             }
         }
 
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('コピーしました！');
-            }).catch(err => {
-                console.error('コピーに失敗しました:', err);
-            });
+        // Tool 4: 行シャッフル
+        function shuffleData() {
+            const input = document.getElementById("inputData").value.split("\n").filter(line => line.trim() !== "");
+            for (let i = input.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [input[i], input[j]] = [input[j], input[i]];
+            }
+            const resultDiv = document.getElementById("resultContainer");
+            resultDiv.innerHTML = "";
+            const textarea = document.createElement("textarea");
+            textarea.rows = 10;
+            textarea.cols = 30;
+            textarea.value = input.join("\n");
+            textarea.id = "shuffledData";
+            resultDiv.appendChild(textarea);
+            const copyButton = document.createElement("button");
+            copyButton.textContent = "クリップボードにコピー";
+            copyButton.onclick = copyToClipboard;
+            resultDiv.appendChild(document.createElement("br"));
+            resultDiv.appendChild(copyButton);
+        }
+
+        function copyToClipboard() {
+            const shuffledData = document.getElementById("shuffledData");
+            shuffledData.select();
+            document.execCommand("copy");
+            alert("シャッフルされたデータをクリップボードにコピーしました！");
         }
     </script>
 </body>
