@@ -297,9 +297,9 @@
         <div id="splitResult"></div>
     </div>
 
-    <!-- Tool 4: リストフォーマッター -->
+    <!-- Tool 4: リスト化加工 -->
     <div id="tool4" class="tab-content list-formatter">
-        <h2>リストフォーマッター</h2>
+        <h2>リスト化加工</h2>
         <form id="formatForm">
             <label for="inputList">アイテムを入力してください（一行ごとに）:</label>
             <textarea id="inputList" placeholder="SAMPLE1&#10;SAMPLE2&#10;SAMPLE3&#10;SAMPLE4"></textarea>
@@ -328,9 +328,9 @@
         <div id="outputContainer"></div>
     </div>
 
-    <!-- Tool 9: テキストデータカウント -->
+    <!-- Tool 9: 列内キーワード数調査 -->
     <div id="tool9" class="tab-content">
-        <h2>テキストデータカウント</h2>
+        <h2>列内キーワード数調査</h2>
         <textarea id="inputText9" rows="10" cols="50" placeholder="ここにテキストデータを入力してください（1行ごと）"></textarea>
         <br>
         <button onclick="countOccurrences()">カウント</button>
@@ -339,9 +339,9 @@
         <div id="output9"></div>
     </div>
 
-    <!-- Tool 5: 行シャッフル -->
+    <!-- Tool 5: 列内行シャッフル -->
     <div id="tool5" class="tab-content">
-        <h2>行シャッフル</h2>
+        <h2>列内行シャッフル</h2>
         <p>貼り付けた列の順番をシャッフルします。</p>
         <textarea id="inputData" rows="10" cols="30" placeholder="ここにデータをペースト"></textarea>
         <br>
@@ -395,9 +395,9 @@
         </table>
     </div>
 
-    <!-- Tool 10: 改行変更 -->
+    <!-- Tool 10: 改行、改行削除 -->
     <div id="tool10" class="tab-content line-break-tool">
-        <h2>改行変更</h2>
+        <h2>改行、改行削除</h2>
         <p>以下にテキストを入力してください。</p>
         <textarea id="tool10_inputText" placeholder="ここにテキストを入力..."></textarea>
 
@@ -530,7 +530,7 @@
             });
         }
 
-        // Tool 4: リストフォーマッター
+        // Tool 4: リスト化加工ー
         function toggleSeparateQuotes() {
             const separateQuoteToggle = document.getElementById('separateQuoteToggle');
             const endQuoteContainer = document.getElementById('endQuoteContainer');
@@ -595,7 +595,7 @@
             }, 250);
         }
 
-        // Tool 9: テキストデータカウント
+        // Tool 9: 列内キーワード数調査
         function countOccurrences() {
             const inputText = document.getElementById("inputText9").value;
             const lines = inputText.split("\n").map(line => line.trim()).filter(line => line !== ""); // 空行を除去
@@ -644,7 +644,7 @@
             outputDiv.appendChild(resultTable);
         }
 
-        // Tool 5: 行シャッフル
+        // Tool 5: 列内行シャッフル
         function shuffleData() {
             const inputData = document.getElementById("inputData").value.trim();
             const lines = inputData.split("\n");
@@ -772,7 +772,7 @@
             alert("処理が完了しました！");
         });
 
-        // Tool 10: 改行変更
+        // Tool 10: 改行、改行削除
         // 改行変更ツール用の関数名に 'tool10_' プレフィックスを追加して名前衝突を防ぐ
         function tool10_splitText() {
             const input = document.getElementById('tool10_inputText').value;
