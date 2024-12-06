@@ -204,8 +204,9 @@
             margin-right: 10px;
             margin-bottom: 10px;
         }
-        .line-break-tool .controls input[type="number"] {
-            width: 100px;
+        .line-break-tool .controls input[type="number"], 
+        .line-break-tool .controls input[type="text"] {
+            width: 200px;
             padding: 5px;
             font-size: 16px;
         }
@@ -406,6 +407,10 @@
             <input type="number" id="tool10_charCount" min="1" value="10">
             <button onclick="tool10_splitText()">列に分割</button>
             <button onclick="tool10_removeLineBreaks()">改行を削除</button>
+            <!-- 新規追加: キーワードによる改行挿入 -->
+            <label for="tool10_keywords">改行キーワード（カンマ区切り）:</label>
+            <input type="text" id="tool10_keywords" placeholder="例: 。,！,？">
+            <button onclick="tool10_insertKeywordBreaks()">キーワードで改行</button>
             <!-- コピー ボタンはここに動的に挿入されます -->
         </div>
 
@@ -796,6 +801,31 @@
                 result = result.replace(/ /g, '');
             }
             tool10_displayResult(result.trim());
+        }
+
+        function tool10_insertKeywordBreaks() {
+            const input = document.getElementById('tool10_inputText').value;
+            const keywordsInput = document.getElementById('tool10_keywords').value;
+            if (!keywordsInput) {
+                alert('キーワードを入力してください。');
+                return;
+            }
+            // キーワードをカンマで分割し、正規表現用にエスケープ
+            const keywords = keywordsInput.split(',').map(k => k.trim()).filter(k => k !== '').map(k => escapeRegExp(k));
+            if (keywords.length === 0) {
+                alert('有効なキーワードを入力してください。');
+                return;
+            }
+            // 正規表現を作成
+            const regex = new RegExp(`(${keywords.join('|')})`, 'g');
+            // キーワードの後に改行を挿入
+            const result = input.replace(regex, '$1\n');
+            tool10_displayResult(result.trim());
+        }
+
+        // ユーティリティ関数: 正規表現用に文字をエスケープ
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
         function tool10_displayResult(text) {
