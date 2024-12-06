@@ -180,519 +180,678 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-      </style>
-    </head>
-    <body>
-        <header>
-            <div class="menu-icon" id="menu-icon">
-                ☰
+        /* 改行変更ツールのスタイル */
+        .line-break-tool h2 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .line-break-tool textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        .line-break-tool .controls {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .line-break-tool .controls > * {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .line-break-tool .controls input[type="number"] {
+            width: 100px;
+            padding: 5px;
+            font-size: 16px;
+        }
+        .line-break-tool .controls button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .line-break-tool .copy-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .line-break-tool .output {
+            margin-top: 20px;
+        }
+        .line-break-tool .output pre {
+            background-color: #eaeaea;
+            padding: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #ccc;
+        }
+        .line-break-tool .checkbox-label {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+        }
+        .line-break-tool .checkbox-label input {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="menu-icon" id="menu-icon">
+            ☰
+        </div>
+        <nav id="nav-menu" class="nav-menu">
+            <ul>
+                <li data-tab="home">ホーム</li>
+                <li data-tab="tool1">行数カウント</li>
+                <li data-tab="tool2">順不同行差分比較</li>
+                <li data-tab="tool3">行数分割</li>
+                <li data-tab="tool4">リスト化加工</li>
+                <li data-tab="tool9">列内キーワード数調査</li>
+                <li data-tab="tool5">列内行シャッフル</li>
+                <li data-tab="tool6">URLエンコード</li>
+                <li data-tab="tool7">URLデコード</li>
+                <li data-tab="tool8">ランダム割り当て</li>
+                <li data-tab="tool10">改行、改行削除</li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ホームページ -->
+    <div id="home" class="tab-content active">
+        <h1>synthesis_tools</h1>
+        <p>上のメニューから機能を選べます。</p>
+    </div>
+
+    <!-- Tool 1: 行数カウント -->
+    <div id="tool1" class="tab-content">
+        <h2>行数カウント</h2>
+        <textarea id="textArea" placeholder="ここにテキストを入力してください"></textarea>
+        <div>行数: <span id="lineCount">1</span></div>
+    </div>
+
+    <!-- Tool 2: 順不同行差分比較 -->
+    <div id="tool2" class="tab-content">
+        <h2>順不同行差分比較</h2>
+        <p>2つの行列データを順不同で差分を比較します。</p>
+        <textarea id="input1" placeholder="行列1をここに貼り付け"></textarea>
+        <textarea id="input2" placeholder="行列2をここに貼り付け"></textarea>
+        <button onclick="compareColumns()">比較する</button>
+        <div class="result">
+            <h2>差分結果</h2>
+            <pre id="result"></pre>
+        </div>
+    </div>
+
+    <!-- Tool 3: 行数分割 -->
+    <div id="tool3" class="tab-content">
+        <h2>行数分割</h2>
+        <textarea id="inputText" placeholder="ここにテキストを入力してください"></textarea>
+        <label for="lineCountInput">分割する行数:</label>
+        <input type="number" id="lineCountInput" value="4096" min="1">
+        <button onclick="splitText()">分割する</button>
+        <div id="splitResult"></div>
+    </div>
+
+    <!-- Tool 4: リストフォーマッター -->
+    <div id="tool4" class="tab-content list-formatter">
+        <h2>リストフォーマッター</h2>
+        <form id="formatForm">
+            <label for="inputList">アイテムを入力してください（一行ごとに）:</label>
+            <textarea id="inputList" placeholder="SAMPLE1&#10;SAMPLE2&#10;SAMPLE3&#10;SAMPLE4"></textarea>
+            
+            <label for="splitSize">一括処理件数（例: 20000件）:</label>
+            <input type="number" id="splitSize" value="20000">
+            
+            <label for="delimiter">区切り文字（例: `,`）:</label>
+            <input type="text" id="delimiter" placeholder="," value=",">
+            
+            <label for="quoteChar">囲み文字（開始文字例: `'`）:</label>
+            <input type="text" id="quoteChar" placeholder="'" value="'">
+            
+            <label>
+                <input type="checkbox" id="separateQuoteToggle" onclick="toggleSeparateQuotes()"> 終わり文字を別に設定する
+            </label>
+            
+            <div id="endQuoteContainer" style="display: none;">
+                <label for="endQuoteChar">囲み文字（終了文字例: `"`）:</label>
+                <input type="text" id="endQuoteChar" placeholder="'" value="'">
             </div>
-            <nav id="nav-menu" class="nav-menu">
-                <ul>
-                    <li data-tab="home">ホーム</li>
-                    <li data-tab="tool1">行数カウント</li>
-                    <li data-tab="tool2">順不同行差分比較</li>
-                    <li data-tab="tool3">行数分割</li>
-                    <li data-tab="tool4">リストフォーマッター</li>
-                    <li data-tab="tool9">テキストデータカウント</li>
-                    <li data-tab="tool5">行シャッフル</li>
-                    <li data-tab="tool6">URLエンコード</li>
-                    <li data-tab="tool7">URLデコード</li>
-                    <li data-tab="tool8">ランダム割り当て</li>
-                </ul>
-            </nav>
-        </header>
+            
+            <button type="button" class="formatButton" onclick="formatList()">フォーマット</button>
+        </form>
+        <div class="spinner" id="loadingSpinner"></div>
+        <div id="outputContainer"></div>
+    </div>
 
-        <!-- ホームページ -->
-        <div id="home" class="tab-content active">
-            <h1>synthesis_tools</h1>
-            <p>上のメニューから機能を選べます。</p>
+    <!-- Tool 9: テキストデータカウント -->
+    <div id="tool9" class="tab-content">
+        <h2>テキストデータカウント</h2>
+        <textarea id="inputText9" rows="10" cols="50" placeholder="ここにテキストデータを入力してください（1行ごと）"></textarea>
+        <br>
+        <button onclick="countOccurrences()">カウント</button>
+        <h2>結果</h2>
+        <div id="summary9"></div>
+        <div id="output9"></div>
+    </div>
+
+    <!-- Tool 5: 行シャッフル -->
+    <div id="tool5" class="tab-content">
+        <h2>行シャッフル</h2>
+        <p>貼り付けた列の順番をシャッフルします。</p>
+        <textarea id="inputData" rows="10" cols="30" placeholder="ここにデータをペースト"></textarea>
+        <br>
+        <button onclick="shuffleData()">シャッフル</button>
+        <br><br>
+        <div id="resultContainer"></div>
+    </div>
+
+    <!-- Tool 6: URLエンコード -->
+    <div id="tool6" class="tab-content">
+        <h2>URLエンコード</h2>
+        <textarea id="encodeInput" rows="10" cols="50" placeholder="エンコードするURLを入力してください"></textarea>
+        <br>
+        <button id="encodeButton">エンコード</button>
+        <h2>エンコード結果</h2>
+        <p id="encodedOutput" style="font-weight: bold; color: blue;"></p>
+    </div>
+
+    <!-- Tool 7: URLデコード -->
+    <div id="tool7" class="tab-content">
+        <h2>URLデコード</h2>
+        <textarea id="decodeInput" rows="10" cols="50" placeholder="デコードするURLを入力してください"></textarea>
+        <br>
+        <button id="decodeButton">デコード</button>
+        <h2>デコード結果</h2>
+        <p id="decodedOutput" style="font-weight: bold; color: blue;"></p>
+    </div>
+
+    <!-- Tool 8: ランダム割り当て -->
+    <div id="tool8" class="tab-content">
+        <h2>ランダム割り当て</h2>
+        <p>元データに対してランダムに割り当てるマスタデータを指定してください。</p>
+
+        <h3>元データ</h3>
+        <textarea id="originalData" placeholder="元データ（1行ずつ）を入力"></textarea>
+
+        <h3>マスタデータ</h3>
+        <textarea id="masterData" placeholder="マスタデータ（1行ずつ）を入力"></textarea>
+
+        <button id="processButton">処理開始</button>
+        <button id="copyButton">割り当てられたマスタをコピー</button>
+
+        <table id="resultTable">
+            <thead>
+                <tr>
+                    <th>元データ</th>
+                    <th>割り当てられたマスタ</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Tool 10: 改行変更 -->
+    <div id="tool10" class="tab-content line-break-tool">
+        <h2>改行変更</h2>
+        <p>以下にテキストを入力してください。</p>
+        <textarea id="tool10_inputText" placeholder="ここにテキストを入力..."></textarea>
+
+        <div class="controls">
+            <label for="tool10_charCount">文字数:</label>
+            <input type="number" id="tool10_charCount" min="1" value="10">
+            <button onclick="tool10_splitText()">列に分割</button>
+            <button onclick="tool10_removeLineBreaks()">改行を削除</button>
+            <!-- コピー ボタンはここに動的に挿入されます -->
         </div>
 
-        <!-- Tool 1: 行数カウント -->
-        <div id="tool1" class="tab-content">
-            <h2>行数カウント</h2>
-            <textarea id="textArea" placeholder="ここにテキストを入力してください"></textarea>
-            <div>行数: <span id="lineCount">1</span></div>
+        <div class="output">
+            <h2>結果:</h2>
+            <pre id="tool10_outputText"></pre>
         </div>
+    </div>
 
-        <!-- Tool 2: 順不同行差分比較 -->
-        <div id="tool2" class="tab-content">
-            <h2>順不同行差分比較</h2>
-            <p>2つの行列データを順不同で差分を比較します。</p>
-            <textarea id="input1" placeholder="行列1をここに貼り付け"></textarea>
-            <textarea id="input2" placeholder="行列2をここに貼り付け"></textarea>
-            <button onclick="compareColumns()">比較する</button>
-            <div class="result">
-                <h2>差分結果</h2>
-                <pre id="result"></pre>
-            </div>
-        </div>
+    <script>
+        // ハンバーガーメニューの機能
+        const menuIcon = document.getElementById('menu-icon');
+        const navMenu = document.getElementById('nav-menu');
 
-        <!-- Tool 3: 行数分割 -->
-        <div id="tool3" class="tab-content">
-            <h2>行数分割</h2>
-            <textarea id="inputText" placeholder="ここにテキストを入力してください"></textarea>
-            <label for="lineCountInput">分割する行数:</label>
-            <input type="number" id="lineCountInput" value="4096" min="1">
-            <button onclick="splitText()">分割する</button>
-            <div id="splitResult"></div>
-        </div>
+        menuIcon.addEventListener('click', () => {
+            if (navMenu.style.display === 'block') {
+                navMenu.style.display = 'none';
+            } else {
+                navMenu.style.display = 'block';
+            }
+        });
 
-        <!-- Tool 4: リストフォーマッター -->
-        <div id="tool4" class="tab-content list-formatter">
-            <h2>リストフォーマッター</h2>
-            <form id="formatForm">
-                <label for="inputList">アイテムを入力してください（一行ごとに）:</label>
-                <textarea id="inputList" placeholder="SAMPLE1&#10;SAMPLE2&#10;SAMPLE3&#10;SAMPLE4"></textarea>
-                
-                <label for="splitSize">一括処理件数（例: 20000件）:</label>
-                <input type="number" id="splitSize" value="20000">
-                
-                <label for="delimiter">区切り文字（例: `,`）:</label>
-                <input type="text" id="delimiter" placeholder="," value=",">
-                
-                <label for="quoteChar">囲み文字（開始文字例: `'`）:</label>
-                <input type="text" id="quoteChar" placeholder="'" value="'">
-                
-                <label>
-                    <input type="checkbox" id="separateQuoteToggle" onclick="toggleSeparateQuotes()"> 終わり文字を別に設定する
-                </label>
-                
-                <div id="endQuoteContainer" style="display: none;">
-                    <label for="endQuoteChar">囲み文字（終了文字例: `"`）:</label>
-                    <input type="text" id="endQuoteChar" placeholder="'" value="'">
-                </div>
-                
-                <button type="button" class="formatButton" onclick="formatList()">フォーマット</button>
-            </form>
-            <div class="spinner" id="loadingSpinner"></div>
-            <div id="outputContainer"></div>
-        </div>
+        // メニュー項目をクリックしたときの処理
+        navMenu.addEventListener('click', (event) => {
+            if (event.target.tagName === 'LI') {
+                const tabId = event.target.getAttribute('data-tab');
+                window.location.hash = tabId;
+                navMenu.style.display = 'none';
+            }
+        });
 
-        <!-- Tool 9: テキストデータカウント -->
-        <div id="tool9" class="tab-content">
-            <h2>テキストデータカウント</h2>
-            <textarea id="inputText9" rows="10" cols="50" placeholder="ここにテキストデータを入力してください（1行ごと）"></textarea>
-            <br>
-            <button onclick="countOccurrences()">カウント</button>
-            <h2>結果</h2>
-            <div id="summary9"></div>
-            <div id="output9"></div>
-        </div>
+        // URLのハッシュに応じて表示するタブを切り替える関数
+        function showTabFromHash() {
+            const hash = window.location.hash.substring(1); // '#'を除去
+            const validTabs = ['home', 'tool1', 'tool2', 'tool3', 'tool4', 'tool5', 'tool6', 'tool7', 'tool8', 'tool9', 'tool10'];
+            const tabToShow = validTabs.includes(hash) ? hash : 'home';
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            document.getElementById(tabToShow).classList.add('active');
+        }
 
-        <!-- Tool 5: 行シャッフル -->
-        <div id="tool5" class="tab-content">
-            <h2>行シャッフル</h2>
-            <p>貼り付けた列の順番をシャッフルします。</p>
-            <textarea id="inputData" rows="10" cols="30" placeholder="ここにデータをペースト"></textarea>
-            <br>
-            <button onclick="shuffleData()">シャッフル</button>
-            <br><br>
-            <div id="resultContainer"></div>
-        </div>
+        // ページ読み込み時とハッシュ変更時にタブを表示
+        window.addEventListener('load', showTabFromHash);
+        window.addEventListener('hashchange', showTabFromHash);
 
-        <!-- Tool 6: URLエンコード -->
-        <div id="tool6" class="tab-content">
-            <h2>URLエンコード</h2>
-            <textarea id="encodeInput" rows="10" cols="50" placeholder="エンコードするURLを入力してください"></textarea>
-            <br>
-            <button id="encodeButton">エンコード</button>
-            <h2>エンコード結果</h2>
-            <p id="encodedOutput" style="font-weight: bold; color: blue;"></p>
-        </div>
+        // メニュー外をクリックしたらメニューを閉じる
+        document.addEventListener('click', function(event) {
+            if (!navMenu.contains(event.target) && !menuIcon.contains(event.target)) {
+                navMenu.style.display = 'none';
+            }
+        });
 
-        <!-- Tool 7: URLデコード -->
-        <div id="tool7" class="tab-content">
-            <h2>URLデコード</h2>
-            <textarea id="decodeInput" rows="10" cols="50" placeholder="デコードするURLを入力してください"></textarea>
-            <br>
-            <button id="decodeButton">デコード</button>
-            <h2>デコード結果</h2>
-            <p id="decodedOutput" style="font-weight: bold; color: blue;"></p>
-        </div>
+        // Tool 1: 行数カウント
+        const textArea = document.getElementById('textArea');
+        const lineCount = document.getElementById('lineCount');
+        textArea.addEventListener('input', () => {
+            lineCount.textContent = textArea.value.split('\n').length;
+        });
 
-        <!-- Tool 8: ランダム割り当て -->
-        <div id="tool8" class="tab-content">
-            <h2>ランダム割り当て</h2>
-            <p>元データに対してランダムに割り当てるマスタデータを指定してください。</p>
-
-            <h3>元データ</h3>
-            <textarea id="originalData" placeholder="元データ（1行ずつ）を入力"></textarea>
-
-            <h3>マスタデータ</h3>
-            <textarea id="masterData" placeholder="マスタデータ（1行ずつ）を入力"></textarea>
-
-            <button id="processButton">処理開始</button>
-            <button id="copyButton">割り当てられたマスタをコピー</button>
-
-            <table id="resultTable">
-                <thead>
-                    <tr>
-                        <th>元データ</th>
-                        <th>割り当てられたマスタ</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <script>
-            // ハンバーガーメニューの機能
-            const menuIcon = document.getElementById('menu-icon');
-            const navMenu = document.getElementById('nav-menu');
-
-            menuIcon.addEventListener('click', () => {
-                if (navMenu.style.display === 'block') {
-                    navMenu.style.display = 'none';
-                } else {
-                    navMenu.style.display = 'block';
+        // Tool 2: 順不同行差分比較
+        function compareColumns() {
+            const input1 = document.getElementById("input1").value.trim().split("\n").map(line => line.trim());
+            const input2 = document.getElementById("input2").value.trim().split("\n").map(line => line.trim());
+            const set1 = new Set(input1);
+            const set2 = new Set(input2);
+            const onlyInInput1 = Array.from(set1).filter(line => !set2.has(line));
+            const onlyInInput2 = Array.from(set2).filter(line => !set1.has(line));
+            const resultBox = document.getElementById("result");
+            if (onlyInInput1.length === 0 && onlyInInput2.length === 0) {
+                resultBox.textContent = "差分なし: 両方のカラムは同じ内容を持っています。";
+            } else {
+                let resultText = "";
+                if (onlyInInput1.length > 0) {
+                    resultText += "[カラム1にのみ存在する行]\n" + onlyInInput1.join("\n") + "\n\n";
                 }
-            });
-
-            // メニュー項目をクリックしたときの処理
-            navMenu.addEventListener('click', (event) => {
-                if (event.target.tagName === 'LI') {
-                    const tabId = event.target.getAttribute('data-tab');
-                    window.location.hash = tabId;
-                    navMenu.style.display = 'none';
+                if (onlyInInput2.length > 0) {
+                    resultText += "[カラム2にのみ存在する行]\n" + onlyInInput2.join("\n");
                 }
-            });
+                resultBox.textContent = resultText;
+            }
+        }
 
-            // URLのハッシュに応じて表示するタブを切り替える関数
-            function showTabFromHash() {
-                const hash = window.location.hash.substring(1); // '#'を除去
-                const validTabs = ['home', 'tool1', 'tool2', 'tool3', 'tool4', 'tool5', 'tool6', 'tool7', 'tool8', 'tool9'];
-                const tabToShow = validTabs.includes(hash) ? hash : 'home';
-                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-                document.getElementById(tabToShow).classList.add('active');
+        // Tool 3: 行数分割
+        function splitText() {
+            const inputText = document.getElementById('inputText').value;
+            const lines = inputText.split('\n');
+            const chunkSize = parseInt(document.getElementById('lineCountInput').value, 10);
+            const resultContainer = document.getElementById('splitResult');
+            resultContainer.innerHTML = '';
+
+            if (chunkSize < 1 || isNaN(chunkSize)) {
+                alert('行数は1以上を指定してください。');
+                return;
             }
 
-            // ページ読み込み時とハッシュ変更時にタブを表示
-            window.addEventListener('load', showTabFromHash);
-            window.addEventListener('hashchange', showTabFromHash);
+            // 分割処理
+            for (let i = 0; i < lines.length; i += chunkSize) {
+                const chunk = lines.slice(i, i + chunkSize).join('\n');
+                const chunkDiv = document.createElement('div');
+                chunkDiv.classList.add('chunk-container');
 
-            // メニュー外をクリックしたらメニューを閉じる
-            document.addEventListener('click', function(event) {
-                if (!navMenu.contains(event.target) && !menuIcon.contains(event.target)) {
-                    navMenu.style.display = 'none';
-                }
-            });
-
-            // Tool 1: 行数カウント
-            const textArea = document.getElementById('textArea');
-            const lineCount = document.getElementById('lineCount');
-            textArea.addEventListener('input', () => {
-                lineCount.textContent = textArea.value.split('\n').length;
-            });
-
-            // Tool 2: 順不同行差分比較
-            function compareColumns() {
-                const input1 = document.getElementById("input1").value.trim().split("\n").map(line => line.trim());
-                const input2 = document.getElementById("input2").value.trim().split("\n").map(line => line.trim());
-                const set1 = new Set(input1);
-                const set2 = new Set(input2);
-                const onlyInInput1 = Array.from(set1).filter(line => !set2.has(line));
-                const onlyInInput2 = Array.from(set2).filter(line => !set1.has(line));
-                const resultBox = document.getElementById("result");
-                if (onlyInInput1.length === 0 && onlyInInput2.length === 0) {
-                    resultBox.textContent = "差分なし: 両方のカラムは同じ内容を持っています。";
-                } else {
-                    let resultText = "";
-                    if (onlyInInput1.length > 0) {
-                        resultText += "[カラム1にのみ存在する行]\n" + onlyInInput1.join("\n") + "\n\n";
-                    }
-                    if (onlyInInput2.length > 0) {
-                        resultText += "[カラム2にのみ存在する行]\n" + onlyInInput2.join("\n");
-                    }
-                    resultBox.textContent = resultText;
-                }
-            }
-
-            // Tool 3: 行数分割
-            function splitText() {
-                const inputText = document.getElementById('inputText').value;
-                const lines = inputText.split('\n');
-                const chunkSize = parseInt(document.getElementById('lineCountInput').value, 10);
-                const resultContainer = document.getElementById('splitResult');
-                resultContainer.innerHTML = '';
-
-                if (chunkSize < 1 || isNaN(chunkSize)) {
-                    alert('行数は1以上を指定してください。');
-                    return;
-                }
-
-                // 分割処理
-                for (let i = 0; i < lines.length; i += chunkSize) {
-                    const chunk = lines.slice(i, i + chunkSize).join('\n');
-                    const chunkDiv = document.createElement('div');
-                    chunkDiv.classList.add('chunk-container');
-
-                    const textArea = document.createElement('textarea');
-                    textArea.classList.add('chunk-textarea');
-                    textArea.value = chunk;
-                    textArea.readOnly = true;
-
-                    const copyButton = document.createElement('button');
-                    copyButton.innerText = `コピー (${i + 1} - ${Math.min(i + chunkSize, lines.length)}行)`;
-                    copyButton.onclick = () => copyToClipboard(chunk);
-
-                    chunkDiv.appendChild(textArea);
-                    chunkDiv.appendChild(copyButton);
-                    resultContainer.appendChild(chunkDiv);
-                }
-            }
-
-            // クリップボードにコピー
-            function copyToClipboard(text) {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert('コピーしました！');
-                }).catch(err => {
-                    console.error('コピーに失敗しました:', err);
-                });
-            }
-
-            // Tool 4: リストフォーマッター
-            function toggleSeparateQuotes() {
-                const separateQuoteToggle = document.getElementById('separateQuoteToggle');
-                const endQuoteContainer = document.getElementById('endQuoteContainer');
-                if (separateQuoteToggle.checked) {
-                    endQuoteContainer.style.display = 'block';
-                } else {
-                    endQuoteContainer.style.display = 'none';
-                }
-            }
-
-            function formatList() {
-                const input = document.getElementById('inputList').value;
-                const splitSize = parseInt(document.getElementById('splitSize').value);
-                const delimiter = document.getElementById('delimiter').value;
-                const quoteChar = document.getElementById('quoteChar').value;
-                const separateQuoteToggle = document.getElementById('separateQuoteToggle').checked;
-                const endQuoteChar = separateQuoteToggle ? document.getElementById('endQuoteChar').value : quoteChar;
-                const outputContainer = document.getElementById('outputContainer');
-                const spinner = document.getElementById('loadingSpinner');
-                
-                outputContainer.innerHTML = '';
-                spinner.style.display = 'block';
-                
-                setTimeout(() => {
-                    const lines = input.split('\n').map(line => line.trim()).filter(line => line !== '');
-                    
-                    if (lines.length === 0) {
-                        alert("リストが空です。");
-                        spinner.style.display = 'none';
-                        return;
-                    }
-                    
-                    const chunks = [];
-                    for (let i = 0; i < lines.length; i += splitSize) {
-                        chunks.push(lines.slice(i, i + splitSize));
-                    }
-                    
-                    chunks.forEach((chunk, index) => {
-                        const formattedChunk = chunk.map(line => `${quoteChar}${line}${endQuoteChar}`).join(`${delimiter}\n`);
-                        const groupDiv = document.createElement('div');
-                        groupDiv.classList.add('output-group');
-                        
-                        const groupLabel = document.createElement('div');
-                        groupLabel.classList.add('group-label');
-                        groupLabel.textContent = `グループ ${index + 1}`;
-                        groupDiv.appendChild(groupLabel);
-                        
-                        const textarea = document.createElement('textarea');
-                        textarea.value = formattedChunk;
-                        groupDiv.appendChild(textarea);
-
-                        const copyButton = document.createElement('button');
-                        copyButton.classList.add('copyButton');
-                        copyButton.textContent = 'クリップボードにコピー';
-                        copyButton.onclick = () => copyToClipboard(textarea.value);
-                        groupDiv.appendChild(copyButton);
-
-                        outputContainer.appendChild(groupDiv);
-                    });
-                    
-                    spinner.style.display = 'none';
-                }, 250);
-            }
-
-            // Tool 9: テキストデータカウント
-            function countOccurrences() {
-                const inputText = document.getElementById("inputText9").value;
-                const lines = inputText.split("\n").map(line => line.trim()).filter(line => line !== ""); // 空行を除去
-                const totalLines = lines.length;
-                const counts = {};
-
-                lines.forEach(line => {
-                    counts[line] = (counts[line] || 0) + 1;
-                });
-
-                const uniqueLinesCount = Object.keys(counts).length; // ユニークな行の数
-
-                const summaryDiv = document.getElementById("summary9");
-                const outputDiv = document.getElementById("output9");
-
-                summaryDiv.innerHTML = ""; // 概要をクリア
-                outputDiv.innerHTML = ""; // 結果をクリア
-
-                if (totalLines === 0) {
-                    summaryDiv.innerText = "入力データがありません。";
-                    return;
-                }
-
-                // 概要の表示
-                summaryDiv.innerHTML = `
-                    <p><strong>総行数:</strong> ${totalLines}</p>
-                    <p><strong>ユニークな行数:</strong> ${uniqueLinesCount}</p>
-                `;
-
-                // テーブルの作成
-                const resultTable = document.createElement("table");
-                resultTable.border = "1";
-
-                const headerRow = resultTable.insertRow();
-                headerRow.insertCell().innerText = "行の内容";
-                headerRow.insertCell().innerText = "出現回数";
-                headerRow.insertCell().innerText = "割合 (%)";
-
-                for (const [line, count] of Object.entries(counts)) {
-                    const row = resultTable.insertRow();
-                    row.insertCell().innerText = line;
-                    row.insertCell().innerText = count;
-                    row.insertCell().innerText = ((count / totalLines) * 100).toFixed(2); // パーセンテージ計算
-                }
-
-                outputDiv.appendChild(resultTable);
-            }
-
-            // Tool 5: 行シャッフル
-            function shuffleData() {
-                const inputData = document.getElementById("inputData").value.trim();
-                const lines = inputData.split("\n");
-                const resultContainer = document.getElementById("resultContainer");
-
-                if (lines.length === 0) {
-                    resultContainer.textContent = "データを入力してください。";
-                    return;
-                }
-
-                // シャッフルアルゴリズム (Fisher-Yates)
-                for (let i = lines.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [lines[i], lines[j]] = [lines[j], lines[i]];
-                }
-
-                // 結果表示とコピー機能の追加
-                resultContainer.innerHTML = `
-                    <h2>シャッフル結果</h2>
-                `;
-
-                const shuffledText = lines.join("\n");
-                const textArea = document.createElement("textarea");
-                textArea.classList.add("chunk-textarea");
-                textArea.value = shuffledText;
+                const textArea = document.createElement('textarea');
+                textArea.classList.add('chunk-textarea');
+                textArea.value = chunk;
                 textArea.readOnly = true;
 
-                const copyButton = document.createElement("button");
-                copyButton.innerText = "結果をコピー";
-                copyButton.onclick = () => copyToClipboard(shuffledText);
+                const copyButton = document.createElement('button');
+                copyButton.innerText = `コピー (${i + 1} - ${Math.min(i + chunkSize, lines.length)}行)`;
+                copyButton.onclick = () => copyToClipboard(chunk);
 
-                resultContainer.appendChild(textArea);
-                resultContainer.appendChild(copyButton);
+                chunkDiv.appendChild(textArea);
+                chunkDiv.appendChild(copyButton);
+                resultContainer.appendChild(chunkDiv);
             }
+        }
 
-            // Tool 6: URLエンコード
-            document.getElementById('encodeButton').addEventListener('click', function () {
-                const input = document.getElementById('encodeInput').value;
-                const lines = input.split('\n'); // 複数行対応
-                const encodedLines = lines.map(line => {
-                    if (line.startsWith('https://') || line.startsWith('http://')) {
-                        // プロトコル部分を分離し、後続をエンコード
-                        const [protocol, rest] = line.split('://');
-                        return `${protocol}://${encodeURIComponent(rest)}`;
-                    } else {
-                        return encodeURIComponent(line); // 通常エンコード
-                    }
-                });
-                document.getElementById('encodedOutput').textContent = encodedLines.join('\n');
+        // クリップボードにコピー
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('コピーしました！');
+            }).catch(err => {
+                console.error('コピーに失敗しました:', err);
             });
+        }
 
-            // Tool 7: URLデコード
-            document.getElementById('decodeButton').addEventListener('click', function () {
-                const input = document.getElementById('decodeInput').value;
-                const lines = input.split('\n'); // 複数行対応
-                const decodedLines = lines.map(line => {
-                    try {
-                        return decodeURIComponent(line.trim());
-                    } catch (e) {
-                        return `デコードエラー: ${line}`;
-                    }
-                });
-                document.getElementById('decodedOutput').textContent = decodedLines.join('\n');
-            });
+        // Tool 4: リストフォーマッター
+        function toggleSeparateQuotes() {
+            const separateQuoteToggle = document.getElementById('separateQuoteToggle');
+            const endQuoteContainer = document.getElementById('endQuoteContainer');
+            if (separateQuoteToggle.checked) {
+                endQuoteContainer.style.display = 'block';
+            } else {
+                endQuoteContainer.style.display = 'none';
+            }
+        }
 
-            // Tool 8: ランダム割り当て
-            document.getElementById('processButton').addEventListener('click', () => {
-                const originalText = document.getElementById('originalData').value.split('\n').filter(line => line.trim() !== '');
-                const masterText = document.getElementById('masterData').value.split('\n').filter(line => line.trim() !== '');
-
-                if (originalText.length === 0 || masterText.length === 0) {
-                    alert("データを入力してください。");
+        function formatList() {
+            const input = document.getElementById('inputList').value;
+            const splitSize = parseInt(document.getElementById('splitSize').value);
+            const delimiter = document.getElementById('delimiter').value;
+            const quoteChar = document.getElementById('quoteChar').value;
+            const separateQuoteToggle = document.getElementById('separateQuoteToggle').checked;
+            const endQuoteChar = separateQuoteToggle ? document.getElementById('endQuoteChar').value : quoteChar;
+            const outputContainer = document.getElementById('outputContainer');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            outputContainer.innerHTML = '';
+            spinner.style.display = 'block';
+            
+            setTimeout(() => {
+                const lines = input.split('\n').map(line => line.trim()).filter(line => line !== '');
+                
+                if (lines.length === 0) {
+                    alert("リストが空です。");
+                    spinner.style.display = 'none';
                     return;
                 }
-
-                const resultTable = document.getElementById('resultTable').querySelector('tbody');
-                resultTable.innerHTML = '';
-
-                const masterPool = [];
-                const repeats = Math.ceil(originalText.length / masterText.length);
-                for (let i = 0; i < repeats; i++) {
-                    masterPool.push(...masterText);
+                
+                const chunks = [];
+                for (let i = 0; i < lines.length; i += splitSize) {
+                    chunks.push(lines.slice(i, i + splitSize));
                 }
+                
+                chunks.forEach((chunk, index) => {
+                    const formattedChunk = chunk.map(line => `${quoteChar}${line}${endQuoteChar}`).join(`${delimiter}\n`);
+                    const groupDiv = document.createElement('div');
+                    groupDiv.classList.add('output-group');
+                    
+                    const groupLabel = document.createElement('div');
+                    groupLabel.classList.add('group-label');
+                    groupLabel.textContent = `グループ ${index + 1}`;
+                    groupDiv.appendChild(groupLabel);
+                    
+                    const textarea = document.createElement('textarea');
+                    textarea.value = formattedChunk;
+                    groupDiv.appendChild(textarea);
 
-                // マスタデータをシャッフル
-                for (let i = masterPool.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [masterPool[i], masterPool[j]] = [masterPool[j], masterPool[i]];
-                }
+                    const copyButton = document.createElement('button');
+                    copyButton.classList.add('copyButton');
+                    copyButton.textContent = 'クリップボードにコピー';
+                    copyButton.onclick = () => copyToClipboard(textarea.value);
+                    groupDiv.appendChild(copyButton);
 
-                const assignedMasters = [];
-                originalText.forEach((original, index) => {
-                    let assignedMaster = masterPool[index];
-
-                    let retryCount = 0;
-                    while (original === assignedMaster && retryCount < masterPool.length) {
-                        retryCount++;
-                        assignedMaster = masterPool[(index + retryCount) % masterPool.length];
-                    }
-
-                    assignedMasters.push(assignedMaster);
-
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${original}</td>
-                        <td>${assignedMaster}</td>
-                    `;
-                    resultTable.appendChild(row);
+                    outputContainer.appendChild(groupDiv);
                 });
+                
+                spinner.style.display = 'none';
+            }, 250);
+        }
 
-                // コピー用ボタンを表示
-                const copyButton = document.getElementById('copyButton');
-                copyButton.style.display = 'inline-block';
+        // Tool 9: テキストデータカウント
+        function countOccurrences() {
+            const inputText = document.getElementById("inputText9").value;
+            const lines = inputText.split("\n").map(line => line.trim()).filter(line => line !== ""); // 空行を除去
+            const totalLines = lines.length;
+            const counts = {};
 
-                // クリップボードコピーの処理を設定
-                copyButton.onclick = () => {
-                    const textToCopy = assignedMasters.join('\n');
-                    navigator.clipboard.writeText(textToCopy).then(() => {
-                        alert("割り当てられたマスタ列をクリップボードにコピーしました！");
-                    }).catch(err => {
-                        alert("コピーに失敗しました: " + err);
-                    });
-                };
-
-                alert("処理が完了しました！");
+            lines.forEach(line => {
+                counts[line] = (counts[line] || 0) + 1;
             });
-        </script>
-    </body>
+
+            const uniqueLinesCount = Object.keys(counts).length; // ユニークな行の数
+
+            const summaryDiv = document.getElementById("summary9");
+            const outputDiv = document.getElementById("output9");
+
+            summaryDiv.innerHTML = ""; // 概要をクリア
+            outputDiv.innerHTML = ""; // 結果をクリア
+
+            if (totalLines === 0) {
+                summaryDiv.innerText = "入力データがありません。";
+                return;
+            }
+
+            // 概要の表示
+            summaryDiv.innerHTML = `
+                <p><strong>総行数:</strong> ${totalLines}</p>
+                <p><strong>ユニークな行数:</strong> ${uniqueLinesCount}</p>
+            `;
+
+            // テーブルの作成
+            const resultTable = document.createElement("table");
+            resultTable.border = "1";
+
+            const headerRow = resultTable.insertRow();
+            headerRow.insertCell().innerText = "行の内容";
+            headerRow.insertCell().innerText = "出現回数";
+            headerRow.insertCell().innerText = "割合 (%)";
+
+            for (const [line, count] of Object.entries(counts)) {
+                const row = resultTable.insertRow();
+                row.insertCell().innerText = line;
+                row.insertCell().innerText = count;
+                row.insertCell().innerText = ((count / totalLines) * 100).toFixed(2); // パーセンテージ計算
+            }
+
+            outputDiv.appendChild(resultTable);
+        }
+
+        // Tool 5: 行シャッフル
+        function shuffleData() {
+            const inputData = document.getElementById("inputData").value.trim();
+            const lines = inputData.split("\n");
+            const resultContainer = document.getElementById("resultContainer");
+
+            if (lines.length === 0) {
+                resultContainer.textContent = "データを入力してください。";
+                return;
+            }
+
+            // シャッフルアルゴリズム (Fisher-Yates)
+            for (let i = lines.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [lines[i], lines[j]] = [lines[j], lines[i]];
+            }
+
+            // 結果表示とコピー機能の追加
+            resultContainer.innerHTML = `
+                <h2>シャッフル結果</h2>
+            `;
+
+            const shuffledText = lines.join("\n");
+            const textArea = document.createElement("textarea");
+            textArea.classList.add("chunk-textarea");
+            textArea.value = shuffledText;
+            textArea.readOnly = true;
+
+            const copyButton = document.createElement("button");
+            copyButton.innerText = "結果をコピー";
+            copyButton.onclick = () => copyToClipboard(shuffledText);
+
+            resultContainer.appendChild(textArea);
+            resultContainer.appendChild(copyButton);
+        }
+
+        // Tool 6: URLエンコード
+        document.getElementById('encodeButton').addEventListener('click', function () {
+            const input = document.getElementById('encodeInput').value;
+            const lines = input.split('\n'); // 複数行対応
+            const encodedLines = lines.map(line => {
+                if (line.startsWith('https://') || line.startsWith('http://')) {
+                    // プロトコル部分を分離し、後続をエンコード
+                    const [protocol, rest] = line.split('://');
+                    return `${protocol}://${encodeURIComponent(rest)}`;
+                } else {
+                    return encodeURIComponent(line); // 通常エンコード
+                }
+            });
+            document.getElementById('encodedOutput').textContent = encodedLines.join('\n');
+        });
+
+        // Tool 7: URLデコード
+        document.getElementById('decodeButton').addEventListener('click', function () {
+            const input = document.getElementById('decodeInput').value;
+            const lines = input.split('\n'); // 複数行対応
+            const decodedLines = lines.map(line => {
+                try {
+                    return decodeURIComponent(line.trim());
+                } catch (e) {
+                    return `デコードエラー: ${line}`;
+                }
+            });
+            document.getElementById('decodedOutput').textContent = decodedLines.join('\n');
+        });
+
+        // Tool 8: ランダム割り当て
+        document.getElementById('processButton').addEventListener('click', () => {
+            const originalText = document.getElementById('originalData').value.split('\n').filter(line => line.trim() !== '');
+            const masterText = document.getElementById('masterData').value.split('\n').filter(line => line.trim() !== '');
+
+            if (originalText.length === 0 || masterText.length === 0) {
+                alert("データを入力してください。");
+                return;
+            }
+
+            const resultTable = document.getElementById('resultTable').querySelector('tbody');
+            resultTable.innerHTML = '';
+
+            const masterPool = [];
+            const repeats = Math.ceil(originalText.length / masterText.length);
+            for (let i = 0; i < repeats; i++) {
+                masterPool.push(...masterText);
+            }
+
+            // マスタデータをシャッフル
+            for (let i = masterPool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [masterPool[i], masterPool[j]] = [masterPool[j], masterPool[i]];
+            }
+
+            const assignedMasters = [];
+            originalText.forEach((original, index) => {
+                let assignedMaster = masterPool[index];
+
+                let retryCount = 0;
+                while (original === assignedMaster && retryCount < masterPool.length) {
+                    retryCount++;
+                    assignedMaster = masterPool[(index + retryCount) % masterPool.length];
+                }
+
+                assignedMasters.push(assignedMaster);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${original}</td>
+                    <td>${assignedMaster}</td>
+                `;
+                resultTable.appendChild(row);
+            });
+
+            // コピー用ボタンを表示
+            const copyButton = document.getElementById('copyButton');
+            copyButton.style.display = 'inline-block';
+
+            // クリップボードコピーの処理を設定
+            copyButton.onclick = () => {
+                const textToCopy = assignedMasters.join('\n');
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    alert("割り当てられたマスタ列をクリップボードにコピーしました！");
+                }).catch(err => {
+                    alert("コピーに失敗しました: " + err);
+                });
+            };
+
+            alert("処理が完了しました！");
+        });
+
+        // Tool 10: 改行変更
+        // 改行変更ツール用の関数名に 'tool10_' プレフィックスを追加して名前衝突を防ぐ
+        function tool10_splitText() {
+            const input = document.getElementById('tool10_inputText').value;
+            const charCount = parseInt(document.getElementById('tool10_charCount').value);
+            if (isNaN(charCount) || charCount < 1) {
+                alert('有効な文字数を入力してください。');
+                return;
+            }
+            let result = '';
+            for (let i = 0; i < input.length; i += charCount) {
+                result += input.substr(i, charCount) + '\n';
+            }
+            tool10_displayResult(result.trim());
+        }
+
+        function tool10_removeLineBreaks() {
+            const input = document.getElementById('tool10_inputText').value;
+            const removeSpaces = document.getElementById('tool10_removeSpaces')?.checked || false;
+            let result = input.replace(/[\r\n]+/g, ' ');
+            if (removeSpaces) {
+                result = result.replace(/ /g, '');
+            }
+            tool10_displayResult(result.trim());
+        }
+
+        function tool10_displayResult(text) {
+            const output = document.getElementById('tool10_outputText');
+            output.textContent = text;
+
+            // コントロールパネルにコピー ボタンが既に存在する場合は削除
+            const existingButton = document.getElementById('tool10_copyButton');
+            if (existingButton) {
+                existingButton.remove();
+            }
+
+            // コピー ボタンを作成
+            const copyButton = document.createElement('button');
+            copyButton.id = 'tool10_copyButton';
+            copyButton.textContent = 'コピー';
+            copyButton.className = 'copy-button';
+            copyButton.onclick = tool10_copyToClipboard;
+
+            // コントロールパネルにコピー ボタンを追加
+            const controlsDiv = document.querySelector('#tool10 .controls');
+            controlsDiv.appendChild(copyButton);
+        }
+
+        function tool10_copyToClipboard() {
+            const text = document.getElementById('tool10_outputText').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('クリップボードにコピーしました。');
+            }).catch(err => {
+                alert('コピーに失敗しました。');
+                console.error('コピーエラー:', err);
+            });
+        }
+
+        // ページ読み込み時にチェックボックスを追加
+        window.onload = function() {
+            // Tool 10: 改行変更
+            const controlsDiv = document.querySelector('#tool10 .controls');
+
+            // チェックボックスのラベルと入力を作成
+            const checkboxLabel = document.createElement('label');
+            checkboxLabel.className = 'checkbox-label';
+            checkboxLabel.setAttribute('for', 'tool10_removeSpaces');
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = 'tool10_removeSpaces';
+
+            const labelText = document.createTextNode('空欄を空けずに詰めて1行にする');
+
+            checkboxLabel.appendChild(checkbox);
+            checkboxLabel.appendChild(labelText);
+
+            // コントロールパネルにチェックボックスを追加
+            controlsDiv.insertBefore(checkboxLabel, controlsDiv.lastElementChild.previousSibling);
+        };
+    </script>
+</body>
 </html>
