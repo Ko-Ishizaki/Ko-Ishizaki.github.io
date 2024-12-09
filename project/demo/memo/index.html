@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Simple_Memo</title>
+<style>
+  body {
+    font-family: sans-serif;
+    max-width: 500px;
+    margin: 20px auto;
+    background: #f8f8f8;
+    color: #333;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.5em;
+    margin-bottom: 10px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  textarea {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 10px;
+    resize: vertical;
+    padding: 10px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+
+  button {
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    background: #007BFF;
+    border: none;
+    color: #fff;
+    border-radius: 3px;
+    transition: background 0.3s;
+    margin-bottom: 20px;
+  }
+
+  button:hover {
+    background: #0056b3;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  li {
+    background: #fff;
+    margin-bottom: 10px;
+    padding: 10px;
+    word-wrap: break-word;
+    position: relative;
+  }
+
+  .delete-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    padding: 3px 5px;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+
+  .delete-btn:hover {
+    background: #c0392b;
+  }
+</style>
+</head>
+<body>
+  <h1>Simple_Memo</h1>
+  <form id="memoForm">
+    <textarea id="memoText" placeholder="Writing..."></textarea>
+    <button type="submit">Submit</button>
+  </form>
+  <ul id="memoList"></ul>
+
+  <script>
+    (async function() {
+      const form = document.getElementById('memoForm');
+      const textarea = document.getElementById('memoText');
+      const list = document.getElementById('memoList');
+
+      // URLクエリやハッシュを識別子として利用
+      // 例: ?id=foo や #foo など
+      const identifier = (window.location.search || window.location.hash || '').replace(/[^\w\d-_]/g,'');
+      const STORAGE_KEY = 'my_memos' + (identifier || '');
+
+      // 非同期でローカルストレージからメモ取得
+      async function loadMemos() {
+        const memos = localStorage.getItem(STORAGE_KEY);
+        return memos ? JSON.parse(memos) : [];
+      }
+
+      // 非同期でローカルストレージにメモを保存
+      async function saveMemos(memos) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(memos));
+      }
+
+      // メモ一覧表示
+      async function renderMemos() {
+        const memos = await loadMemos();
+        list.innerHTML = '';
+        memos.forEach((memo, index) => {
+          const li = document.createElement('li');
+          li.textContent = memo;
+          const deleteBtn = document.createElement('button');
+          deleteBtn.textContent = 'Delete';
+          deleteBtn.className = 'delete-btn';
+          deleteBtn.addEventListener('click', async () => {
+            const memos = await loadMemos();
+            memos.splice(index, 1);
+            await saveMemos(memos);
+            renderMemos();
+          });
+          li.appendChild(deleteBtn);
+          list.appendChild(li);
+        });
+      }
+
+      // 送信時の処理
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newMemo = textarea.value.trim();
+        if (newMemo) {
+          const memos = await loadMemos();
+          memos.push(newMemo);
+          await saveMemos(memos);
+          textarea.value = '';
+          renderMemos();
+        }
+      });
+
+      // 初期描画
+      renderMemos();
+    })();
+  </script>
+</body>
+</html>
