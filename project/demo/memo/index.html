@@ -137,48 +137,6 @@
     right: 10px;
   }
 
-  .edit-area {
-    width: 100%;
-    height: 80px;
-    margin-bottom: 10px;
-    resize: vertical;
-    padding: 10px;
-    font-size: 14px;
-    box-sizing: border-box;
-    border: none;
-    outline: none;
-    border-radius: 5px;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
-    background: #fefefe;
-  }
-
-  .save-btn, .cancel-btn {
-    padding: 5px 10px;
-    font-size: 12px;
-    margin-right: 5px;
-    border: none;
-    cursor: pointer;
-    border-radius: 3px;
-  }
-
-  .save-btn {
-    background: #34a853;
-    color: #fff;
-  }
-
-  .save-btn:hover {
-    background: #2c8f44;
-  }
-
-  .cancel-btn {
-    background: #e0e0e0;
-    color: #333;
-  }
-
-  .cancel-btn:hover {
-    background: #d0d0d0;
-  }
-
   /* モーダルスタイル */
   .modal-overlay {
     position: fixed;
@@ -253,6 +211,74 @@
   .close-btn:hover {
     background:#d0d0d0;
   }
+
+
+  /* 全画面編集モーダル */
+  .fullscreen-overlay {
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background: rgba(0,0,0,0.7);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:10000;
+  }
+
+  .fullscreen-modal {
+    background:#fff;
+    width: 90%;
+    max-width: 800px;
+    height: 90%;
+    border-radius:8px;
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .fullscreen-modal h2 {
+    margin-top:0;
+  }
+
+  .fullscreen-modal textarea {
+    flex:1;
+    width:100%;
+    resize:none;
+  }
+
+  .fullscreen-modal .actions {
+    margin-top:20px;
+    display:flex;
+    gap:10px;
+    justify-content:flex-end;
+  }
+
+  .fullscreen-modal .actions button {
+    font-size:14px;
+    padding: 8px 12px;
+    border-radius:5px;
+    border:none;
+    cursor:pointer;
+  }
+
+  .fullscreen-modal .save-btn {
+    background:#34a853;
+    color:#fff;
+  }
+
+  .fullscreen-modal .save-btn:hover {
+    background:#2c8f44;
+  }
+
+  .fullscreen-modal .cancel-btn {
+    background:#e0e0e0;
+    color:#333;
+  }
+
+  .fullscreen-modal .cancel-btn:hover {
+    background:#d0d0d0;
+  }
+
 </style>
 </head>
 <body>
@@ -277,12 +303,36 @@
     </div>
   </div>
 
+  <!-- Fullscreen Edit Modal -->
+  <div class="fullscreen-overlay" id="fullscreenOverlay">
+    <div class="fullscreen-modal">
+      <h2>Edit Memo</h2>
+      <textarea id="fullscreenEditArea"></textarea>
+      <div class="actions">
+        <button class="save-btn" id="fullscreenSaveBtn">Save</button>
+        <button class="cancel-btn" id="fullscreenCancelBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     (async function() {
-      let identifier = (window.location.search || window.location.hash || '').replace(/[^\w\d-_]/g,'');
+      // URLパラメータ解析
+      function getQueryParams() {
+        const params = {};
+        window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+          params[key] = value;
+        });
+        return params;
+      }
+
+      let params = getQueryParams();
+      let identifier = params.id;
       if (!identifier) {
-        identifier = '?id=' + Math.random().toString(36).substr(2, 9);
-        window.location.search = identifier;
+        identifier = Math.random().toString(36).substr(2, 9);
+        let newUrl = window.location.pathname + '?id=' + identifier;
+        window.history.replaceState(null, '', newUrl);
+        params = getQueryParams();
       }
 
       const STORAGE_KEY = 'my_memos' + (identifier || '');
@@ -296,6 +346,11 @@
       const modalOverlay = document.getElementById('modalOverlay');
       const versionList = document.getElementById('versionList');
       const closeModalBtn = document.getElementById('closeModalBtn');
+
+      const fullscreenOverlay = document.getElementById('fullscreenOverlay');
+      const fullscreenEditArea = document.getElementById('fullscreenEditArea');
+      const fullscreenSaveBtn = document.getElementById('fullscreenSaveBtn');
+      const fullscreenCancelBtn = document.getElementById('fullscreenCancelBtn');
 
       async function loadMemos() {
         const memos = localStorage.getItem(STORAGE_KEY);
@@ -336,7 +391,7 @@
             const memos = await loadMemos();
             memos.splice(index, 1);
             await saveMemos(memos);
-            await addToHistory(memos); // 削除後に履歴追加
+            await addToHistory(memos); 
             renderMemos();
           });
 
@@ -345,7 +400,7 @@
           editBtn.className = 'edit-btn';
 
           editBtn.addEventListener('click', () => {
-            enterEditMode(li, index, memo);
+            enterFullscreenEditMode(index);
           });
 
           li.appendChild(textDiv);
@@ -355,41 +410,49 @@
         });
       }
 
-      function enterEditMode(li, index, oldMemo) {
-        li.innerHTML = '';
+      // 全画面編集モードへ
+      async function enterFullscreenEditMode(index) {
+        const memos = await loadMemos();
+        const memo = memos[index];
+        fullscreenEditArea.value = memo;
 
-        const editArea = document.createElement('textarea');
-        editArea.className = 'edit-area';
-        editArea.value = oldMemo;
+        // URLにeditパラメータ追加
+        let newUrl = window.location.pathname + '?id=' + identifier + '&edit=' + index;
+        window.history.pushState(null, '', newUrl);
 
-        const saveBtn = document.createElement('button');
-        saveBtn.textContent = 'Save';
-        saveBtn.className = 'save-btn';
+        fullscreenOverlay.style.display = 'flex';
 
-        const cancelBtn = document.createElement('button');
-        cancelBtn.textContent = 'Cancel';
-        cancelBtn.className = 'cancel-btn';
-
-        saveBtn.addEventListener('click', async () => {
-          const newVal = editArea.value.trim();
+        // 保存ボタン
+        fullscreenSaveBtn.onclick = async () => {
+          const newVal = fullscreenEditArea.value.trim();
           if (newVal) {
             const memos = await loadMemos();
             memos[index] = newVal;
             await saveMemos(memos);
-            await addToHistory(memos); // 編集後に履歴追加
-            renderMemos();
-          } else {
-            renderMemos();
+            await addToHistory(memos);
           }
-        });
+          exitFullscreenEditMode();
+        };
 
-        cancelBtn.addEventListener('click', () => {
-          renderMemos();
-        });
+        // キャンセルボタン
+        fullscreenCancelBtn.onclick = () => {
+          exitFullscreenEditMode();
+        };
+      }
 
-        li.appendChild(editArea);
-        li.appendChild(saveBtn);
-        li.appendChild(cancelBtn);
+      function exitFullscreenEditMode() {
+        fullscreenOverlay.style.display = 'none';
+
+        // editパラメータ除去
+        let currentParams = getQueryParams();
+        delete currentParams.edit;
+        let newUrl = window.location.pathname + '?id=' + identifier;
+        Object.keys(currentParams).forEach((key,i) => {
+          newUrl += (i===0?'?':'&') + key + '=' + currentParams[key];
+        });
+        window.history.pushState(null, '', newUrl);
+
+        renderMemos();
       }
 
       // メモ追加時
@@ -400,7 +463,7 @@
           const memos = await loadMemos();
           memos.push(newMemo);
           await saveMemos(memos);
-          await addToHistory(memos); // 追加後に履歴追加
+          await addToHistory(memos);
           textarea.value = '';
           renderMemos();
         }
@@ -420,7 +483,7 @@
           revertBtn.className = 'revert-btn';
           revertBtn.addEventListener('click', async () => {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(item.memos));
-            await addToHistory(item.memos); // 復元後も履歴追加
+            await addToHistory(item.memos);
             renderMemos();
             modalOverlay.style.display = 'none';
           });
@@ -440,12 +503,22 @@
         if (confirm('Delete all memos and history?')) {
           localStorage.removeItem(STORAGE_KEY);
           localStorage.removeItem(HISTORY_KEY);
-          renderMemos(); // 空状態を反映
+          renderMemos();
         }
       });
 
-      // 初期描画（この時点では履歴に追加しない）
-      renderMemos();
+      // ページ読み込み時、editパラメータがあれば編集モードへ
+      if (params.edit !== undefined) {
+        // editモード
+        const index = parseInt(params.edit, 10);
+        if (!isNaN(index)) {
+          await renderMemos();
+          enterFullscreenEditMode(index);
+        }
+      } else {
+        // 初期描画
+        renderMemos();
+      }
 
     })();
   </script>
