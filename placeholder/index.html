@@ -6,39 +6,80 @@
     <title>Placeholder</title>
 </head>
 <body>
+    <h1>Image with Link Generator</h1>
+    <form onsubmit="generateImageWithLink(event)">
+        <label>
+            Width:
+            <input type="number" id="width" value="300" required>
+        </label>
+        <br>
+        <label>
+            Height:
+            <input type="number" id="height" value="200" required>
+        </label>
+        <br>
+        <label>
+            Text:
+            <input type="text" id="text" placeholder="Placeholder Text">
+        </label>
+        <br>
+        <label>
+            Link URL:
+            <input type="url" id="linkUrl" placeholder="https://example.com" required>
+        </label>
+        <br>
+        <button type="submit">Generate</button>
+    </form>
+
+    <div id="output" style="margin-top: 20px;"></div>
+
     <script>
-        // クエリパラメータを解析
-        const params = new URLSearchParams(window.location.search);
-        const width = params.get("width") || 300;
-        const height = params.get("height") || 200;
-        const text = params.get("text") || `${width}x${height}`;
+        function generateImageWithLink(event) {
+            event.preventDefault();
 
-        // Canvasで画像を生成
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
+            // フォームデータを取得
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
+            const text = document.getElementById('text').value || `${width}x${height}`;
+            const linkUrl = document.getElementById('linkUrl').value;
 
-        // 背景
-        ctx.fillStyle = "#ddd";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Canvasで画像を生成
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
 
-        // テキスト
-        ctx.fillStyle = "#555";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = "20px Arial";
-        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+            // 背景を描画
+            ctx.fillStyle = "#ddd";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 画像をHTMLに挿入
-        document.body.appendChild(canvas);
+            // テキストを描画
+            ctx.fillStyle = "#555";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.font = "20px Arial";
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
-        // ダウンロード用リンクを作成
-        const link = document.createElement('a');
-        link.download = 'placeholder.png';
-        link.href = canvas.toDataURL();
-        link.textContent = 'Download Image';
-        document.body.appendChild(link);
+            // 画像URLを取得
+            const imageUrl = canvas.toDataURL();
+
+            // リンク要素を作成
+            const link = document.createElement('a');
+            link.href = linkUrl;
+            link.target = "_blank"; // 新しいタブで開く
+            link.title = "Click to follow the link";
+
+            // 画像をリンク内に挿入
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = text;
+            link.appendChild(img);
+
+            // 既存の出力をクリアして新しい出力を表示
+            const output = document.getElementById('output');
+            output.innerHTML = ''; // クリア
+            output.appendChild(link);
+        }
     </script>
 </body>
 </html>
