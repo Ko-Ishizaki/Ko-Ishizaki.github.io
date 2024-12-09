@@ -260,6 +260,7 @@
                 <li data-tab="tool7">URLデコード</li>
                 <li data-tab="tool8">ランダム割り当て</li>
                 <li data-tab="tool10">改行、改行削除</li>
+                <li data-tab="tool11">HTMLタイトル抽出</li>
             </ul>
         </nav>
     </header>
@@ -286,7 +287,7 @@
         <button onclick="compareColumns()">比較する</button>
         <div class="result">
             <h2>差分結果</h2>
-            <pre id="result"></pre>
+            <pre id="tool2Result"></pre>
         </div>
     </div>
 
@@ -424,6 +425,16 @@
         </div>
     </div>
 
+    <!-- Tool 11: HTMLタイトル抽出 -->
+    <div id="tool11" class="tab-content">
+        <h1>HTML Title Extractor</h1>
+        <p>以下のテキストボックスにHTMLソースをペーストし、「タイトルを抽出」をクリックしてください。</p>
+        <textarea id="htmlSource" rows="10" cols="50" placeholder="ここにHTMLソースをペーストしてください"></textarea>
+        <br>
+        <button onclick="extractTitle()">タイトルを抽出</button>
+        <p id="htmlTitleResult" style="font-weight: bold; margin-top: 10px;"></p>
+    </div>
+
     <script>
         // ハンバーガーメニューの機能
         const menuIcon = document.getElementById('menu-icon');
@@ -449,7 +460,7 @@
         // URLのハッシュに応じて表示するタブを切り替える関数
         function showTabFromHash() {
             const hash = window.location.hash.substring(1); // '#'を除去
-            const validTabs = ['home', 'tool1', 'tool2', 'tool3', 'tool4', 'tool5', 'tool6', 'tool7', 'tool8', 'tool9', 'tool10'];
+            const validTabs = ['home', 'tool1', 'tool2', 'tool3', 'tool4', 'tool5', 'tool6', 'tool7', 'tool8', 'tool9', 'tool10', 'tool11'];
             const tabToShow = validTabs.includes(hash) ? hash : 'home';
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
             document.getElementById(tabToShow).classList.add('active');
@@ -481,7 +492,7 @@
             const set2 = new Set(input2);
             const onlyInInput1 = Array.from(set1).filter(line => !set2.has(line));
             const onlyInInput2 = Array.from(set2).filter(line => !set1.has(line));
-            const resultBox = document.getElementById("result");
+            const resultBox = document.getElementById("tool2Result");
             if (onlyInInput1.length === 0 && onlyInInput2.length === 0) {
                 resultBox.textContent = "差分なし: 両方のカラムは同じ内容を持っています。";
             } else {
@@ -515,16 +526,16 @@
                 const chunkDiv = document.createElement('div');
                 chunkDiv.classList.add('chunk-container');
 
-                const textArea = document.createElement('textarea');
-                textArea.classList.add('chunk-textarea');
-                textArea.value = chunk;
-                textArea.readOnly = true;
+                const ta = document.createElement('textarea');
+                ta.classList.add('chunk-textarea');
+                ta.value = chunk;
+                ta.readOnly = true;
 
                 const copyButton = document.createElement('button');
                 copyButton.innerText = `コピー (${i + 1} - ${Math.min(i + chunkSize, lines.length)}行)`;
                 copyButton.onclick = () => copyToClipboard(chunk);
 
-                chunkDiv.appendChild(textArea);
+                chunkDiv.appendChild(ta);
                 chunkDiv.appendChild(copyButton);
                 resultContainer.appendChild(chunkDiv);
             }
@@ -539,7 +550,7 @@
             });
         }
 
-        // Tool 4: リスト化加工ー
+        // Tool 4: リスト化加工
         function toggleSeparateQuotes() {
             const separateQuoteToggle = document.getElementById('separateQuoteToggle');
             const endQuoteContainer = document.getElementById('endQuoteContainer');
@@ -607,7 +618,7 @@
         // Tool 9: 列内キーワード数調査
         function countOccurrences() {
             const inputText = document.getElementById("inputText9").value;
-            const lines = inputText.split("\n").map(line => line.trim()).filter(line => line !== ""); // 空行を除去
+            const lines = inputText.split("\n").map(line => line.trim()).filter(line => line !== "");
             const totalLines = lines.length;
             const counts = {};
 
@@ -615,26 +626,24 @@
                 counts[line] = (counts[line] || 0) + 1;
             });
 
-            const uniqueLinesCount = Object.keys(counts).length; // ユニークな行の数
+            const uniqueLinesCount = Object.keys(counts).length;
 
             const summaryDiv = document.getElementById("summary9");
             const outputDiv = document.getElementById("output9");
 
-            summaryDiv.innerHTML = ""; // 概要をクリア
-            outputDiv.innerHTML = ""; // 結果をクリア
+            summaryDiv.innerHTML = "";
+            outputDiv.innerHTML = "";
 
             if (totalLines === 0) {
                 summaryDiv.innerText = "入力データがありません。";
                 return;
             }
 
-            // 概要の表示
             summaryDiv.innerHTML = `
                 <p><strong>総行数:</strong> ${totalLines}</p>
                 <p><strong>ユニークな行数:</strong> ${uniqueLinesCount}</p>
             `;
 
-            // テーブルの作成
             const resultTable = document.createElement("table");
             resultTable.border = "1";
 
@@ -647,7 +656,7 @@
                 const row = resultTable.insertRow();
                 row.insertCell().innerText = line;
                 row.insertCell().innerText = count;
-                row.insertCell().innerText = ((count / totalLines) * 100).toFixed(2); // パーセンテージ計算
+                row.insertCell().innerText = ((count / totalLines) * 100).toFixed(2);
             }
 
             outputDiv.appendChild(resultTable);
@@ -664,43 +673,40 @@
                 return;
             }
 
-            // シャッフルアルゴリズム (Fisher-Yates)
             for (let i = lines.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [lines[i], lines[j]] = [lines[j], lines[i]];
             }
 
-            // 結果表示とコピー機能の追加
             resultContainer.innerHTML = `
                 <h2>シャッフル結果</h2>
             `;
 
             const shuffledText = lines.join("\n");
-            const textArea = document.createElement("textarea");
-            textArea.classList.add("chunk-textarea");
-            textArea.value = shuffledText;
-            textArea.readOnly = true;
+            const ta = document.createElement("textarea");
+            ta.classList.add("chunk-textarea");
+            ta.value = shuffledText;
+            ta.readOnly = true;
 
             const copyButton = document.createElement("button");
             copyButton.innerText = "結果をコピー";
             copyButton.onclick = () => copyToClipboard(shuffledText);
 
-            resultContainer.appendChild(textArea);
+            resultContainer.appendChild(ta);
             resultContainer.appendChild(copyButton);
         }
 
         // Tool 6: URLエンコード
         document.getElementById('encodeButton').addEventListener('click', function () {
             const input = document.getElementById('encodeInput').value;
-            const lines = input.split('\n'); // 複数行対応
+            const lines = input.split('\n');
             const encodedLines = lines.map(line => {
                 if (line.startsWith('https://') || line.startsWith('http://')) {
-                    // プロトコル部分を分離し、後続をエンコード
                     const [protocol, ...rest] = line.split('://');
-                    const restJoined = rest.join('://'); // 再結合（もし '://' が複数あった場合）
+                    const restJoined = rest.join('://');
                     return `${protocol}://${encodeURIComponent(restJoined)}`;
                 } else {
-                    return encodeURIComponent(line); // 通常エンコード
+                    return encodeURIComponent(line);
                 }
             });
             document.getElementById('encodedOutput').textContent = encodedLines.join('\n');
@@ -709,7 +715,7 @@
         // Tool 7: URLデコード
         document.getElementById('decodeButton').addEventListener('click', function () {
             const input = document.getElementById('decodeInput').value;
-            const lines = input.split('\n'); // 複数行対応
+            const lines = input.split('\n');
             const decodedLines = lines.map(line => {
                 try {
                     return decodeURIComponent(line.trim());
@@ -739,7 +745,6 @@
                 masterPool.push(...masterText);
             }
 
-            // マスタデータをシャッフル
             for (let i = masterPool.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [masterPool[i], masterPool[j]] = [masterPool[j], masterPool[i]];
@@ -765,11 +770,9 @@
                 resultTable.appendChild(row);
             });
 
-            // コピー用ボタンを表示
             const copyButton = document.getElementById('copyButton');
             copyButton.style.display = 'inline-block';
 
-            // クリップボードコピーの処理を設定
             copyButton.onclick = () => {
                 const textToCopy = assignedMasters.join('\n');
                 navigator.clipboard.writeText(textToCopy).then(() => {
@@ -783,7 +786,6 @@
         });
 
         // Tool 10: 改行、改行削除
-        // 改行変更ツール用の関数名に 'tool10_' プレフィックスを追加して名前衝突を防ぐ
         function tool10_splitText() {
             const input = document.getElementById('tool10_inputText').value;
             const charCount = parseInt(document.getElementById('tool10_charCount').value);
@@ -800,7 +802,8 @@
 
         function tool10_removeLineBreaks() {
             const input = document.getElementById('tool10_inputText').value;
-            const removeSpaces = document.getElementById('tool10_removeSpaces')?.checked || false;
+            const removeSpacesCheckbox = document.getElementById('tool10_removeSpaces');
+            const removeSpaces = removeSpacesCheckbox && removeSpacesCheckbox.checked;
             let result = input.replace(/[\r\n]+/g, ' ');
             if (removeSpaces) {
                 result = result.replace(/ /g, '');
@@ -815,32 +818,26 @@
                 alert('キーワードを入力してください。');
                 return;
             }
-            // キーワードをカンマで分割し、正規表現用にエスケープ
             const keywords = keywordsInput.split(',').map(k => k.trim()).filter(k => k !== '').map(k => escapeRegExp(k));
             if (keywords.length === 0) {
                 alert('有効なキーワードを入力してください。');
                 return;
             }
-            // 正規表現を作成
             const regex = new RegExp(`(${keywords.join('|')})`, 'g');
-            // キーワードの後に改行を挿入
             const result = input.replace(regex, '$1\n');
             tool10_displayResult(result.trim());
         }
 
-        // 新規追加: 空白で改行（連続する空白を一つの空白とみなして改行）
         function tool10_insertSpaceBreaks() {
             const input = document.getElementById('tool10_inputText').value;
             if (!input) {
                 alert('テキストを入力してください。');
                 return;
             }
-            // 連続する空白を一つの空白に縮約し、その空白を改行に置換
             const result = input.replace(/ {2,}/g, ' ').replace(/ /g, '\n');
             tool10_displayResult(result.trim());
         }
 
-        // ユーティリティ関数: 正規表現用に文字をエスケープ
         function escapeRegExp(string) {
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
@@ -849,20 +846,17 @@
             const output = document.getElementById('tool10_outputText');
             output.textContent = text;
 
-            // コントロールパネルにコピー ボタンが既に存在する場合は削除
             const existingButton = document.getElementById('tool10_copyButton');
             if (existingButton) {
                 existingButton.remove();
             }
 
-            // コピー ボタンを作成
             const copyButton = document.createElement('button');
             copyButton.id = 'tool10_copyButton';
             copyButton.textContent = 'コピー';
             copyButton.className = 'copy-button';
             copyButton.onclick = tool10_copyToClipboard;
 
-            // コントロールパネルにコピー ボタンを追加
             const controlsDiv = document.querySelector('#tool10 .controls');
             controlsDiv.appendChild(copyButton);
         }
@@ -877,12 +871,8 @@
             });
         }
 
-        // ページ読み込み時にチェックボックスを追加
         window.onload = function() {
-            // Tool 10: 改行変更
             const controlsDiv = document.querySelector('#tool10 .controls');
-
-            // チェックボックスのラベルと入力を作成
             const checkboxLabel = document.createElement('label');
             checkboxLabel.className = 'checkbox-label';
             checkboxLabel.setAttribute('for', 'tool10_removeSpaces');
@@ -896,9 +886,28 @@
             checkboxLabel.appendChild(checkbox);
             checkboxLabel.appendChild(labelText);
 
-            // コントロールパネルにチェックボックスを追加
             controlsDiv.insertBefore(checkboxLabel, controlsDiv.lastElementChild.previousSibling);
         };
+
+        // Tool 11: HTMLタイトル抽出
+        function extractTitle() {
+            const htmlSource = document.getElementById('htmlSource').value;
+            const resultElement = document.getElementById('htmlTitleResult');
+
+            if (!htmlSource) {
+                resultElement.textContent = "HTMLソースを入力してください。";
+                return;
+            }
+
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlSource, 'text/html');
+                const title = doc.querySelector('title')?.textContent || 'タイトルが見つかりません';
+                resultElement.textContent = `抽出されたタイトル: ${title}`;
+            } catch (error) {
+                resultElement.textContent = `エラーが発生しました: ${error.message}`;
+            }
+        }
     </script>
 </body>
 </html>
