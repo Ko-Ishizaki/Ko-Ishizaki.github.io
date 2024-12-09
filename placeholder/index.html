@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placeholder</title>
+</head>
+<body>
+    <script>
+        // クエリパラメータを解析
+        const params = new URLSearchParams(window.location.search);
+        const width = params.get("width") || 300;
+        const height = params.get("height") || 200;
+        const text = params.get("text") || `${width}x${height}`;
+
+        // Canvasで画像を生成
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+
+        // 背景
+        ctx.fillStyle = "#ddd";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // テキスト
+        ctx.fillStyle = "#555";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "20px Arial";
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+        // 画像をHTMLに挿入
+        document.body.appendChild(canvas);
+
+        // ダウンロード用リンクを作成
+        const link = document.createElement('a');
+        link.download = 'placeholder.png';
+        link.href = canvas.toDataURL();
+        link.textContent = 'Download Image';
+        document.body.appendChild(link);
+    </script>
+</body>
+</html>
