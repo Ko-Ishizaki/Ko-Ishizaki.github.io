@@ -63,9 +63,8 @@
     position: relative;
   }
 
-  .delete-btn {
+  .delete-btn, .edit-btn {
     position: absolute;
-    right: 10px;
     top: 10px;
     background: #e74c3c;
     color: #fff;
@@ -74,15 +73,74 @@
     padding: 3px 5px;
     cursor: pointer;
     border-radius: 3px;
+    right: 10px; /* 初期はDelete用 */
   }
 
   .delete-btn:hover {
     background: #c0392b;
   }
+
+  .edit-btn {
+    background: #f39c12;
+    right: 60px;
+  }
+
+  .edit-btn:hover {
+    background: #d35400;
+  }
+
+  .edit-area {
+    margin-top: 10px;
+  }
+
+  .save-btn, .cancel-btn {
+    padding: 5px 8px;
+    font-size: 12px;
+    margin-right: 5px;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+
+  .save-btn {
+    background: #2ecc71;
+    color: #fff;
+  }
+
+  .save-btn:hover {
+    background: #27ae60;
+  }
+
+  .cancel-btn {
+    background: #bdc3c7;
+    color: #fff;
+  }
+
+  .cancel-btn:hover {
+    background: #95a5a6;
+  }
+
+  .share-link {
+    text-align: center;
+    margin-bottom: 20px;
+    word-break: break-all;
+  }
+
+  .share-link a {
+    color: #007BFF;
+  }
+
+  .share-link a:hover {
+    color: #0056b3;
+  }
 </style>
 </head>
 <body>
   <h1>Simple_Memo</h1>
+  <div class="share-link">
+    <p>以下のURLを共有すれば、同じIDでアクセスできます:</p>
+    <p id="currentUrl"></p>
+  </div>
   <form id="memoForm">
     <textarea id="memoText" placeholder="Writing..."></textarea>
     <button type="submit">Submit</button>
@@ -91,14 +149,24 @@
 
   <script>
     (async function() {
+      // URLクエリやハッシュを識別子として利用
+      let identifier = (window.location.search || window.location.hash || '').replace(/[^\w\d-_]/g,'');
+      if (!identifier) {
+        // 識別子がなければ新規作成
+        identifier = '?id=' + Math.random().toString(36).substr(2, 9);
+        // URLを書き換え
+        window.location.search = identifier;
+      }
+
+      const STORAGE_KEY = 'my_memos' + (identifier || '');
+
       const form = document.getElementById('memoForm');
       const textarea = document.getElementById('memoText');
       const list = document.getElementById('memoList');
+      const currentUrl = document.getElementById('currentUrl');
 
-      // URLクエリやハッシュを識別子として利用
-      // 例: ?id=foo や #foo など
-      const identifier = (window.location.search || window.location.hash || '').replace(/[^\w\d-_]/g,'');
-      const STORAGE_KEY = 'my_memos' + (identifier || '');
+      // 現在のURL表示
+      currentUrl.textContent = window.location.href;
 
       // 非同期でローカルストレージからメモ取得
       async function loadMemos() {
@@ -117,19 +185,73 @@
         list.innerHTML = '';
         memos.forEach((memo, index) => {
           const li = document.createElement('li');
-          li.textContent = memo;
+          const textDiv = document.createElement('div');
+          textDiv.textContent = memo;
+
           const deleteBtn = document.createElement('button');
           deleteBtn.textContent = 'Delete';
           deleteBtn.className = 'delete-btn';
+
           deleteBtn.addEventListener('click', async () => {
             const memos = await loadMemos();
             memos.splice(index, 1);
             await saveMemos(memos);
             renderMemos();
           });
+
+          const editBtn = document.createElement('button');
+          editBtn.textContent = 'Edit';
+          editBtn.className = 'edit-btn';
+
+          editBtn.addEventListener('click', () => {
+            // Editモードに入る
+            enterEditMode(li, index, memo);
+          });
+
+          li.appendChild(textDiv);
           li.appendChild(deleteBtn);
+          li.appendChild(editBtn);
           list.appendChild(li);
         });
+      }
+
+      // Editモードに入る処理
+      function enterEditMode(li, index, oldMemo) {
+        li.innerHTML = '';
+
+        const textarea = document.createElement('textarea');
+        textarea.className = 'edit-area';
+        textarea.value = oldMemo;
+
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Save';
+        saveBtn.className = 'save-btn';
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.className = 'cancel-btn';
+
+        saveBtn.addEventListener('click', async () => {
+          const newVal = textarea.value.trim();
+          if (newVal) {
+            const memos = await loadMemos();
+            memos[index] = newVal;
+            await saveMemos(memos);
+            renderMemos();
+          } else {
+            // 空ならキャンセル扱い
+            renderMemos();
+          }
+        });
+
+        cancelBtn.addEventListener('click', () => {
+          // キャンセルなら元に戻す
+          renderMemos();
+        });
+
+        li.appendChild(textarea);
+        li.appendChild(saveBtn);
+        li.appendChild(cancelBtn);
       }
 
       // 送信時の処理
