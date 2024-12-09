@@ -3,25 +3,53 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Simple_Memo</title>
+<title>My Notes</title>
 <style>
   body {
     font-family: sans-serif;
-    max-width: 500px;
-    margin: 20px auto;
-    background: #f8f8f8;
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fafafa;
     color: #333;
+    padding: 20px;
   }
 
   h1 {
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-size: 1.5em;
-    margin-bottom: 10px;
+    margin: 20px 0;
+    font-weight: normal;
+    color: #555;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .history-btn, .clear-btn {
+    background: #fbbc05;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .history-btn:hover, .clear-btn:hover {
+    background: #eaa305;
   }
 
   form {
     display: flex;
     flex-direction: column;
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
   }
 
   textarea {
@@ -32,69 +60,100 @@
     padding: 10px;
     font-size: 14px;
     box-sizing: border-box;
+    border: none;
+    outline: none;
+    background: #fefefe;
+    border-radius: 5px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
   }
 
   button {
     padding: 10px;
     font-size: 14px;
     cursor: pointer;
-    background: #007BFF;
+    background: #4285f4;
     border: none;
     color: #fff;
-    border-radius: 3px;
+    border-radius: 5px;
     transition: background 0.3s;
-    margin-bottom: 20px;
+    align-self: flex-start;
   }
 
   button:hover {
-    background: #0056b3;
+    background: #357ae8;
   }
 
   ul {
     list-style-type: none;
     padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+    gap: 20px;
   }
 
   li {
     background: #fff;
-    margin-bottom: 10px;
-    padding: 10px;
+    padding: 15px;
     word-wrap: break-word;
     position: relative;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+  }
+
+  li div {
+    flex: 1;
+    margin-bottom: 30px;
+    white-space: pre-wrap;
   }
 
   .delete-btn, .edit-btn {
     position: absolute;
     top: 10px;
-    background: #e74c3c;
-    color: #fff;
+    color: #333;
     border: none;
     font-size: 12px;
-    padding: 3px 5px;
+    padding: 5px;
     cursor: pointer;
     border-radius: 3px;
-    right: 10px; /* 初期はDelete用 */
+    background: transparent;
+    transition: background 0.2s;
   }
 
   .delete-btn:hover {
-    background: #c0392b;
+    background: #f8e2e0;
   }
 
   .edit-btn {
-    background: #f39c12;
-    right: 60px;
+    right: 40px;
   }
 
   .edit-btn:hover {
-    background: #d35400;
+    background: #ffeec2;
+  }
+
+  .delete-btn {
+    right: 10px;
   }
 
   .edit-area {
-    margin-top: 10px;
+    width: 100%;
+    height: 80px;
+    margin-bottom: 10px;
+    resize: vertical;
+    padding: 10px;
+    font-size: 14px;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    background: #fefefe;
   }
 
   .save-btn, .cancel-btn {
-    padding: 5px 8px;
+    padding: 5px 10px;
     font-size: 12px;
     margin-right: 5px;
     border: none;
@@ -103,83 +162,164 @@
   }
 
   .save-btn {
-    background: #2ecc71;
+    background: #34a853;
     color: #fff;
   }
 
   .save-btn:hover {
-    background: #27ae60;
+    background: #2c8f44;
   }
 
   .cancel-btn {
-    background: #bdc3c7;
-    color: #fff;
+    background: #e0e0e0;
+    color: #333;
   }
 
   .cancel-btn:hover {
-    background: #95a5a6;
+    background: #d0d0d0;
   }
 
-  .share-link {
-    text-align: center;
-    margin-bottom: 20px;
-    word-break: break-all;
+  /* モーダルスタイル */
+  .modal-overlay {
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background: rgba(0,0,0,0.5);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
   }
 
-  .share-link a {
-    color: #007BFF;
+  .modal {
+    background: #fff;
+    padding:20px;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
   }
 
-  .share-link a:hover {
-    color: #0056b3;
+  .modal h2 {
+    margin-top:0;
+    font-size:1.2em;
+    margin-bottom:20px;
+  }
+
+  .version-list {
+    max-height: 300px;
+    overflow-y:auto;
+    margin-bottom:20px;
+    border: 1px solid #ccc;
+    padding:10px;
+    border-radius:5px;
+  }
+
+  .version-item {
+    display: flex;
+    justify-content: space-between;
+    align-items:center;
+    margin-bottom: 10px;
+  }
+
+  .version-item span {
+    font-size:14px;
+    color:#555;
+  }
+
+  .revert-btn {
+    background:#fbbc05;
+    color:#fff;
+    border:none;
+    padding:5px 10px;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:12px;
+  }
+
+  .revert-btn:hover {
+    background:#eaa305;
+  }
+
+  .close-btn {
+    background:#e0e0e0;
+    color:#333;
+    border:none;
+    padding:5px 10px;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:12px;
+  }
+
+  .close-btn:hover {
+    background:#d0d0d0;
   }
 </style>
 </head>
 <body>
-  <h1>Simple_Memo</h1>
-  <div class="share-link">
-    <p>以下のURLを共有すれば、同じIDでアクセスできます:</p>
-    <p id="currentUrl"></p>
-  </div>
+  <h1>My Notes 
+    <div class="header-actions">
+      <button class="history-btn" id="historyBtn">History</button>
+      <button class="clear-btn" id="clearBtn">Clear</button>
+    </div>
+  </h1>
   <form id="memoForm">
-    <textarea id="memoText" placeholder="Writing..."></textarea>
-    <button type="submit">Submit</button>
+    <textarea id="memoText" placeholder="Write Notes..."></textarea>
+    <button type="submit">Add</button>
   </form>
   <ul id="memoList"></ul>
 
+  <!-- Modal for history -->
+  <div class="modal-overlay" id="modalOverlay" style="display:none;">
+    <div class="modal">
+      <h2>Version History</h2>
+      <div class="version-list" id="versionList"></div>
+      <button class="close-btn" id="closeModalBtn">Close</button>
+    </div>
+  </div>
+
   <script>
     (async function() {
-      // URLクエリやハッシュを識別子として利用
       let identifier = (window.location.search || window.location.hash || '').replace(/[^\w\d-_]/g,'');
       if (!identifier) {
-        // 識別子がなければ新規作成
         identifier = '?id=' + Math.random().toString(36).substr(2, 9);
-        // URLを書き換え
         window.location.search = identifier;
       }
 
       const STORAGE_KEY = 'my_memos' + (identifier || '');
+      const HISTORY_KEY = STORAGE_KEY + '_history';
 
       const form = document.getElementById('memoForm');
       const textarea = document.getElementById('memoText');
       const list = document.getElementById('memoList');
-      const currentUrl = document.getElementById('currentUrl');
+      const historyBtn = document.getElementById('historyBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const modalOverlay = document.getElementById('modalOverlay');
+      const versionList = document.getElementById('versionList');
+      const closeModalBtn = document.getElementById('closeModalBtn');
 
-      // 現在のURL表示
-      currentUrl.textContent = window.location.href;
-
-      // 非同期でローカルストレージからメモ取得
       async function loadMemos() {
         const memos = localStorage.getItem(STORAGE_KEY);
         return memos ? JSON.parse(memos) : [];
       }
 
-      // 非同期でローカルストレージにメモを保存
+      async function loadHistory() {
+        const historyData = localStorage.getItem(HISTORY_KEY);
+        return historyData ? JSON.parse(historyData) : [];
+      }
+
+      async function addToHistory(memos) {
+        const history = await loadHistory();
+        history.push({
+          timestamp: new Date().toISOString(),
+          memos: memos
+        });
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      }
+
       async function saveMemos(memos) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(memos));
       }
 
-      // メモ一覧表示
       async function renderMemos() {
         const memos = await loadMemos();
         list.innerHTML = '';
@@ -189,22 +329,22 @@
           textDiv.textContent = memo;
 
           const deleteBtn = document.createElement('button');
-          deleteBtn.textContent = 'Delete';
+          deleteBtn.textContent = '✕';
           deleteBtn.className = 'delete-btn';
 
           deleteBtn.addEventListener('click', async () => {
             const memos = await loadMemos();
             memos.splice(index, 1);
             await saveMemos(memos);
+            await addToHistory(memos); // 削除後に履歴追加
             renderMemos();
           });
 
           const editBtn = document.createElement('button');
-          editBtn.textContent = 'Edit';
+          editBtn.textContent = '✎';
           editBtn.className = 'edit-btn';
 
           editBtn.addEventListener('click', () => {
-            // Editモードに入る
             enterEditMode(li, index, memo);
           });
 
@@ -215,13 +355,12 @@
         });
       }
 
-      // Editモードに入る処理
       function enterEditMode(li, index, oldMemo) {
         li.innerHTML = '';
 
-        const textarea = document.createElement('textarea');
-        textarea.className = 'edit-area';
-        textarea.value = oldMemo;
+        const editArea = document.createElement('textarea');
+        editArea.className = 'edit-area';
+        editArea.value = oldMemo;
 
         const saveBtn = document.createElement('button');
         saveBtn.textContent = 'Save';
@@ -232,29 +371,28 @@
         cancelBtn.className = 'cancel-btn';
 
         saveBtn.addEventListener('click', async () => {
-          const newVal = textarea.value.trim();
+          const newVal = editArea.value.trim();
           if (newVal) {
             const memos = await loadMemos();
             memos[index] = newVal;
             await saveMemos(memos);
+            await addToHistory(memos); // 編集後に履歴追加
             renderMemos();
           } else {
-            // 空ならキャンセル扱い
             renderMemos();
           }
         });
 
         cancelBtn.addEventListener('click', () => {
-          // キャンセルなら元に戻す
           renderMemos();
         });
 
-        li.appendChild(textarea);
+        li.appendChild(editArea);
         li.appendChild(saveBtn);
         li.appendChild(cancelBtn);
       }
 
-      // 送信時の処理
+      // メモ追加時
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const newMemo = textarea.value.trim();
@@ -262,13 +400,53 @@
           const memos = await loadMemos();
           memos.push(newMemo);
           await saveMemos(memos);
+          await addToHistory(memos); // 追加後に履歴追加
           textarea.value = '';
           renderMemos();
         }
       });
 
-      // 初期描画
+      historyBtn.addEventListener('click', async () => {
+        const history = await loadHistory();
+        versionList.innerHTML = '';
+        history.forEach((item, i) => {
+          const div = document.createElement('div');
+          div.className = 'version-item';
+          const date = new Date(item.timestamp);
+          const label = document.createElement('span');
+          label.textContent = `${i+1}: ${date.toLocaleString()}`;
+          const revertBtn = document.createElement('button');
+          revertBtn.textContent = 'Revert';
+          revertBtn.className = 'revert-btn';
+          revertBtn.addEventListener('click', async () => {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(item.memos));
+            await addToHistory(item.memos); // 復元後も履歴追加
+            renderMemos();
+            modalOverlay.style.display = 'none';
+          });
+          div.appendChild(label);
+          div.appendChild(revertBtn);
+          versionList.appendChild(div);
+        });
+        modalOverlay.style.display = 'flex';
+      });
+
+      closeModalBtn.addEventListener('click', () => {
+        modalOverlay.style.display = 'none';
+      });
+
+      // クリアボタン押下時
+      clearBtn.addEventListener('click', async () => {
+        if (confirm('Delete all memos and history?')) {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(HISTORY_KEY);
+          renderMemos(); // 空状態を反映
+        }
+      });
+
+      // 初期描画（この時点では履歴に追加しない）
       renderMemos();
+
     })();
   </script>
 </body>
