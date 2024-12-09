@@ -214,6 +214,8 @@
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
         }
         .line-break-tool .copy-button {
             padding: 10px 20px;
@@ -406,11 +408,13 @@
             <label for="tool10_charCount">文字数:</label>
             <input type="number" id="tool10_charCount" min="1" value="10">
             <button onclick="tool10_splitText()">列に分割</button>
-            <!-- 新規追加: キーワードによる改行挿入 -->
+            <!-- キーワードによる改行挿入 -->
             <label for="tool10_keywords">改行キーワード（カンマ区切り）:</label>
             <input type="text" id="tool10_keywords" placeholder="例: 。,！,？">
             <button onclick="tool10_insertKeywordBreaks()">キーワードで改行</button>
             <button onclick="tool10_removeLineBreaks()">改行を削除</button>
+            <!-- 空白で改行 -->
+            <button onclick="tool10_insertSpaceBreaks()">空白で改行</button>
             <!-- コピー ボタンはここに動的に挿入されます -->
         </div>
 
@@ -692,8 +696,9 @@
             const encodedLines = lines.map(line => {
                 if (line.startsWith('https://') || line.startsWith('http://')) {
                     // プロトコル部分を分離し、後続をエンコード
-                    const [protocol, rest] = line.split('://');
-                    return `${protocol}://${encodeURIComponent(rest)}`;
+                    const [protocol, ...rest] = line.split('://');
+                    const restJoined = rest.join('://'); // 再結合（もし '://' が複数あった場合）
+                    return `${protocol}://${encodeURIComponent(restJoined)}`;
                 } else {
                     return encodeURIComponent(line); // 通常エンコード
                 }
@@ -820,6 +825,18 @@
             const regex = new RegExp(`(${keywords.join('|')})`, 'g');
             // キーワードの後に改行を挿入
             const result = input.replace(regex, '$1\n');
+            tool10_displayResult(result.trim());
+        }
+
+        // 新規追加: 空白で改行（連続する空白を一つの空白とみなして改行）
+        function tool10_insertSpaceBreaks() {
+            const input = document.getElementById('tool10_inputText').value;
+            if (!input) {
+                alert('テキストを入力してください。');
+                return;
+            }
+            // 連続する空白を一つの空白に縮約し、その空白を改行に置換
+            const result = input.replace(/ {2,}/g, ' ').replace(/ /g, '\n');
             tool10_displayResult(result.trim());
         }
 
