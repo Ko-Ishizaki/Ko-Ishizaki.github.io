@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL_Template</title>
+    <style>
+        /* 全体スタイル */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        /* タブスタイル */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .tab:hover {
+            background-color: #0056b3;
+        }
+        .tab.active {
+            background-color: #0056b3;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* データ保存ツールスタイル */
+        .data-storage {
+            margin-bottom: 40px;
+        }
+        .data-storage__form-group {
+            margin-bottom: 15px;
+        }
+        .data-storage__label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .data-storage__input,
+        .data-storage__textarea,
+        .data-storage__tags-input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .data-storage__tags-input {
+            margin-top: 5px;
+        }
+        .data-storage__save-button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 15px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .data-storage__search-group {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .data-storage__search-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .data-storage__search-button {
+            background-color: #17a2b8;
+            color: white;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        .data-storage__saved-data {
+            margin-top: 20px;
+        }
+        .data-storage__data-block {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+        .data-storage__data-info {
+            margin-bottom: 10px;
+        }
+        .data-storage__data-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .data-storage__data-tags {
+            margin-top: 5px;
+            color: #555;
+        }
+        .data-storage__buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .data-storage__edit-button {
+            background-color: #007bff;
+            color: white;
+        }
+        .data-storage__delete-button {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* Customerize_Loop_Text_Generatorスタイル */
+        .text-generator {
+            margin-bottom: 40px;
+        }
+        .text-generator__description {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .text-generator__fields-container {
+            margin-bottom: 20px;
+        }
+        .text-generator__item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .text-generator__item-label {
+            width: 80px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .text-generator__field-name {
+            width: 150px;
+            padding: 5px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .text-generator__field-value {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+            font-size: 14px;
+        }
+        .text-generator__delete-button {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            font-size: 14px;
+            height: 40px;
+            margin-left: 10px;
+        }
+        .text-generator__buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .text-generator__add-field-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            font-size: 16px;
+        }
+        .text-generator__generate-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 15px;
+            font-size: 16px;
+        }
+        .text-generator__output {
+            list-style-type: disc;
+            padding-left: 40px;
+            margin-bottom: 20px;
+        }
+        .text-generator__actions button {
+            background-color: #17a2b8;
+            color: white;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        .text-generator__save-template-btn {
+            background-color: #ffc107;
+            color: white;
+        }
+        .text-generator__templates {
+            margin-top: 20px;
+        }
+        .text-generator__template-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .text-generator__template-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .text-generator__load-button {
+            background-color: #ffc107;
+            color: white;
+            padding: 5px 10px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .text-generator__clear-cache-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 8px 12px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        /* モーダルスタイル */
+        .modal {
+            display: none; /* 初期状態は非表示 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        .modal__content {
+            width: 90%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        .modal__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .modal__title {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .modal__close-button {
+            background-color: #6c757d;
+            color: white;
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .modal__textarea {
+            width: 100%;
+            height: 200px;
+            background-color: #f9f9f9;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 14px;
+            white-space: pre-wrap; /* 改行を保持 */
+        }
+        .modal__tags-input {
+            margin-top: 10px;
+        }
+        .modal__save-button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 15px;
+            font-size: 16px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        /* タグ表示スタイル */
+        .tag {
+            display: inline-block;
+            background-color: #17a2b8;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 5px;
+            margin-top: 5px;
+        }
+
+        /* レスポンシブデザイン */
+        @media (max-width: 768px) {
+            .text-generator__item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .text-generator__item-label {
+                width: 100%;
+                margin-bottom: 5px;
+                text-align: left;
+            }
+            .text-generator__delete-button {
+                margin-left: 0;
+                margin-top: 5px;
+                align-self: flex-end;
+            }
+            .text-generator__buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .text-generator__generate-btn {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>SQL_Template</h1>
+    
+    <div class="container">
+        <!-- タブナビゲーション -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('data-storage')">SQLテンプレート保存</button>
+            <button class="tab" onclick="switchTab('text-generator')">Customerize_Loop_Text_Generator</button>
+        </div>
+        
+        <!-- SQLテンプレート保存ツール -->
+        <div id="data-storage" class="tab-content active data-storage">
+            <h2>SQLテンプレート保存</h2>
+            <form id="data-storage-tool-form">
+                <div class="data-storage__form-group">
+                    <label for="storage-title" class="data-storage__label">タイトル:</label>
+                    <input type="text" id="storage-title" name="storage-title" class="data-storage__input" required>
+                </div>
+                <div class="data-storage__form-group">
+                    <label for="storage-content" class="data-storage__label">SQLコード:</label>
+                    <textarea id="storage-content" name="storage-content" class="data-storage__textarea" rows="10" required></textarea>
+                </div>
+                <div class="data-storage__form-group">
+                    <label for="storage-tags" class="data-storage__label">タグ (カンマ区切り):</label>
+                    <input type="text" id="storage-tags" name="storage-tags" class="data-storage__tags-input" placeholder="例: レポート, データ抽出">
+                </div>
+                <button type="button" class="data-storage__save-button" onclick="saveData()">保存</button>
+            </form>
+        
+            <!-- 検索機能 -->
+            <div class="data-storage__search-group">
+                <input type="text" id="data-storage-search-input" class="data-storage__search-input" placeholder="タグで検索 (カンマ区切り)">
+                <button class="data-storage__search-button" onclick="searchDataStorage()">検索</button>
+                <button class="data-storage__search-button" onclick="resetDataStorageSearch()">リセット</button>
+            </div>
+        
+            <h2>保存済みテンプレート</h2>
+            <div id="savedData" class="data-storage__saved-data"></div>
+        
+            <!-- モーダルウィンドウ -->
+            <div id="storage-modal" class="modal">
+                <div class="modal__content">
+                    <div class="modal__header">
+                        <h3 id="storage-modal-title" class="modal__title">テンプレート編集</h3>
+                        <button class="modal__close-button" onclick="closeStorageModal()">×</button>
+                    </div>
+                    <textarea id="storage-modal-textarea" class="modal__textarea"></textarea>
+                    <div class="data-storage__form-group">
+                        <label for="storage-modal-tags" class="data-storage__label">タグ (カンマ区切り):</label>
+                        <input type="text" id="storage-modal-tags" name="storage-modal-tags" class="data-storage__tags-input" placeholder="例: レポート, データ抽出">
+                    </div>
+                    <button class="modal__save-button" onclick="saveEditedData()">保存</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Customerize_Loop_Text_Generatorツール -->
+        <div id="text-generator" class="tab-content text-generator">
+            <h2>Customerize_Loop_Text_Generator</h2>
+            <p class="text-generator__description">単一の値が使用される場合は繰り返され、複数の値が改行で区切られている場合は順番に使用されます。</p>
+    
+            <div id="text-generator-tool">
+                <div id="fields-container" class="text-generator__fields-container">
+                    <div class="text-generator__item item">
+                        <label class="text-generator__item-label">項目: </label>
+                        <input type="text" placeholder="例: 主語" class="text-generator__field-name field-name" value="a">
+                        <textarea placeholder="値を改行で入力" class="text-generator__field-value field-value" rows="4" cols="30"></textarea>
+                        <button class="text-generator__delete-button delete">Delete</button>
+                    </div>
+                </div>
+                <div class="text-generator__buttons">
+                    <button id="add-field-btn" class="text-generator__add-field-btn">Add Value</button>
+                    <button id="generate-btn" class="text-generator__generate-btn">Generate Text</button>
+                </div>
+    
+                <!-- 検索機能 -->
+                <div class="text-generator__search-group">
+                    <input type="text" id="text-generator-search-input" class="data-storage__search-input" placeholder="タグで検索 (カンマ区切り)">
+                    <button class="data-storage__search-button" onclick="searchTextGenerator()">検索</button>
+                    <button class="data-storage__search-button" onclick="resetTextGeneratorSearch()">リセット</button>
+                </div>
+    
+                <h2>Generated Text</h2>
+                <ul id="output" class="text-generator__output"></ul>
+                <div id="actions" class="text-generator__actions"></div>
+    
+                <h2>Saved Templates</h2>
+                <div id="templates" class="text-generator__templates">
+                    <p>Saved templates are displayed below.</p>
+                    <ul id="template-list" class="text-generator__template-list"></ul>
+                    <button id="clear-cache-btn" class="text-generator__clear-cache-btn">Delete all</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- モーダルウィンドウの共通スクリプト -->
+    <script>
+        /* ------------------------ */
+        /* タブ切り替え機能 */
+        /* ------------------------ */
+        function switchTab(tabId) {
+            // タブボタンのアクティブ状態を切り替え
+            document.querySelectorAll('.tab').forEach(tab => {
+                if (tab.getAttribute('onclick').includes(tabId)) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // タブコンテンツの表示を切り替え
+            document.querySelectorAll('.tab-content').forEach(content => {
+                if (content.id === tabId) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+        }
+
+        /* ------------------------ */
+        /* SQLテンプレート保存ツール */
+        /* ------------------------ */
+        const STORAGE_NAMESPACE = "SQLTemplate_"; // SQLテンプレート専用の名前空間
+        let currentEditingStorageKey = null; // 編集中のキーを保存
+
+        // データをローカルストレージに保存する関数
+        function saveData() {
+            const title = document.getElementById("storage-title").value.trim();
+            const content = document.getElementById("storage-content").value.trim();
+            const tagsInput = document.getElementById("storage-tags").value.trim();
+            const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag !== "") : [];
+
+            if (title && content) {
+                const key = `${STORAGE_NAMESPACE}${title}`;
+                const data = {
+                    title,
+                    content,
+                    tags
+                };
+                localStorage.setItem(key, JSON.stringify(data));
+                alert("テンプレートが保存されました！");
+                displaySavedData();
+                document.getElementById("data-storage-tool-form").reset();
+            } else {
+                alert("タイトルとSQLコードを入力してください！");
+            }
+        }
+
+        // 保存済みデータを表示する関数
+        function displaySavedData(filteredKeys = null) {
+            const savedDataDiv = document.getElementById("savedData");
+            savedDataDiv.innerHTML = ""; // 初期化
+
+            const keys = Object.keys(localStorage).filter(key => key.startsWith(STORAGE_NAMESPACE));
+            const displayKeys = filteredKeys !== null ? filteredKeys : keys;
+
+            if (displayKeys.length > 0) {
+                displayKeys.forEach(key => {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    const { title, content, tags } = data;
+
+                    const dataBlock = document.createElement("div");
+                    dataBlock.className = "data-storage__data-block";
+
+                    const dataInfo = document.createElement("div");
+                    dataInfo.className = "data-storage__data-info";
+
+                    const titleElem = document.createElement("h3");
+                    titleElem.textContent = title;
+                    titleElem.className = "data-storage__data-title";
+
+                    const tagsElem = document.createElement("div");
+                    tags.forEach(tag => {
+                        const tagSpan = document.createElement("span");
+                        tagSpan.className = "tag";
+                        tagSpan.textContent = `#${tag}`;
+                        tagsElem.appendChild(tagSpan);
+                    });
+                    tagsElem.className = "data-storage__data-tags";
+
+                    dataInfo.appendChild(titleElem);
+                    dataInfo.appendChild(tagsElem);
+
+                    const buttonsDiv = document.createElement("div");
+                    buttonsDiv.className = "data-storage__buttons";
+
+                    const editButton = document.createElement("button");
+                    editButton.textContent = "編集";
+                    editButton.className = "data-storage__edit-button edit-button";
+                    editButton.onclick = () => openStorageModal(key, title, content, tags);
+
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "削除";
+                    deleteButton.className = "data-storage__delete-button delete-button";
+                    deleteButton.onclick = () => {
+                        if (confirm(`「${title}」を削除しますか？`)) {
+                            localStorage.removeItem(key);
+                            displaySavedData();
+                        }
+                    };
+
+                    buttonsDiv.appendChild(editButton);
+                    buttonsDiv.appendChild(deleteButton);
+
+                    dataBlock.appendChild(dataInfo);
+                    dataBlock.appendChild(buttonsDiv);
+
+                    savedDataDiv.appendChild(dataBlock);
+                });
+            } else {
+                savedDataDiv.textContent = "保存されたテンプレートはありません。";
+            }
+        }
+
+        // モーダルを開く関数
+        function openStorageModal(key, title, content, tags) {
+            currentEditingStorageKey = key;
+            document.getElementById("storage-modal-title").textContent = title;
+            document.getElementById("storage-modal-textarea").value = content;
+            document.getElementById("storage-modal-tags").value = tags.join(', ');
+            document.getElementById("storage-modal").style.display = "flex";
+        }
+
+        // モーダルを閉じる関数
+        function closeStorageModal() {
+            document.getElementById("storage-modal").style.display = "none";
+        }
+
+        // 編集内容を保存する関数
+        function saveEditedData() {
+            const updatedContent = document.getElementById("storage-modal-textarea").value.trim();
+            const updatedTagsInput = document.getElementById("storage-modal-tags").value.trim();
+            const updatedTags = updatedTagsInput ? updatedTagsInput.split(',').map(tag => tag.trim()).filter(tag => tag !== "") : [];
+
+            if (currentEditingStorageKey && updatedContent) {
+                const updatedData = {
+                    title: currentEditingStorageKey.replace(STORAGE_NAMESPACE, ""),
+                    content: updatedContent,
+                    tags: updatedTags
+                };
+                localStorage.setItem(currentEditingStorageKey, JSON.stringify(updatedData));
+                alert("テンプレートが更新されました！");
+                closeStorageModal();
+                displaySavedData();
+            } else {
+                alert("SQLコードを入力してください！");
+            }
+        }
+
+        // 検索機能
+        function searchDataStorage() {
+            const searchInput = document.getElementById("data-storage-search-input").value.trim();
+            const searchTags = searchInput ? searchInput.split(',').map(tag => tag.trim().toLowerCase()).filter(tag => tag !== "") : [];
+
+            if (searchTags.length === 0) {
+                displaySavedData();
+                return;
+            }
+
+            const keys = Object.keys(localStorage).filter(key => key.startsWith(STORAGE_NAMESPACE));
+            const filteredKeys = keys.filter(key => {
+                const data = JSON.parse(localStorage.getItem(key));
+                const dataTagsLower = data.tags.map(tag => tag.toLowerCase());
+                return searchTags.every(tag => dataTagsLower.includes(tag));
+            });
+
+            displaySavedData(filteredKeys);
+        }
+
+        function resetDataStorageSearch() {
+            document.getElementById("data-storage-search-input").value = "";
+            displaySavedData();
+        }
+
+        /* ------------------------ */
+        /* Customerize_Loop_Text_Generatorツール */
+        /* ------------------------ */
+        const TEMPLATE_STORAGE_KEY = 'custom_text_templates';
+
+        // 項目追加
+        document.getElementById('add-field-btn').addEventListener('click', function () {
+            const container = document.getElementById('fields-container');
+            const newItem = document.createElement('div');
+            newItem.className = 'text-generator__item item';
+            newItem.innerHTML = `
+                <label class="text-generator__item-label">項目: </label>
+                <input type="text" placeholder="例: 主語" class="text-generator__field-name field-name">
+                <textarea placeholder="値を改行で入力" class="text-generator__field-value field-value" rows="4" cols="30"></textarea>
+                <button class="text-generator__delete-button delete">Delete</button>
+            `;
+            container.appendChild(newItem);
+
+            // 削除ボタンのイベントリスナーを追加
+            newItem.querySelector('.delete').addEventListener('click', function () {
+                newItem.remove();
+            });
+        });
+
+        // 初期削除ボタンにイベントリスナーを追加
+        document.querySelectorAll('.text-generator__item .delete').forEach(button => {
+            button.addEventListener('click', function () {
+                button.parentElement.remove();
+            });
+        });
+
+        // 文章生成
+        document.getElementById('generate-btn').addEventListener('click', function () {
+            const fields = Array.from(document.querySelectorAll('.text-generator__item')).map(item => ({
+                name: item.querySelector('.field-name').value.trim(),
+                values: item.querySelector('.field-value').value.trim().split('\n').map(v => v.trim()).filter(v => v !== "")
+            }));
+
+            if (fields.some(field => field.name === "")) {
+                alert("すべての項目に名前を入力してください！");
+                return;
+            }
+
+            const outputElement = document.getElementById('output');
+            outputElement.innerHTML = ''; // 出力エリアをクリア
+
+            // 最大行数の取得
+            const maxRows = Math.max(...fields.map(field => field.values.length));
+            const generatedLines = [];
+
+            for (let i = 0; i < maxRows; i++) {
+                const sentence = fields
+                    .map(field => {
+                        return field.values[i] !== undefined ? field.values[i] : (field.values.length > 0 ? field.values[field.values.length - 1] : '');
+                    })
+                    .join(' ').trim();
+
+                if (sentence !== "") {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = sentence;
+                    outputElement.appendChild(listItem);
+                    generatedLines.push(sentence);
+                }
+            }
+
+            if (generatedLines.length === 0) {
+                alert("生成する文章がありません。値を入力してください。");
+                return;
+            }
+
+            // 動的ボタンを生成
+            const actionsDiv = document.getElementById('actions');
+            actionsDiv.innerHTML = `
+                <button id="copy-btn" class="action-button">全行をクリップボードにコピー</button>
+                <button id="save-template-btn" class="action-button text-generator__save-template-btn">テンプレートとして保存</button>
+            `;
+
+            // 全行をクリップボードにコピー
+            document.getElementById('copy-btn').addEventListener('click', function () {
+                const allText = generatedLines.join('\n');
+                navigator.clipboard.writeText(allText).then(() => {
+                    alert('生成された文章をクリップボードにコピーしました！');
+                }).catch(err => {
+                    console.error('クリップボードへのコピーに失敗しました:', err);
+                    alert('クリップボードへのコピーに失敗しました。');
+                });
+            });
+
+            // テンプレートとして保存
+            document.getElementById('save-template-btn').addEventListener('click', function () {
+                const templateName = prompt('テンプレート名を入力してください:');
+                if (templateName) {
+                    const tagsInput = prompt('タグを入力してください (カンマ区切り):');
+                    const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag !== "") : [];
+                    saveTextGeneratorTemplate(templateName, fields, tags);
+                    alert('テンプレートを保存しました！');
+                    renderTemplateList();
+                }
+            });
+        });
+
+        // テンプレート保存
+        function saveTextGeneratorTemplate(name, fields, tags) {
+            const templates = getTextGeneratorTemplates();
+            templates[name] = { fields, tags };
+            localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(templates));
+        }
+
+        // テンプレート取得
+        function getTextGeneratorTemplates() {
+            const stored = localStorage.getItem(TEMPLATE_STORAGE_KEY);
+            return stored ? JSON.parse(stored) : {};
+        }
+
+        // テンプレートリストを描画
+        function renderTemplateList(filteredTemplates = null) {
+            const templates = filteredTemplates !== null ? filteredTemplates : getTextGeneratorTemplates();
+            const templateList = document.getElementById('template-list');
+            templateList.innerHTML = '';
+
+            Object.keys(templates).forEach(name => {
+                const { tags } = templates[name];
+                const listItem = document.createElement('li');
+                listItem.className = 'text-generator__template-item';
+                listItem.innerHTML = `
+                    ${name}
+                    ${tags.map(tag => `<span class="tag">#${tag}</span>`).join(' ')}
+                    <button class="text-generator__load-button">Load</button>
+                `;
+                const loadButton = listItem.querySelector('.text-generator__load-button');
+                loadButton.addEventListener('click', () => loadTextGeneratorTemplate(name));
+                templateList.appendChild(listItem);
+            });
+        }
+
+        // テンプレート読み込み
+        function loadTextGeneratorTemplate(name) {
+            const templates = getTextGeneratorTemplates();
+            const { fields } = templates[name];
+            const container = document.getElementById('fields-container');
+            container.innerHTML = ''; // 現在のフィールドをクリア
+
+            fields.forEach(field => {
+                const newItem = document.createElement('div');
+                newItem.className = 'text-generator__item item';
+                newItem.innerHTML = `
+                    <label class="text-generator__item-label">項目: </label>
+                    <input type="text" class="text-generator__field-name field-name" value="${field.name}">
+                    <textarea class="text-generator__field-value field-value" rows="4" cols="30">${field.values.join('\n')}</textarea>
+                    <button class="text-generator__delete-button delete">Delete</button>
+                `;
+                container.appendChild(newItem);
+                newItem.querySelector('.delete').addEventListener('click', function () {
+                    newItem.remove();
+                });
+            });
+        }
+
+        // キャッシュクリア
+        document.getElementById('clear-cache-btn').addEventListener('click', function () {
+            if (confirm('すべてのテンプレートを削除しますか？')) {
+                localStorage.removeItem(TEMPLATE_STORAGE_KEY);
+                localStorage.forEach((value, key) => {
+                    if (key.startsWith(STORAGE_NAMESPACE)) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                alert('キャッシュをクリアしました！');
+                renderTemplateList();
+                displaySavedData();
+            }
+        });
+
+        // 検索機能
+        function searchTextGenerator() {
+            const searchInput = document.getElementById("text-generator-search-input").value.trim();
+            const searchTags = searchInput ? searchInput.split(',').map(tag => tag.trim().toLowerCase()).filter(tag => tag !== "") : [];
+
+            if (searchTags.length === 0) {
+                renderTemplateList();
+                return;
+            }
+
+            const templates = getTextGeneratorTemplates();
+            const filteredTemplates = {};
+
+            Object.keys(templates).forEach(name => {
+                const dataTagsLower = templates[name].tags.map(tag => tag.toLowerCase());
+                if (searchTags.every(tag => dataTagsLower.includes(tag))) {
+                    filteredTemplates[name] = templates[name];
+                }
+            });
+
+            renderTemplateList(filteredTemplates);
+        }
+
+        function resetTextGeneratorSearch() {
+            document.getElementById("text-generator-search-input").value = "";
+            renderTemplateList();
+        }
+
+        /* ------------------------ */
+        /* その他の関数 */
+        /* ------------------------ */
+        // Prevent modal from closing when clicking inside the content
+        document.getElementById("storage-modal").addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeStorageModal();
+            }
+        });
+
+        // ページ読み込み時に保存済みデータを表示
+        window.onload = function() {
+            displaySavedData();
+            renderTemplateList(); // Customerize_Loop_Text_Generatorのテンプレートリストを初期化
+        };
+    </script>
+</body>
+</html>
