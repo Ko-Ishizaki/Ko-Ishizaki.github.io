@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punycode変換</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/punycode/2.1.1/punycode.min.js"></script>
+</head>
+<body>
+    <h1>Punycode変換</h1>
+
+    <!-- 通常の文字列・ドメイン用エンコード -->
+    <h3>Unicode → Punycode</h3>
+    <input type="text" id="generalInput" placeholder="例: 例え.テスト">
+    <button onclick="encodeToPunycode()">エンコード</button>
+    <p>結果: <span id="generalEncodedResult"></span></p>
+
+    <!-- 通常の文字列・ドメイン用デコード -->
+    <h3>Punycode → Unicode</h3>
+    <input type="text" id="generalPunycodeInput" placeholder="例: xn--r8jz45g.xn--zckzah">
+    <button onclick="decodeFromPunycode()">デコード</button>
+    <p>結果: <span id="generalDecodedResult"></span></p>
+
+    <!-- メールアドレス用エンコード -->
+    <h3>メールアドレスをPunycodeに変換</h3>
+    <input type="text" id="emailInput" placeholder="例: user@例え.テスト">
+    <button onclick="encodeEmailToPunycode()">エンコード</button>
+    <p>結果: <span id="emailEncodedResult"></span></p>
+
+    <!-- メールアドレス用デコード -->
+    <h3>PunycodeのメールアドレスをUnicodeに戻す</h3>
+    <input type="text" id="punycodeEmailInput" placeholder="例: user@xn--r8jz45g.xn--zckzah">
+    <button onclick="decodeEmailFromPunycode()">デコード</button>
+    <p>結果: <span id="emailDecodedResult"></span></p>
+
+    <script>
+        // 通常の文字列・ドメインをPunycodeに変換
+        function encodeToPunycode() {
+            const input = document.getElementById("generalInput").value;
+            try {
+                const punycodeResult = punycode.toASCII(input);
+                document.getElementById("generalEncodedResult").innerText = punycodeResult;
+            } catch (error) {
+                alert("変換に失敗しました: " + error.message);
+            }
+        }
+
+        // Punycodeを通常の文字列・ドメインにデコード
+        function decodeFromPunycode() {
+            const input = document.getElementById("generalPunycodeInput").value;
+            try {
+                const unicodeResult = punycode.toUnicode(input);
+                document.getElementById("generalDecodedResult").innerText = unicodeResult;
+            } catch (error) {
+                alert("デコードに失敗しました: " + error.message);
+            }
+        }
+
+        // メールアドレスをPunycodeに変換
+        function encodeEmailToPunycode() {
+            const email = document.getElementById("emailInput").value;
+            if (!email.includes("@")) {
+                alert("有効なメールアドレスを入力してください。");
+                return;
+            }
+            const [localPart, domainPart] = email.split("@");
+            try {
+                const punycodeDomain = punycode.toASCII(domainPart);
+                document.getElementById("emailEncodedResult").innerText = `${localPart}@${punycodeDomain}`;
+            } catch (error) {
+                alert("メールアドレスのドメイン部分の変換に失敗しました: " + error.message);
+            }
+        }
+
+        // Punycode形式のメールアドレスをUnicodeに戻す
+        function decodeEmailFromPunycode() {
+            const email = document.getElementById("punycodeEmailInput").value;
+            if (!email.includes("@")) {
+                alert("有効なPunycode形式のメールアドレスを入力してください。");
+                return;
+            }
+            const [localPart, punycodeDomain] = email.split("@");
+            try {
+                const unicodeDomain = punycode.toUnicode(punycodeDomain);
+                document.getElementById("emailDecodedResult").innerText = `${localPart}@${unicodeDomain}`;
+            } catch (error) {
+                alert("メールアドレスのドメイン部分のデコードに失敗しました: " + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
