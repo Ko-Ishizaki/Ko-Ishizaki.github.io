@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>datagrid.js</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            user-select: none;
+            position: relative;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            min-width: 100px;
+            height: 30px;
+            position: relative;
+            text-align: center;
+        }
+        th {
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        th.row-header {
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+        td.selected, th.selected {
+            background-color: #d0e7ff;
+        }
+        td.hovered, th.hovered {
+            background-color: #f1f1f1;
+        }
+        input.edit-input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: inherit;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <table id="handsontable">
+        <thead>
+            <tr>
+                <th id="select-all"></th>
+                <!-- Column Headers -->
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows -->
+        </tbody>
+    </table>
+    <div id="error-message" class="error"></div>
+
+    <script>
+        (function(){
+            const table = document.getElementById('handsontable');
+            const thead = table.querySelector('thead tr');
+            const tbody = table.querySelector('tbody');
+            const errorMessage = document.getElementById('error-message');
+
+            const ROWS = 10;
+            const COLS = 10;
+
+            // Initialize top-left cell (empty)
+            const selectAllTh = document.getElementById('select-all');
+            // No text content or special styling applied
+
+            // Initialize column headers
+            for(let c=0; c<COLS; c++) {
+                const th = document.createElement('th');
+                th.textContent = '列 ' + (c+1);
+                th.dataset.col = c;
+                thead.appendChild(th);
+            }
+
+            // Initialize table body
+            for(let r=0; r<ROWS; r++) {
+                const tr = document.createElement('tr');
+                const th = document.createElement('th');
+                th.textContent = '行 ' + (r+1);
+                th.dataset.row = r;
+                th.classList.add('row-header');
+                tr.appendChild(th);
+                for(let c=0; c<COLS; c++) {
+                    const td = document.createElement('td');
+                    td.textContent = `R${r+1}C${c+1}`;
+                    td.dataset.row = r;
+                    td.dataset.col = c;
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+
+            let selected = {
+                type: null, // 'cell', 'row', 'col', 'all'
+                cells: []
+            };
+
+            let clipboard = {
+                type: null,
+                data: []
+            };
+
+            let editing = {
+                element: null,
+                type: null // 'cell' or 'header',
+            };
+
+            // Helper functions
+            function clearSelection() {
+                const selectedElements = table.querySelectorAll('.selected');
+                selectedElements.forEach(el => el.classList.remove('selected'));
+                selected.type = null;
+                selected.cells = [];
+            }
+
+            function selectCells(elements, type) {
+                clearSelection();
+                elements.forEach(el => el.classList.add('selected'));
+                selected.type = type;
+                selected.cells = elements;
+            }
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                setTimeout(() => {
+                    errorMessage.textContent = '';
+                }, 3000);
+            }
+
+            // Event listeners for headers
+            thead.querySelectorAll('th').forEach(th => {
+                if(th.id === 'select-all') return; // Skip top-left cell for now
+
+                th.addEventListener('click', (e) => {
+                    if(editing.element) return;
+                    const col = th.dataset.col;
+                    if(col === undefined) return;
+                    const cells = tbody.querySelectorAll(`td[data-col='${col}']`);
+                    selectCells([th, ...Array.from(cells)], 'col');
+                });
+
+                th.addEventListener('dblclick', (e) => {
+                    const th = e.target;
+                    if(th.dataset.col !== undefined){
+                        startEdit(th, 'header', 'col');
+                    }
+                });
+
+                th.addEventListener('mouseover', (e) => {
+                    th.classList.add('hovered');
+                });
+                th.addEventListener('mouseout', (e) => {
+                    th.classList.remove('hovered');
+                });
+            });
+
+            // Event listener for top-left cell (select all)
+            selectAllTh.addEventListener('click', (e) => {
+                if(editing.element) return;
+                const allThs = thead.querySelectorAll('th');
+                const allRowHeaders = tbody.querySelectorAll('tr th');
+                const allTds = tbody.querySelectorAll('td');
+                selectCells([selectAllTh, ...Array.from(allThs).slice(1), ...Array.from(allRowHeaders), ...Array.from(allTds)], 'all');
+            });
+
+            selectAllTh.addEventListener('dblclick', (e) => {
+                // Optional: Implement any specific edit functionality for top-left cell
+                startEdit(selectAllTh, 'header', 'all');
+            });
+
+            selectAllTh.addEventListener('mouseover', (e) => {
+                selectAllTh.classList.add('hovered');
+            });
+            selectAllTh.addEventListener('mouseout', (e) => {
+                selectAllTh.classList.remove('hovered');
+            });
+
+            // Event listeners for row headers and cells
+            tbody.querySelectorAll('tr').forEach(tr => {
+                const rowHeader = tr.querySelector('th');
+                rowHeader.addEventListener('click', (e) => {
+                    if(editing.element) return;
+                    const row = rowHeader.dataset.row;
+                    const cells = tr.querySelectorAll('td');
+                    selectCells([rowHeader, ...Array.from(cells)], 'row');
+                });
+
+                rowHeader.addEventListener('dblclick', (e) => {
+                    startEdit(rowHeader, 'header', 'row');
+                });
+
+                rowHeader.addEventListener('mouseover', (e) => {
+                    rowHeader.classList.add('hovered');
+                });
+                rowHeader.addEventListener('mouseout', (e) => {
+                    rowHeader.classList.remove('hovered');
+                });
+
+                tr.querySelectorAll('td').forEach(td => {
+                    td.addEventListener('click', (e) => {
+                        if(editing.element) return;
+                        // If already in 'all' selection, do not change selection
+                        if(selected.type === 'all') return;
+                        selectCells([td], 'cell');
+                    });
+
+                    td.addEventListener('dblclick', (e) => {
+                        startEdit(td, 'cell');
+                    });
+
+                    td.addEventListener('mouseover', (e) => {
+                        td.classList.add('hovered');
+                    });
+                    td.addEventListener('mouseout', (e) => {
+                        td.classList.remove('hovered');
+                    });
+                });
+            });
+
+            // Click outside to clear selection and stop editing
+            document.addEventListener('click', (e) => {
+                if(!table.contains(e.target)) {
+                    clearSelection();
+                    stopEdit();
+                }
+            });
+
+            // Start editing function
+            function startEdit(element, type, subtype) {
+                if(editing.element) return;
+                editing.element = element;
+                editing.type = type;
+
+                const originalText = element.textContent;
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = originalText;
+                input.className = 'edit-input';
+                element.textContent = '';
+                element.appendChild(input);
+                input.focus();
+
+                // Set input dimensions to match cell
+                const rect = element.getBoundingClientRect();
+                input.style.width = '100%';
+                input.style.height = '100%';
+
+                input.addEventListener('keydown', (e) => {
+                    if(e.key === 'Enter') {
+                        finishEdit();
+                    } else if(e.key === 'Escape') {
+                        cancelEdit();
+                    }
+                });
+
+                input.addEventListener('blur', () => {
+                    finishEdit();
+                });
+            }
+
+            // Finish editing
+            function finishEdit() {
+                if(!editing.element) return;
+                const input = editing.element.querySelector('input');
+                if(input) {
+                    const newValue = input.value;
+                    editing.element.textContent = newValue;
+                }
+                editing = {element: null, type: null};
+            }
+
+            // Cancel editing
+            function cancelEdit() {
+                if(!editing.element) return;
+                const originalText = editing.element.dataset.originalText || '';
+                editing.element.textContent = originalText;
+                editing = {element: null, type: null};
+            }
+
+            // Stop editing
+            function stopEdit() {
+                if(editing.element) {
+                    finishEdit();
+                }
+            }
+
+            // Handle keyboard shortcuts for clipboard
+            document.addEventListener('keydown', (e) => {
+                if(e.ctrlKey && (e.key === 'c' || e.key === 'x' || e.key === 'v')) {
+                    e.preventDefault();
+                    if(e.key === 'c') {
+                        copySelection();
+                    } else if(e.key === 'x') {
+                        cutSelection();
+                    } else if(e.key === 'v') {
+                        pasteSelection();
+                    }
+                }
+            });
+
+            // Copy selection
+            function copySelection() {
+                if(!selected.type) return;
+                if(selected.type === 'cell') {
+                    clipboard.type = 'cell';
+                    clipboard.data = [selected.cells[0].textContent];
+                } else if(selected.type === 'row') {
+                    clipboard.type = 'row';
+                    clipboard.data = Array.from(selected.cells).slice(1).map(td => td.textContent);
+                } else if(selected.type === 'col') {
+                    clipboard.type = 'col';
+                    clipboard.data = Array.from(selected.cells).slice(1).map(td => td.textContent);
+                } else if(selected.type === 'all') {
+                    clipboard.type = 'all';
+                    // Gather all data including headers
+                    const headers = thead.querySelectorAll('th');
+                    const allHeaders = Array.from(headers).map(th => th.textContent.trim());
+                    const allRows = Array.from(tbody.querySelectorAll('tr')).map(tr => {
+                        const cells = tr.querySelectorAll('th, td');
+                        return Array.from(cells).map(cell => cell.textContent.trim());
+                    });
+                    clipboard.data = [allHeaders, ...allRows];
+                }
+                // Use navigator clipboard API as fallback
+                let text = '';
+                if(clipboard.type === 'all') {
+                    clipboard.data.forEach(row => {
+                        text += row.join('\t') + '\n';
+                    });
+                } else {
+                    text = clipboard.data.join('\t');
+                }
+                navigator.clipboard.writeText(text).catch(err => {
+                    console.error('Clipboard write failed:', err);
+                });
+            }
+
+            // Cut selection
+            function cutSelection() {
+                if(!selected.type) return;
+                if(selected.type === 'cell') {
+                    clipboard.type = 'cell';
+                    clipboard.data = [selected.cells[0].textContent];
+                    selected.cells[0].textContent = '';
+                } else if(selected.type === 'row') {
+                    clipboard.type = 'row';
+                    clipboard.data = Array.from(selected.cells).slice(1).map(td => td.textContent);
+                    selected.cells.forEach((cell, index) => {
+                        if(index > 0) cell.textContent = '';
+                    });
+                } else if(selected.type === 'col') {
+                    clipboard.type = 'col';
+                    clipboard.data = Array.from(selected.cells).slice(1).map(td => td.textContent);
+                    selected.cells.forEach((cell, index) => {
+                        if(index > 0) cell.textContent = '';
+                    });
+                } else if(selected.type === 'all') {
+                    clipboard.type = 'all';
+                    // Gather all data including headers
+                    const headers = thead.querySelectorAll('th');
+                    const allHeaders = Array.from(headers).map(th => th.textContent.trim());
+                    const allRows = Array.from(tbody.querySelectorAll('tr')).map(tr => {
+                        const cells = tr.querySelectorAll('th, td');
+                        return Array.from(cells).map(cell => cell.textContent.trim());
+                    });
+                    clipboard.data = [allHeaders, ...allRows];
+                    // Clear all cells
+                    thead.querySelectorAll('th').forEach(th => {
+                        th.textContent = '';
+                    });
+                    tbody.querySelectorAll('tr').forEach(tr => {
+                        tr.querySelectorAll('th, td').forEach(cell => {
+                            cell.textContent = '';
+                        });
+                    });
+                }
+                // Use navigator clipboard API as fallback
+                let text = '';
+                if(clipboard.type === 'all') {
+                    clipboard.data.forEach(row => {
+                        text += row.join('\t') + '\n';
+                    });
+                } else {
+                    text = clipboard.data.join('\t');
+                }
+                navigator.clipboard.writeText(text).catch(err => {
+                    console.error('Clipboard write failed:', err);
+                });
+            }
+
+            // Paste selection
+            function pasteSelection() {
+                navigator.clipboard.readText().then(text => {
+                    const pastedData = text.trim().split('\n').map(line => line.split('\t'));
+                    if(!clipboard.type) return;
+                    if(clipboard.type === 'cell') {
+                        if(selected.type === 'cell') {
+                            selected.cells[0].textContent = pastedData[0];
+                        }
+                    } else if(clipboard.type === 'row') {
+                        if(selected.type === 'row') {
+                            if(pastedData.length !== COLS) {
+                                showError('規格が違います');
+                                return;
+                            }
+                            selected.cells.forEach((cell, index) => {
+                                if(index > 0) cell.textContent = pastedData[index-1];
+                            });
+                        }
+                    } else if(clipboard.type === 'col') {
+                        if(selected.type === 'col') {
+                            if(pastedData.length !== ROWS) {
+                                showError('規格が違います');
+                                return;
+                            }
+                            selected.cells.forEach((cell, index) => {
+                                if(index > 0) cell.textContent = pastedData[index-1];
+                            });
+                        }
+                    } else if(clipboard.type === 'all') {
+                        if(selected.type === 'all') {
+                            // Number of rows should match
+                            if(pastedData.length < 1 || pastedData.length - 1 !== ROWS || pastedData[0].length -1 !== COLS) {
+                                showError('規格が違います');
+                                return;
+                            }
+                            // Paste headers
+                            const headers = pastedData[0];
+                            const ths = thead.querySelectorAll('th');
+                            headers.forEach((header, index) => {
+                                ths[index].textContent = header;
+                            });
+                            // Paste rows
+                            for(let r=0; r<ROWS; r++) {
+                                const tr = tbody.querySelectorAll('tr')[r];
+                                const cells = tr.querySelectorAll('th, td');
+                                for(let c=0; c<=COLS; c++) { // c=0 is row header
+                                    cells[c].textContent = pastedData[r+1][c];
+                                }
+                            }
+                        }
+                    }
+                }).catch(err => {
+                    console.error('Clipboard read failed:', err);
+                });
+            }
+
+        })();
+    </script>
+</body>
+</html>
