@@ -338,17 +338,28 @@
                     const allData = Array.from(allTds).map(td => td.textContent.trim());
                     clipboard.data = allData;
                 }
-                // Use navigator clipboard API as fallback
+
+                // Format the clipboard data based on selection type
                 let text = '';
-                if(clipboard.type === 'all') {
-                    // Convert 1D array to 2D array based on ROWS and COLS
+                if(clipboard.type === 'row') {
+                    // Join row data with tabs for horizontal paste
+                    text = clipboard.data.join('\t');
+                } else if(clipboard.type === 'col') {
+                    // Join column data with newlines for vertical paste
+                    text = clipboard.data.join('\n');
+                } else if(clipboard.type === 'all') {
+                    // For all selection, format as rows with tabs and newlines
+                    let allRows = [];
                     for(let r=0; r<ROWS; r++) {
                         const rowData = clipboard.data.slice(r*COLS, (r+1)*COLS).join('\t');
-                        text += rowData + '\n';
+                        allRows.push(rowData);
                     }
-                } else {
-                    text = clipboard.data.join('\t');
+                    text = allRows.join('\n');
+                } else if(clipboard.type === 'cell') {
+                    text = clipboard.data[0];
                 }
+
+                // Write to clipboard
                 navigator.clipboard.writeText(text).catch(err => {
                     console.error('Clipboard write failed:', err);
                 });
@@ -386,17 +397,28 @@
                         td.textContent = '';
                     });
                 }
-                // Use navigator clipboard API as fallback
+
+                // Format the clipboard data based on selection type
                 let text = '';
-                if(clipboard.type === 'all') {
-                    // Convert 1D array to 2D array based on ROWS and COLS
+                if(clipboard.type === 'row') {
+                    // Join row data with tabs for horizontal paste
+                    text = clipboard.data.join('\t');
+                } else if(clipboard.type === 'col') {
+                    // Join column data with newlines for vertical paste
+                    text = clipboard.data.join('\n');
+                } else if(clipboard.type === 'all') {
+                    // For all selection, format as rows with tabs and newlines
+                    let allRows = [];
                     for(let r=0; r<ROWS; r++) {
                         const rowData = clipboard.data.slice(r*COLS, (r+1)*COLS).join('\t');
-                        text += rowData + '\n';
+                        allRows.push(rowData);
                     }
-                } else {
-                    text = clipboard.data.join('\t');
+                    text = allRows.join('\n');
+                } else if(clipboard.type === 'cell') {
+                    text = clipboard.data[0];
                 }
+
+                // Write to clipboard
                 navigator.clipboard.writeText(text).catch(err => {
                     console.error('Clipboard write failed:', err);
                 });
@@ -405,52 +427,62 @@
             // Paste selection
             function pasteSelection() {
                 navigator.clipboard.readText().then(text => {
-                    const pastedData = text.trim().split('\n').map(line => line.split('\t'));
-                    if(!clipboard.type) return;
+                    if(!selected.type) return;
 
-                    if(clipboard.type === 'cell') {
-                        if(selected.type === 'cell') {
-                            selected.cells[0].textContent = pastedData[0];
-                        }
-                    } else if(clipboard.type === 'row') {
-                        if(selected.type === 'row') {
-                            // Each pasted row should have COLS elements
-                            if(pastedData.length !== 1 || pastedData[0].length !== COLS) {
-                                showError('規格が違います');
-                                return;
-                            }
-                            selected.cells.forEach((cell, index) => {
-                                if(index > 0) cell.textContent = pastedData[0][index-1];
-                            });
+                    let pastedData = [];
+                    let pasteType = null;
+
+                    // Determine paste type based on selected.type and clipboard.type
+                    if(clipboard.type === 'row') {
+                        pasteType = 'row';
+                        pastedData = text.split('\t'); // Horizontal paste
+                        if(pastedData.length !== COLS) {
+                            showError('貼り付けるデータの列数が一致しません');
+                            return;
                         }
                     } else if(clipboard.type === 'col') {
-                        if(selected.type === 'col') {
-                            // Each pasted column should have ROWS elements
-                            if(pastedData.length !== 1 || pastedData[0].length !== ROWS) {
-                                showError('規格が違います');
-                                return;
-                            }
-                            selected.cells.forEach((cell, index) => {
-                                if(index > 0) cell.textContent = pastedData[0][index-1];
-                            });
+                        pasteType = 'col';
+                        pastedData = text.split('\n'); // Vertical paste
+                        if(pastedData.length !== ROWS) {
+                            showError('貼り付けるデータの行数が一致しません');
+                            return;
                         }
                     } else if(clipboard.type === 'all') {
-                        if(selected.type === 'all') {
-                            // Expected number of rows and columns
-                            if(pastedData.length !== ROWS || pastedData.some(row => row.length !== COLS)) {
-                                showError('規格が違います');
-                                return;
-                            }
-                            // Paste data into cells
-                            for(let r=0; r<ROWS; r++) {
-                                for(let c=0; c<COLS; c++) {
-                                    const tr = tbody.querySelectorAll('tr')[r];
-                                    const td = tr.querySelectorAll('td')[c];
-                                    td.textContent = pastedData[r][c];
-                                }
+                        pasteType = 'all';
+                        pastedData = text.split('\n').map(line => line.split('\t'));
+                        if(pastedData.length !== ROWS || pastedData.some(row => row.length !== COLS)) {
+                            showError('貼り付けるデータの行数または列数が一致しません');
+                            return;
+                        }
+                    } else if(clipboard.type === 'cell') {
+                        pasteType = 'cell';
+                        pastedData = [text];
+                    }
+
+                    if(selected.type === 'cell' && pasteType === 'cell') {
+                        selected.cells[0].textContent = pastedData[0];
+                    } else if(selected.type === 'row' && pasteType === 'row') {
+                        selected.cells.forEach((cell, index) => {
+                            if(index > 0) cell.textContent = pastedData[index-1];
+                        });
+                    } else if(selected.type === 'col' && pasteType === 'col') {
+                        selected.cells.forEach((cell, index) => {
+                            if(index > 0) cell.textContent = pastedData[index-1];
+                        });
+                    } else if(selected.type === 'all' && pasteType === 'all') {
+                        // Paste all data
+                        for(let r=0; r<ROWS; r++) {
+                            for(let c=0; c<COLS; c++) {
+                                const tr = tbody.querySelectorAll('tr')[r];
+                                const td = tr.querySelectorAll('td')[c];
+                                td.textContent = pastedData[r][c];
                             }
                         }
+                    } else {
+                        showError('貼り付けるデータの形式が選択内容と一致しません');
+                        return;
                     }
+
                 }).catch(err => {
                     console.error('Clipboard read failed:', err);
                 });
