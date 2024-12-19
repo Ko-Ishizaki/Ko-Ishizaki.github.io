@@ -91,7 +91,7 @@
             for(let r=0; r<ROWS; r++) {
                 const tr = document.createElement('tr');
                 const th = document.createElement('th');
-                th.textContent = '行 ' + (r+1);
+                th.textContent = (r+1); // 「1」「2」などの数字のみ表示
                 th.dataset.row = r;
                 th.classList.add('row-header');
                 tr.appendChild(th);
@@ -142,7 +142,7 @@
                 }, 3000);
             }
 
-            // Event listeners for headers
+            // Event listeners for column headers
             thead.querySelectorAll('th').forEach(th => {
                 if(th.id === 'select-all') return; // Skip top-left cell for now
 
@@ -175,12 +175,13 @@
                 const allThs = thead.querySelectorAll('th');
                 const allRowHeaders = tbody.querySelectorAll('tr th');
                 const allTds = tbody.querySelectorAll('td');
-                selectCells([selectAllTh, ...Array.from(allThs).slice(1), ...Array.from(allRowHeaders), ...Array.from(allTds)], 'all');
+                // Exclude the top-left cell itself from data to avoid duplication
+                selectCells([...Array.from(allThs).slice(1), ...Array.from(allRowHeaders), ...Array.from(allTds)], 'all');
             });
 
             selectAllTh.addEventListener('dblclick', (e) => {
                 // Optional: Implement any specific edit functionality for top-left cell
-                startEdit(selectAllTh, 'header', 'all');
+                // Currently, no editing functionality is implemented for the top-left cell
             });
 
             selectAllTh.addEventListener('mouseover', (e) => {
@@ -200,9 +201,12 @@
                     selectCells([rowHeader, ...Array.from(cells)], 'row');
                 });
 
-                rowHeader.addEventListener('dblclick', (e) => {
-                    startEdit(rowHeader, 'header', 'row');
-                });
+                // 行ヘッダーのダブルクリックイベントリスナーを削除
+                // 行ヘッダーは編集不可
+                // これにより、ダブルクリックしても編集モードに入らない
+                // rowHeader.addEventListener('dblclick', (e) => {
+                //     startEdit(rowHeader, 'header', 'row');
+                // });
 
                 rowHeader.addEventListener('mouseover', (e) => {
                     rowHeader.classList.add('hovered');
@@ -321,27 +325,27 @@
                     clipboard.data = [selected.cells[0].textContent];
                 } else if(selected.type === 'row') {
                     clipboard.type = 'row';
+                    // Exclude the row header from data
                     clipboard.data = Array.from(selected.cells).slice(1).map(td => td.textContent);
                 } else if(selected.type === 'col') {
                     clipboard.type = 'col';
+                    // Exclude the column header from data
                     clipboard.data = Array.from(selected.cells).slice(1).map(td => td.textContent);
                 } else if(selected.type === 'all') {
                     clipboard.type = 'all';
-                    // Gather all data including headers
-                    const headers = thead.querySelectorAll('th');
-                    const allHeaders = Array.from(headers).map(th => th.textContent.trim());
-                    const allRows = Array.from(tbody.querySelectorAll('tr')).map(tr => {
-                        const cells = tr.querySelectorAll('th, td');
-                        return Array.from(cells).map(cell => cell.textContent.trim());
-                    });
-                    clipboard.data = [allHeaders, ...allRows];
+                    // Gather all cell data excluding top-left cell and headers
+                    const allTds = tbody.querySelectorAll('td');
+                    const allData = Array.from(allTds).map(td => td.textContent.trim());
+                    clipboard.data = allData;
                 }
                 // Use navigator clipboard API as fallback
                 let text = '';
                 if(clipboard.type === 'all') {
-                    clipboard.data.forEach(row => {
-                        text += row.join('\t') + '\n';
-                    });
+                    // Convert 1D array to 2D array based on ROWS and COLS
+                    for(let r=0; r<ROWS; r++) {
+                        const rowData = clipboard.data.slice(r*COLS, (r+1)*COLS).join('\t');
+                        text += rowData + '\n';
+                    }
                 } else {
                     text = clipboard.data.join('\t');
                 }
@@ -359,42 +363,37 @@
                     selected.cells[0].textContent = '';
                 } else if(selected.type === 'row') {
                     clipboard.type = 'row';
+                    // Exclude the row header from data
                     clipboard.data = Array.from(selected.cells).slice(1).map(td => td.textContent);
                     selected.cells.forEach((cell, index) => {
                         if(index > 0) cell.textContent = '';
                     });
                 } else if(selected.type === 'col') {
                     clipboard.type = 'col';
+                    // Exclude the column header from data
                     clipboard.data = Array.from(selected.cells).slice(1).map(td => td.textContent);
                     selected.cells.forEach((cell, index) => {
                         if(index > 0) cell.textContent = '';
                     });
                 } else if(selected.type === 'all') {
                     clipboard.type = 'all';
-                    // Gather all data including headers
-                    const headers = thead.querySelectorAll('th');
-                    const allHeaders = Array.from(headers).map(th => th.textContent.trim());
-                    const allRows = Array.from(tbody.querySelectorAll('tr')).map(tr => {
-                        const cells = tr.querySelectorAll('th, td');
-                        return Array.from(cells).map(cell => cell.textContent.trim());
-                    });
-                    clipboard.data = [allHeaders, ...allRows];
+                    // Gather all cell data excluding top-left cell and headers
+                    const allTds = tbody.querySelectorAll('td');
+                    const allData = Array.from(allTds).map(td => td.textContent.trim());
+                    clipboard.data = allData;
                     // Clear all cells
-                    thead.querySelectorAll('th').forEach(th => {
-                        th.textContent = '';
-                    });
-                    tbody.querySelectorAll('tr').forEach(tr => {
-                        tr.querySelectorAll('th, td').forEach(cell => {
-                            cell.textContent = '';
-                        });
+                    tbody.querySelectorAll('td').forEach(td => {
+                        td.textContent = '';
                     });
                 }
                 // Use navigator clipboard API as fallback
                 let text = '';
                 if(clipboard.type === 'all') {
-                    clipboard.data.forEach(row => {
-                        text += row.join('\t') + '\n';
-                    });
+                    // Convert 1D array to 2D array based on ROWS and COLS
+                    for(let r=0; r<ROWS; r++) {
+                        const rowData = clipboard.data.slice(r*COLS, (r+1)*COLS).join('\t');
+                        text += rowData + '\n';
+                    }
                 } else {
                     text = clipboard.data.join('\t');
                 }
@@ -408,49 +407,46 @@
                 navigator.clipboard.readText().then(text => {
                     const pastedData = text.trim().split('\n').map(line => line.split('\t'));
                     if(!clipboard.type) return;
+
                     if(clipboard.type === 'cell') {
                         if(selected.type === 'cell') {
                             selected.cells[0].textContent = pastedData[0];
                         }
                     } else if(clipboard.type === 'row') {
                         if(selected.type === 'row') {
-                            if(pastedData.length !== COLS) {
+                            // Each pasted row should have COLS elements
+                            if(pastedData.length !== 1 || pastedData[0].length !== COLS) {
                                 showError('規格が違います');
                                 return;
                             }
                             selected.cells.forEach((cell, index) => {
-                                if(index > 0) cell.textContent = pastedData[index-1];
+                                if(index > 0) cell.textContent = pastedData[0][index-1];
                             });
                         }
                     } else if(clipboard.type === 'col') {
                         if(selected.type === 'col') {
-                            if(pastedData.length !== ROWS) {
+                            // Each pasted column should have ROWS elements
+                            if(pastedData.length !== 1 || pastedData[0].length !== ROWS) {
                                 showError('規格が違います');
                                 return;
                             }
                             selected.cells.forEach((cell, index) => {
-                                if(index > 0) cell.textContent = pastedData[index-1];
+                                if(index > 0) cell.textContent = pastedData[0][index-1];
                             });
                         }
                     } else if(clipboard.type === 'all') {
                         if(selected.type === 'all') {
-                            // Number of rows should match
-                            if(pastedData.length < 1 || pastedData.length - 1 !== ROWS || pastedData[0].length -1 !== COLS) {
+                            // Expected number of rows and columns
+                            if(pastedData.length !== ROWS || pastedData.some(row => row.length !== COLS)) {
                                 showError('規格が違います');
                                 return;
                             }
-                            // Paste headers
-                            const headers = pastedData[0];
-                            const ths = thead.querySelectorAll('th');
-                            headers.forEach((header, index) => {
-                                ths[index].textContent = header;
-                            });
-                            // Paste rows
+                            // Paste data into cells
                             for(let r=0; r<ROWS; r++) {
-                                const tr = tbody.querySelectorAll('tr')[r];
-                                const cells = tr.querySelectorAll('th, td');
-                                for(let c=0; c<=COLS; c++) { // c=0 is row header
-                                    cells[c].textContent = pastedData[r+1][c];
+                                for(let c=0; c<COLS; c++) {
+                                    const tr = tbody.querySelectorAll('tr')[r];
+                                    const td = tr.querySelectorAll('td')[c];
+                                    td.textContent = pastedData[r][c];
                                 }
                             }
                         }
