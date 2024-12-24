@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF結合ツール</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #file-input {
+      margin: 20px 0;
+    }
+    #merge-button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>PDF結合ツール</h1>
+  <p>PDFファイルを選択して結合できます。</p>
+
+  <!-- ファイル選択 -->
+  <input type="file" id="file-input" multiple accept="application/pdf">
+  <br>
+
+  <!-- 結合ボタン -->
+  <button id="merge-button">結合してダウンロード</button>
+
+  <script>
+    const fileInput = document.getElementById('file-input');
+    const mergeButton = document.getElementById('merge-button');
+
+    // PDF結合処理
+    mergeButton.addEventListener('click', async () => {
+      const files = fileInput.files;
+
+      if (files.length < 2) {
+        alert('少なくとも2つのPDFファイルを選択してください。');
+        return;
+      }
+
+      const mergedPdf = await PDFLib.PDFDocument.create();
+
+      for (const file of files) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
+
+        const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+        copiedPages.forEach(page => mergedPdf.addPage(page));
+      }
+
+      const mergedPdfBytes = await mergedPdf.save();
+
+      // ダウンロードリンクを生成
+      const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'merged.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
