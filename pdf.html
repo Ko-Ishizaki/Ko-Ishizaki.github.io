@@ -2,70 +2,236 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDF結合ツール</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PDF_Editor</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" integrity="sha512-+xi8sODykvzixT0mjaPXMEhPMVwkDmzVqVc6UBJUVcLcKZXNxJZkDvPg2BYtm0JKDkEufVOtvV+V6UIn2wpgfA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
+      background-color: #f7f9fc;
+      margin: 0;
       padding: 20px;
+      display: flex;
+      justify-content: center;
     }
-    #file-input {
-      margin: 20px 0;
+    .container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    #merge-button {
-      padding: 10px 20px;
-      font-size: 16px;
+    h1 {
+      text-align: center;
+      color: #333333;
+    }
+    .section {
+      margin-top: 30px;
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background-color: #fafafa;
+    }
+    .section h2 {
+      margin-top: 0;
+      color: #555555;
+    }
+    input[type="file"], input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0 20px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
       cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .error {
+      color: red;
+      margin-top: -15px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    .download-link {
+      display: none;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .download-link a {
+      background-color: #008CBA;
+      color: white;
+      padding: 12px 20px;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    .download-link a:hover {
+      background-color: #007bb5;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+      button {
+        font-size: 14px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>PDF結合ツール</h1>
-  <p>PDFファイルを選択して結合できます。</p>
 
-  <!-- ファイル選択 -->
-  <input type="file" id="file-input" multiple accept="application/pdf">
-  <br>
+<div class="container">
 
-  <!-- 結合ボタン -->
-  <button id="merge-button">結合してダウンロード</button>
+  <!-- PDFページ抽出セクション -->
+  <div class="section" id="extract-section">
+    <h2>PDFページ抽出</h2>
+    <input type="file" id="extract-pdf-input" accept="application/pdf">
+    <input type="text" id="page-numbers" placeholder="抽出ページを入力 (例: 1,2,4-7 または 1,4,2,6)">
+    <button id="extract-button">ページを抽出して保存</button>
+    <div class="error" id="extract-error"></div>
+    <div class="download-link" id="extract-download">
+      <a href="#" id="download-extracted-pdf" download="extracted_pages.pdf">抽出したPDFをダウンロード</a>
+    </div>
+  </div>
 
-  <script>
-    const fileInput = document.getElementById('file-input');
-    const mergeButton = document.getElementById('merge-button');
+  <!-- PDF結合セクション -->
+  <div class="section" id="merge-section">
+    <h2>PDF結合</h2>
+    <input type="file" id="merge-file-input" multiple accept="application/pdf">
+    <button id="merge-button">結合してダウンロード</button>
+    <div class="error" id="merge-error"></div>
+    <div class="download-link" id="merge-download">
+      <a href="#" id="download-merged-pdf" download="merged.pdf">結合したPDFをダウンロード</a>
+    </div>
+  </div>
+</div>
 
-    // PDF結合処理
-    mergeButton.addEventListener('click', async () => {
-      const files = fileInput.files;
+<script>
+  // PDFページ抽出機能
+  document.getElementById('extract-button').addEventListener('click', async () => {
+    const pdfInput = document.getElementById('extract-pdf-input').files[0];
+    const pageNumbersInput = document.getElementById('page-numbers').value;
+    const errorMessage = document.getElementById('extract-error');
+    const downloadLink = document.getElementById('extract-download');
+    const downloadPDF = document.getElementById('download-extracted-pdf');
 
-      if (files.length < 2) {
-        alert('少なくとも2つのPDFファイルを選択してください。');
-        return;
+    // リセット
+    errorMessage.textContent = '';
+    downloadLink.style.display = 'none';
+
+    if (!pdfInput) {
+      errorMessage.textContent = 'PDFファイルを選択してください。';
+      return;
+    }
+
+    if (!pageNumbersInput.trim()) {
+      errorMessage.textContent = '抽出するページ番号を入力してください。';
+      return;
+    }
+
+    // ページ番号のパース
+    let pageIndices = [];
+    try {
+      const tokens = pageNumbersInput.split(',').map(token => token.trim());
+      tokens.forEach(token => {
+        if (token.includes('-')) {
+          const [start, end] = token.split('-').map(Number);
+          if (isNaN(start) || isNaN(end) || start < 1 || end < start) {
+            throw new Error(`無効な範囲: "${token}"`);
+          }
+          for (let i = start; i <= end; i++) {
+            pageIndices.push(i - 1); // PDF-libは0ベース
+          }
+        } else {
+          const page = Number(token);
+          if (isNaN(page) || page < 1) {
+            throw new Error(`無効なページ番号: "${token}"`);
+          }
+          pageIndices.push(page - 1);
+        }
+      });
+    } catch (e) {
+      errorMessage.textContent = e.message;
+      return;
+    }
+
+    try {
+      const arrayBuffer = await pdfInput.arrayBuffer();
+      const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+      const totalPages = pdfDoc.getPageCount();
+
+      // ページ番号が範囲内か確認
+      for (let index of pageIndices) {
+        if (index < 0 || index >= totalPages) {
+          throw new Error(`ページ番号 ${index + 1} はPDFのページ数 (${totalPages}) を超えています。`);
+        }
       }
 
+      const newPdf = await PDFLib.PDFDocument.create();
+      const copiedPages = await newPdf.copyPages(pdfDoc, pageIndices);
+      copiedPages.forEach(page => newPdf.addPage(page));
+
+      const newPdfBytes = await newPdf.save();
+      const blob = new Blob([newPdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      downloadPDF.href = url;
+      downloadLink.style.display = 'block';
+    } catch (e) {
+      console.error(e);
+      errorMessage.textContent = 'PDFの処理中にエラーが発生しました。';
+    }
+  });
+
+  // PDF結合機能
+  document.getElementById('merge-button').addEventListener('click', async () => {
+    const files = document.getElementById('merge-file-input').files;
+    const errorMessage = document.getElementById('merge-error');
+    const downloadLink = document.getElementById('merge-download');
+    const downloadPDF = document.getElementById('download-merged-pdf');
+
+    // リセット
+    errorMessage.textContent = '';
+    downloadLink.style.display = 'none';
+
+    if (files.length < 2) {
+      errorMessage.textContent = '少なくとも2つのPDFファイルを選択してください。';
+      return;
+    }
+
+    try {
       const mergedPdf = await PDFLib.PDFDocument.create();
 
       for (const file of files) {
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
-
         const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
         copiedPages.forEach(page => mergedPdf.addPage(page));
       }
 
       const mergedPdfBytes = await mergedPdf.save();
-
-      // ダウンロードリンクを生成
       const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'merged.pdf';
-      a.click();
-      URL.revokeObjectURL(url);
-    });
-  </script>
+      downloadPDF.href = url;
+      downloadLink.style.display = 'block';
+    } catch (e) {
+      console.error(e);
+      errorMessage.textContent = 'PDFの結合中にエラーが発生しました。';
+    }
+  });
+</script>
+
 </body>
 </html>
