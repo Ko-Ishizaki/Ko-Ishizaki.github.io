@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>HTMLFilSorter ライブラリ サンプル</title>
+  <style>
+    /* 共通スタイル */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f7f7f7;
+    }
+    table {
+      border-collapse: collapse;
+      width: 80%;
+      margin: 20px auto;
+      background: #fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #eee;
+      position: relative;
+    }
+    /* フィルターアイコン */
+    .hfs-filter-icon {
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 5px;
+      color: #007BFF;
+    }
+    /* ドロップダウン */
+    .hfs-dropdown {
+      background: #fff;
+      border: 1px solid #ccc;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+      padding: 8px;
+      z-index: 1000;
+      width: 220px;
+    }
+    .hfs-dropdown hr {
+      margin: 8px 0;
+      border: none;
+      border-top: 1px solid #ccc;
+    }
+    .hfs-dropdown input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+      padding: 4px;
+    }
+    .hfs-filter-item {
+      margin-bottom: 4px;
+    }
+    .hfs-filter-item label {
+      margin-left: 4px;
+      font-size: 14px;
+    }
+    .hfs-dropdown button {
+      font-size: 12px;
+      padding: 4px 6px;
+      margin: 2px;
+      cursor: pointer;
+    }
+    .hfs-sort-options {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .hfs-sort-button {
+      background: #e6e6e6;
+      border: 1px solid #ccc;
+      padding: 4px 6px;
+      margin: 0 2px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .hfs-sort-button.active {
+      font-weight: bold;
+      text-decoration: underline;
+      background: #d0e9c6;
+    }
+    /* スクロール領域 */
+    .hfs-checkbox-container {
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>HTMLFilSorter ライブラリ サンプル</h1>
+  <table id="sampleTable">
+    <thead>
+      <tr>
+        <th>商品名</th>
+        <th>価格</th>
+        <th>在庫数</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>リンゴ</td><td>100円</td><td>50</td></tr>
+      <tr><td>バナナ</td><td>80円</td><td>30</td></tr>
+      <tr><td>リンゴ</td><td>120円</td><td>20</td></tr>
+      <tr><td>オレンジ</td><td>150円</td><td>10</td></tr>
+      <tr><td>バナナ</td><td>80円</td><td>40</td></tr>
+      <tr><td>キウイ</td><td>200円</td><td>25</td></tr>
+      <tr><td>オレンジ</td><td>150円</td><td>15</td></tr>
+      <tr><td>パイナップル</td><td>300円</td><td>8</td></tr>
+      <tr><td>リンゴ</td><td>100円</td><td>60</td></tr>
+      <tr><td>キウイ</td><td>200円</td><td>35</td></tr>
+    </tbody>
+  </table>
+
+  <!-- HTMLFilSorter.js の読み込み -->
+  <script src="HTMLFilSorter.js"></script>
+  <script>
+    // #sampleTable の 0 列目（商品名）にフィルター／ソート機能を適用
+    new HTMLFilSorter({
+      table: '#sampleTable',
+      filterColumn: 0
+    });
+  </script>
+</body>
+</html>
