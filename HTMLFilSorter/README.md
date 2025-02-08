@@ -25,6 +25,7 @@
 
 ```html
 <script src="path/to/HTMLFilSorter.js"></script>
+```
 
 # 使い方
 
