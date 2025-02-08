@@ -25,3 +25,15 @@
 
 ```html
 <script src="path/to/HTMLFilSorter.js"></script>
+
+# 使い方
+
+## 基本的な使い方
+
+対象テーブルの特定の列にフィルター／ソート機能を付与するには、次のように新しいインスタンスを生成します。
+
+```js
+new HTMLFilSorter({
+  table: '#sampleTable',    // 対象のテーブル（セレクタまたは DOM 要素）
+  filterColumn: 0           // 対象の列番号（0 から始まるインデックス、デフォルトは 0）
+});
