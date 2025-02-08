@@ -38,3 +38,29 @@ new HTMLFilSorter({
   table: '#sampleTable',    // 対象のテーブル（セレクタまたは DOM 要素）
   filterColumn: 0           // 対象の列番号（0 から始まるインデックス、デフォルトは 0）
 });
+```
+
+## 複数の列に適用する場合
+
+同一テーブル内の他の列や、別のテーブルに対しても個別にインスタンスを生成できます。  
+例えば、同じテーブル内の 0 列目、1 列目、2 列目に対して別々の機能を適用する場合は、以下のように記述します。
+
+```js
+// 0 列目（例: 商品名）
+new HTMLFilSorter({
+  table: '#sampleTable',
+  filterColumn: 0
+});
+
+// 1 列目（例: 価格）
+new HTMLFilSorter({
+  table: '#sampleTable',
+  filterColumn: 1
+});
+
+// 2 列目（例: 在庫数）
+new HTMLFilSorter({
+  table: '#sampleTable',
+  filterColumn: 2
+});
+```
