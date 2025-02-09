@@ -3,7 +3,7 @@
 **HTMLFilSorter.js** は、指定したテーブルの特定列に対してフィルター／ソート機能を付与する軽量 JavaScript ライブラリです。  
 内部で使用するプロパティや関数には接頭辞 `hfs_` を付与しており、他のライブラリとの干渉を最小限に抑えています。
 
-<a href="https://ko-ishizaki.github.io/HTMLFilSorter/" onclick="window.open(this.href); return false;">サンプルはこちら</a>
+[サンプルはこちら](https://ko-ishizaki.github.io/HTMLFilSorter/)
 
 ## 特徴
 
