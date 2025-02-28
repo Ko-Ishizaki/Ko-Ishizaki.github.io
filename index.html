@@ -502,7 +502,7 @@
     const pages = {
       home: `<h1>Home</h1>
              <p>Ko-Ishizakiのポートフォリオをご覧の方は上記メニューよりお選びください。<br><br><br><br><br><br><br><br><br><br><br><br></p>
-             <p>提供されたツールを利用の方は下記ツールリスト内からお選びください。<br><br><br><br><br><br></p>
+             <p>提供されたツールを利用の方は下記ツールリスト内からお選びください。<br><br><br><br></p>
              <h2>ツールリスト<br><br></h2>
 
              <a href="/rng.html" title="乱数生成器">乱数生成器 Ver1.12</a>
@@ -543,7 +543,7 @@
       let hash = location.hash;
       if (!hash) { hash = "#home"; }
       const key = hash.substring(1);
-      content.innerHTML = pages[key] || pages['about'];
+      content.innerHTML = pages[key] || pages['home'];
 
       // Workページの場合、RNGモーダルを開くボタンのイベント設定
       if (key === "work") {
