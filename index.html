@@ -353,6 +353,7 @@
     <nav class="nav" id="nav">
       <ul>
         <li><a href="#home" onclick="updateContent()">Home</a></li>
+        <li><a href="#about" onclick="updateContent()">About</a></li>
         <li><a href="#article" onclick="updateContent()">Article</a></li>
         <li><a href="#work" onclick="updateContent()">Work</a></li>
         <li><a href="#faq" onclick="updateContent()">FAQ</a></li>
@@ -499,7 +500,9 @@
 
     // ページ内容を切り替えるためのオブジェクト
     const pages = {
-      home: `<h1>Profile</h1>
+      home: `<h1>ToolList</h1>
+            `,
+      about:`<h1>Profile</h1>
              <li>Ko-Ishizaki</li>
              <li>2003年生まれ <span id="age"></span>歳</li>
              <li>InHouse Web System Engineer</li>
