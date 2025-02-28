@@ -1,8 +1,8 @@
-# Ishizaki Kou's Portfolio
+# Ishizaki Ko's Portfolio
 
-[ko-ishizaki.github.io](https://ko-ishizaki.github.io) is the portfolio site of **Ishizaki Kou**.
+[ko-ishizaki.github.io](https://ko-ishizaki.github.io) is the portfolio site of **Ishizaki Ko**.
 
-Ishizaki Kou works as a **Web Engineer** and has experience in the following programming languages and technologies:
+Ishizaki Ko works as a **Web Engineer** and has experience in the following programming languages and technologies:
 
 - **ASP.NET**, **C#**, **.NET**, **Visual Basic**
 - **HTML**, **CSS**, **Vanilla JavaScript**
