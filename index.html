@@ -353,7 +353,7 @@
     <nav class="nav" id="nav">
       <ul>
         <li><a href="#home" onclick="updateContent()">Home</a></li>
-        <li><a href="#about" onclick="updateContent()">About</a></li>
+        <li><a href="#article" onclick="updateContent()">Article</a></li>
         <li><a href="#work" onclick="updateContent()">Work</a></li>
         <li><a href="#faq" onclick="updateContent()">FAQ</a></li>
         <li><a href="#contactme" onclick="updateContent()">Contact Me</a></li>
@@ -502,8 +502,9 @@
       home: `<h1>Profile</h1>
              <li>Ko-Ishizaki</li>
              <li>2003年生まれ <span id="age"></span>歳</li>
-             <li>InHouse Web System Engineer</li>`,
-      about: `<h1>About</h1>
+             <li>InHouse Web System Engineer</li>
+             <p><br><br><br></p>
+             <h1>About</h1>
               <p>ko-ishizak.github.ioはKo ISHIZAKIのポートフォリオです。</p>
               <p>↓今まで利用した言語一覧</p>
               <ul>
@@ -515,6 +516,7 @@
               </ul>
               <p><br></p>
               <p>Windowsアプリの開発(業務ツール)、保守。</p>`,
+      article: ``,
       work: `<h1>Work</h1>
              <div class="projects">
                <div class="project">
@@ -547,7 +549,7 @@
 
       // Homeページが表示されたら年齢を表示
       if (key === "home") {
-        displayAge(); // ← ここで呼び出しても既に定義されているのでOK
+        displayAge(); 
       }
     }
 
