@@ -536,9 +536,9 @@
 
     function updateContent() {
       let hash = location.hash;
-      if (!hash) { hash = "#home"; }
+      if (!hash) { hash = "#about"; }
       const key = hash.substring(1);
-      content.innerHTML = pages[key] || pages['home'];
+      content.innerHTML = pages[key] || pages['about'];
 
       // Workページの場合、RNGモーダルを開くボタンのイベント設定
       if (key === "work") {
@@ -550,8 +550,8 @@
         }
       }
 
-      // Homeページが表示されたら年齢を表示
-      if (key === "home") {
+      // Aboutページが表示されたら年齢を表示
+      if (key === "about") {
         displayAge(); 
       }
     }
