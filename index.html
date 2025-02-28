@@ -539,7 +539,7 @@
 
     function updateContent() {
       let hash = location.hash;
-      if (!hash) { hash = "#about"; }
+      if (!hash) { hash = "#home"; }
       const key = hash.substring(1);
       content.innerHTML = pages[key] || pages['about'];
 
