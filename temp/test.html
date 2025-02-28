@@ -209,6 +209,9 @@
       height: 100%;
       overflow-y: auto;
       background: rgba(0, 0, 0, 0.7);
+
+      /* ▼▼▼ いい感じの修正: クリックを拾いやすくする ▼▼▼ */
+      pointer-events: auto;
     }
     .modal-content {
       background: #fff;
@@ -218,6 +221,9 @@
       width: 90%;
       max-width: 800px;
       position: relative;
+
+      /* ▼▼▼ いい感じの修正: 中身のクリックを有効にする ▼▼▼ */
+      pointer-events: auto;
     }
     .modal .close {
       position: absolute;
@@ -690,14 +696,18 @@
       document.getElementById('versionModalRNG').style.display = 'none';
     }
 
+    // ▼▼▼ いい感じの修正: RNGモーダルの閉じるイベントにログを入れて動作確認 ▼▼▼
     document.getElementById('rngModalClose').addEventListener('click', function() {
+      console.log("×ボタンがクリックされました - RNGモーダルを閉じます");
       document.getElementById('rngModal').style.display = 'none';
     });
 
+    // 背景クリックで RNGモーダルを閉じるための仕組み
     window.addEventListener('click', function(event) {
       const rngModal = document.getElementById('rngModal');
       if (event.target === rngModal) {
-          rngModal.style.display = 'none';
+        console.log("背景がクリックされました - RNGモーダルを閉じます");
+        rngModal.style.display = 'none';
       }
     });
   </script>
