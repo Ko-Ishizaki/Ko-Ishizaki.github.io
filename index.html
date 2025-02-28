@@ -1,1 +1,356 @@
-メンテナンス中...
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ko-ishizaki.github.io</title>
+  <style>
+    /* リセット */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      overflow: hidden; /* ローディング中はスクロール禁止 */
+      transition: margin-top 0.3s ease-in-out;
+    }
+    /* ローディング画面 */
+    .loading-screen {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 24px;
+      z-index: 9999;
+      transition: opacity 0.5s, visibility 0.5s;
+    }
+    .loading-screen.fade-out {
+      opacity: 0;
+      visibility: hidden;
+    }
+    /* ローディングアニメーション */
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-top: 5px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    /* ヘッダー */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #333;
+      color: #fff;
+      position: relative;
+      z-index: 1000;
+    }
+    /* ヘッダー内のロゴ */
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 1.5px;
+      text-overflow: ellipsis;
+    }
+    /* ハンバーガーメニューアイコン */
+    .menu-icon {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      position: relative;
+    }
+    .menu-icon span {
+      display: block;
+      width: 100%;
+      height: 4px;
+      background: #fff;
+      border-radius: 2px;
+      transition: transform 0.4s, opacity 0.3s, top 0.3s;
+      position: absolute;
+      left: 0;
+    }
+    .menu-icon span:nth-child(1) { top: 4px; }
+    .menu-icon span:nth-child(2) { top: 14px; }
+    .menu-icon span:nth-child(3) { top: 24px; }
+    /* メニューアイコンがアクティブ（×状態）のとき */
+    .menu-icon.active span:nth-child(1) {
+      transform: rotate(45deg);
+      top: 14px;
+    }
+    .menu-icon.active span:nth-child(2) {
+      opacity: 0;
+    }
+    .menu-icon.active span:nth-child(3) {
+      transform: rotate(-45deg);
+      top: 14px;
+    }
+    /* ナビゲーションメニュー */
+    .nav {
+      display: none;
+    }
+    .nav ul {
+      list-style: none;
+      text-align: center;
+    }
+    .nav ul li {
+      padding: 12px 0;
+    }
+    .nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 8px 15px;
+      transition: color 0.3s;
+    }
+    .nav ul li a:hover {
+      color: #f4d03f; /* ホバー時の色変更 */
+    }
+    /* メディアクエリ（PC用表示を740px以上に変更） */
+    @media (min-width: 740px) {
+      .menu-icon {
+        display: none;
+      }
+      .nav {
+        display: block !important;
+      }
+      .nav ul {
+        display: flex;
+        gap: 25px;
+        border-top: 2px solid #555;
+        padding-top: 10px;
+      }
+      .nav ul li {
+        padding: 0;
+      }
+    }
+    /* モバイル用メニュー表示（740px未満） */
+    .nav.active {
+      display: block;
+      position: absolute;
+      top: 60px;
+      left: 0;
+      width: 100%;
+      background: #444;
+      padding: 15px 0;
+      text-align: center;
+    }
+    /* 本文 */
+    .content {
+      padding: 20px;
+      transition: margin-top 0.3s ease-in-out;
+    }
+    /* Modal スタイル */
+    .modal {
+      display: none; /* 非表示 */
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background: rgba(0, 0, 0, 0.7);
+    }
+    .modal-content {
+      background: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      border-radius: 5px;
+      width: 90%;
+      max-width: 800px;
+      position: relative;
+    }
+    .modal-content iframe {
+      width: 100%;
+      height: 500px;
+      border: none;
+    }
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    /* Workページのボタン */
+    #openModal {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #openModal:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ローディング画面 -->
+  <div class="loading-screen" id="loading-screen">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- ヘッダー -->
+  <header class="header">
+    <div class="logo">Ko-Ishizaki</div>
+    <div class="menu-icon" id="menu-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <nav class="nav" id="nav">
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#work">Work</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#contactme">Contact Me</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- 本文 -->
+  <div class="content" id="content">
+    <h1>Welcome to My Portfolio</h1>
+    <p>This is the home page content.</p>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="modalClose">&times;</span>
+      <iframe src="https://ko-ishizaki.github.io/rng"></iframe>
+    </div>
+  </div>
+
+  <script>
+    const menuIcon = document.getElementById('menu-icon');
+    const nav = document.getElementById('nav');
+    const content = document.getElementById('content');
+    const loadingScreen = document.getElementById('loading-screen');
+
+    // ページが完全に読み込まれたらローディング画面をフェードアウト
+    window.addEventListener('load', function () {
+      setTimeout(() => {
+        loadingScreen.classList.add('fade-out');
+        document.body.style.overflow = "auto"; // スクロールを有効化
+        updateContent(); // URLのハッシュに合わせた表示
+      }, 1000);
+    });
+
+    // ハンバーガーメニューの開閉
+    menuIcon.addEventListener('click', function () {
+      nav.classList.toggle('active');
+      menuIcon.classList.toggle('active');
+      if (nav.classList.contains('active')) {
+        content.style.marginTop = nav.offsetHeight + 'px';
+      } else {
+        content.style.marginTop = '0px';
+      }
+    });
+
+    // 画面幅変更時にメニューをリセット（740px以上でリセット）
+    window.addEventListener('resize', function () {
+      if (window.innerWidth >= 740) {
+        nav.classList.remove('active');
+        menuIcon.classList.remove('active');
+        content.style.marginTop = '0px';
+      }
+    });
+
+    // ナビゲーションリンククリック時（モバイル時はメニューを閉じる）
+    document.querySelectorAll('.nav a').forEach(link => {
+      link.addEventListener('click', function() {
+        if (window.innerWidth < 740) {
+          nav.classList.remove('active');
+          menuIcon.classList.remove('active');
+          content.style.marginTop = '0px';
+        }
+      });
+    });
+
+    // 各ページのコンテンツ（Workページはモーダル起動用ボタンを含む）
+    const pages = {
+      home: `<h1>Welcome to My Portfolio</h1>
+             <p>This is the home page content.</p>`,
+      about: `<h1>About</h1>
+              <p>ko-ishizak.github.io is the portfolio site of Ko ISHIZAKI.</p>
+              <p>Ko ISHIZAKI works as a Web Engineer and has experience in the following programming languages and technologies:</p>
+              <ul>
+                <li>ASP.NET, C#, .NET, Visual Basic</li>
+                <li>HTML, CSS, Vanilla JavaScript</li>
+                <li>PHP (Laravel)</li>
+                <li>Python (including Flask)</li>
+              </ul>
+              <p>Feel free to explore the portfolio to learn more about their work and projects.</p>`,
+      work: `<h1>Work</h1>
+             <p>Check out my Random Number Generator Tool:</p>
+             <button id="openModal">View Tool in Modal</button>`,
+      faq: `<h1>FAQ</h1>
+            <p>This is the FAQ page content.</p>`,
+      contactme: `<h1>Contact Me</h1>
+                  <p>Please email me at <a href="mailto:koishizakigithubio@gmail.com">koishizakigithubio@gmail.com</a>.</p>`
+    };
+
+    // コンテンツ更新用関数
+    function updateContent() {
+      let hash = location.hash;
+      if (!hash) { hash = "#home"; }
+      const key = hash.substring(1);
+      content.innerHTML = pages[key] || pages['home'];
+      attachModalEvents(); // Workページにボタンがあればイベントを付与
+    }
+
+    // モーダル関連のイベントを付与
+    function attachModalEvents() {
+      const openModalBtn = document.getElementById('openModal');
+      if (openModalBtn) {
+        openModalBtn.addEventListener('click', function(){
+          document.getElementById('modal').style.display = 'block';
+        });
+      }
+    }
+
+    // モーダルの閉じるボタン
+    document.getElementById('modalClose').addEventListener('click', function(){
+      document.getElementById('modal').style.display = 'none';
+    });
+
+    // モーダル外クリックで閉じる
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById('modal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+
+    // ハッシュ変更時にコンテンツ更新
+    window.addEventListener('hashchange', updateContent);
+  </script>
+
+</body>
+</html>
