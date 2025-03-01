@@ -323,7 +323,7 @@
     .rng-modal .close:hover {
       color: black;
     }
-    /* 固定フッター */
+    /* 固定フッター（中央寄せ、1行表示） */
     footer.fixed-footer {
       position: fixed;
       bottom: 0;
@@ -331,9 +331,58 @@
       width: 100%;
       background: #333;
       color: #fff;
+      padding: 10px 20px;
       text-align: center;
-      padding: 10px;
-      z-index: 1000;
+    }
+    /* フッター内のテキストとボタンを横並びにする */
+    .footer-text {
+      font-size: 14px;
+      display: inline;
+    }
+    .triangle-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline;
+      padding: 0;
+      margin-left: 4px;
+    }
+    /* 隠しメニュー（初期状態は非表示、下からスライドして出現） */
+    .hidden-menu {
+      position: fixed;
+      bottom: 60px; /* フッターの上部（フッターの高さに合わせる） */
+      left: 0;
+      width: 100%;
+      background: #444;
+      color: #fff;
+      text-align: center;
+      padding: 10px 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+    }
+    .hidden-menu.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .hidden-menu ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .hidden-menu ul li {
+      margin: 5px 0;
+    }
+    .hidden-menu ul li a {
+      color: #fff;
+      text-decoration: none;
+    }
+    .hidden-menu ul li a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -469,9 +518,22 @@
     </div>
   </div>
 
+  <!-- 隠しメニュー（初期状態は非表示） -->
+  <div id="hiddenMenu" class="hidden-menu">
+    <ul>
+      <li><a href="#secret1">ドット絵作成・変換(準備中)</a></li>
+      <li><a href="#secret2">エンコーダー・デコーダー(準備中)</a></li>
+      <li><a href="#secret3">改行変換・テキスト成形(準備中)</a></li>
+      <li><a href="#secret4">行数分割・その他変形(準備中)</a></li>
+      <li><a href="#secret5">リッチテキストエディター(準備中)</a></li>
+	  <li><a href="#secret6">便利ツール集(準備中)</a></li>
+    </ul>
+  </div>
+
   <!-- 固定フッター -->
   <footer class="fixed-footer">
-    <p>© 2024 - 2025 Ko ISHIZAKI</p>
+    <span class="footer-text">© 2024 - 2025 Ko ISHIZAKI</span>
+    <button id="toggleMenuBtn" class="triangle-btn">△</button>
   </footer>
 
   <script>
@@ -501,7 +563,11 @@
 
     // ページ内容を切り替えるためのオブジェクト
     const pages = {
-      home: `<h1>Home</h1>
+      home: `<h1>Ko-Ishizaki's Portfolio</h1>
+      		 <p><br><br><br><br><br></p>
+             <h2>Product</h2>
+             <p><br></p>
+             <p>〜Ｃｏｍｉｎｇ　Ｓｏｏｎ〜</p>
             `,
       about:`<h1>Profile</h1>
              <li>Ko-Ishizaki</li>
@@ -739,6 +805,22 @@
     // 初期表示
     updateContent();
 
+    // △ボタン押下で秘密のメニューを表示／非表示に切替
+    document.getElementById('toggleMenuBtn').addEventListener('click', function(e) {
+      e.stopPropagation();
+      var hiddenMenu = document.getElementById('hiddenMenu');
+      hiddenMenu.classList.toggle('active');
+      // 表示状態に合わせてボタンの記号を切り替え
+      this.innerHTML = hiddenMenu.classList.contains('active') ? '▲' : '△';
+    });
+    // ページの他部分をクリックした場合、秘密のメニューを閉じる
+    document.addEventListener('click', function(e) {
+      var hiddenMenu = document.getElementById('hiddenMenu');
+      if (!hiddenMenu.contains(e.target) && e.target.id !== 'toggleMenuBtn') {
+        hiddenMenu.classList.remove('active');
+        document.getElementById('toggleMenuBtn').innerHTML = '△';
+      }
+    });
   </script>
 </body>
 </html>
