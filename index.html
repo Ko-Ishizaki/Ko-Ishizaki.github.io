@@ -122,7 +122,7 @@
     .nav ul li a:hover {
       color: #f4d03f;
     }
-    @media (min-width: 740px) {
+    @media (min-width: 825px) {
       .menu-icon {
         display: none;
       }
@@ -783,7 +783,7 @@
     });
 
     window.addEventListener('resize', function() {
-      if (window.innerWidth >= 740) {
+      if (window.innerWidth >= 825) {
         nav.classList.remove('active');
         menuIcon.classList.remove('active');
         content.style.marginTop = '0px';
@@ -792,7 +792,7 @@
 
     document.querySelectorAll('.nav a').forEach(link => {
       link.addEventListener('click', function() {
-        if (window.innerWidth < 740) {
+        if (window.innerWidth < 825) {
           nav.classList.remove('active');
           menuIcon.classList.remove('active');
           content.style.marginTop = '0px';
