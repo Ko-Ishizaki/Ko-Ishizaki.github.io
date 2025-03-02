@@ -6,6 +6,9 @@
   <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiCAYAAAA6RwvCAAAAAXNSR0IArs4c6QAAAhlJREFUWEftWL2uAUEYPRsiChqJijegl9CIRkJDJbwBnUTBExAPQKfkCai0Ko2CglAQNKJC/CTiZr57V2bd2di93Hv3/kwiNt98O3vmzLdnzqx0uVwuMECTDAdktVqh2+2+4yYSiVBsNpuh3+/TdTgchslkUuQOh0NMJhOKyffwCb1eD8vlUrX/ykir1UI0Gn0HRF65arWKTCZD/ZvNBjabTZFbKBRQKpUoJlrtVCqFRqOh2m88INvtFtPplBDHYjGMx2MF+i9jhOfZ6/ViMBj8A9GsJna7HWwp+cIUFetisYDb7aa8er2OZDKp+owP6cinAmE60Ww2CXEikYDD4VBFn81mcTweqb9SqdD/0xjhdYQJl8fj0bxUvxPI+XzGfr8nFoLBIJhk62mn0wnsx5qsukxhd7sdxaxWK8xms2JIn8+HdrtNMWGx8jqiB4zeXL/fj06n8wOA6JmZJEmUXiwWkc/nX2f3FnO5XJjP55qG+5CO8CP/A7nl+W8wIrIBPBOivUZUNw8X67cCORwOWK/XNLFQKITRaETXIv/5KCPMHrBmsVjgdDqVgnbPPD9zaeQCFyqrIYGUy+Wrs5JdFducarUaEcPOLfK5RuS67imrZkZEfuSei9fz1vwMIGo7k4w+nU5fbaGmXQwAb575e0Rv4t1NzzBAAoEATSYejyOXy2klg/LYwZ6dGm+bbIYUdWW4zxK6pvoJyS+6Ymq5xl9nkQAAAABJRU5ErkJggg==">
   <title>ko-ishizaki.github.io</title>
   <style>
+    /* ----------------------------------------------- */
+    /*   1) もともとのポートフォリオ用のスタイル      */
+    /* ----------------------------------------------- */
     /* 全体のリセットと基本設定 */
     * {
       margin: 0;
@@ -210,7 +213,6 @@
       height: 100%;
       overflow-y: auto;
       background: rgba(0, 0, 0, 0.7);
-      /* クリックを受け取りやすくする */
       pointer-events: auto;
     }
     .modal-content {
@@ -221,7 +223,6 @@
       width: 90%;
       max-width: 800px;
       position: relative;
-      /* 中身のクリックを有効にする */
       pointer-events: auto;
     }
     .modal .close {
@@ -286,8 +287,7 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin-left: 10px; /* コピーボタンの横に配置する例 */
-      /* position系の指定を削除し、モーダル内に自然に収まるようにする */
+      margin-left: 10px;
     }
     #rngTool button.toggle-dark-mode:hover {
       background: #555;
@@ -352,7 +352,7 @@
     /* 隠しメニュー（初期状態は非表示、下からスライドして出現） */
     .hidden-menu {
       position: fixed;
-      bottom: 60px; /* フッターの上部（フッターの高さに合わせる） */
+      bottom: 60px;
       left: 0;
       width: 100%;
       background: #444;
@@ -384,9 +384,127 @@
     .hidden-menu ul li a:hover {
       text-decoration: underline;
     }
+
+
+    /* ----------------------------------------------- */
+    /*   2) ★ドラッグリサイズ用エディタのスタイル★   */
+    /*      (iframe 使わず同居させるため、クラス名等リネーム) */
+    /* ----------------------------------------------- */
+    /* 
+       もともと body.dark-mode や body[data-split="vertical"] などだった部分を
+       .editorBody.dark-mode や .editorBody[data-split="vertical"] のように変更しています
+       衝突を避けるため、全て .editor～ の接頭辞をつけています
+    */
+    .editorBody {
+      font-family: sans-serif;
+      height: 100%;
+      background: #f0f0f0;
+      color: #333;
+      transition: background-color 0.3s, color 0.3s;
+      /* data-editor-split="vertical" or "horizontal" でレイアウトを分ける */
+      width: 100%;
+    }
+    .editorBody.dark-mode {
+      background-color: #2b2b2b;
+      color: #ddd;
+    }
+
+    .htmlEditorHeader {
+      height: 40px;
+      background: #666;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+    }
+    .htmlEditorHeader button {
+      margin-right: 6px;
+      background: #fff;
+      color: #333;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .htmlEditorHeader button:hover {
+      background: #eee;
+    }
+    .htmlEditorHeader .spacer {
+      flex-grow: 1;
+    }
+
+    /* コンテナが占有できる領域内で絶対配置 */
+    .editorMainContainer {
+      position: relative; 
+      width: 100%;
+      height: calc(80vh - 40px); /* 好みで調整 */
+      overflow: hidden;
+    }
+    /* エディタ領域、プレビュー領域ともに絶対配置 */
+    .editorEditorContainer {
+      position: absolute;
+      background: #fff;
+      overflow: hidden;
+    }
+    .editorBody.dark-mode .editorEditorContainer {
+      background: #444;
+    }
+    .editorPreviewContainer {
+      position: absolute;
+      background: #fff;
+      overflow: hidden;
+    }
+    .editorBody.dark-mode .editorPreviewContainer {
+      background: #222;
+    }
+
+    /* テキストエリア */
+    .editorTextarea {
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: none;
+      resize: none;
+      background: inherit;
+      color: #333;
+      padding: 8px;
+      font-size: 14px;
+    }
+    .editorBody.dark-mode .editorTextarea {
+      color: #eee;
+    }
+
+    /* 仕切り線 (ドラッグ対象) */
+    .editorDivider {
+      position: absolute;
+      background: #999;
+    }
+    /* data-editor-splitでカーソルを切り替え */
+    .editorBody[data-editor-split="vertical"] .editorDivider {
+      cursor: col-resize;
+    }
+    .editorBody[data-editor-split="horizontal"] .editorDivider {
+      cursor: row-resize;
+    }
+
+    /* プレビュー用の iframeは使わない場合に合わせてここは必要なら外す
+       → ただし質問文のエディタは「内部にもiframe」があったが“自前埋め込み”ではなく
+         「テキストをプレビュー表示するためのiframe」なので、そこはそのまま利用
+         (外枠iframeは廃止、エディタ内部での「仕上がりプレビュー用iframe」は存続) 
+    */
+    .editorPreview {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
   </style>
 </head>
 <body>
+  <!-- ==================================================== -->
+  <!-- ============= (A) ポートフォリオ本体部分 ============= -->
+  <!-- ==================================================== -->
+
   <!-- ローディング画面 -->
   <div class="loading-screen" id="loading-screen">
     <div class="spinner"></div>
@@ -412,10 +530,8 @@
     </nav>
   </header>
 
-  <!-- メインコンテンツ -->
-  <div class="content" id="content">
-    <!-- ハッシュルーティングにより内容を動的に表示 -->
-  </div>
+  <!-- メインコンテンツ (切り替え表示) -->
+  <div class="content" id="content"></div>
 
   <!-- RNGツールモーダル（Workページのプロジェクトボタンから起動） -->
   <div id="rngModal" class="modal">
@@ -427,7 +543,7 @@
         <p>数字特化の乱数ジェネレーターです。<br>
            小数まで設定可能。<br>
            金融系処理システムのテストにおすすめ。</p>
-        <!-- モーダル内の自然な位置にダークモードボタン配置 -->
+        <!-- ダークモードボタン -->
         <button class="toggle-dark-mode" onclick="toggleDarkMode()">Dark Mode</button>
         <button onclick="openVersionModal()">バージョン更新情報</button>
 
@@ -486,7 +602,7 @@
         <div id="decRangeContainer" style="display: none;">
           <label for="decRangeMin">小数部分の桁数の最小値:</label>
           <input type="number" id="decRangeMin" value="1">
-          <label for="decRangeMax">小数部分の桁数の最大値:</label>
+          <label for="decRangeMax">小数部分の最大値:</label>
           <input type="number" id="decRangeMax" value="2">
         </div>
 
@@ -518,7 +634,7 @@
     </div>
   </div>
 
-  <!-- 隠しメニュー（初期状態は非表示） -->
+  <!-- 隠しメニュー -->
   <div id="hiddenMenu" class="hidden-menu">
     <ul>
       <li><a href="#secret1">ドット絵作成・変換(準備中)</a></li>
@@ -526,7 +642,8 @@
       <li><a href="#secret3">改行変換・テキスト成形(準備中)</a></li>
       <li><a href="#secret4">行数分割・その他変形(準備中)</a></li>
       <li><a href="#secret5">リッチテキストエディター(準備中)</a></li>
-      <li><a href="#htmlcodeeditor">HTML Code Editor</a></li>
+      <!-- ★ここをクリックで #htmlcodeeditor 表示 -->
+      <li><a href="#" onclick="showHtmlCodeEditor()">HTML Code Editor</a></li>
     </ul>
   </div>
 
@@ -536,14 +653,77 @@
     <button id="toggleMenuBtn" class="triangle-btn">△</button>
   </footer>
 
+
+  <!-- ================================== -->
+  <!-- = (B) ドラッグリサイズ エディタ =   -->
+  <!-- ================================== -->
+  <!-- ここでは、同じページ内に隠しておき、クリック時に表示する -->
+  <div id="htmlcodeeditor" style="display:none; padding: 20px;">
+    <h2>HTML Code Editor</h2>
+    <p>
+      <button onclick="hideHtmlCodeEditor()">[Back to Main]</button>
+    </p>
+
+    <!-- 
+      質問文「Precise Drag Resizing (Fully Functional)」の本体を
+      そのまま貼り付けつつ、クラスやIDを `editor-` 接頭辞に変更。
+      body → .editorBody, header → .htmlEditorHeader, など。
+    -->
+
+    <!-- エディタ全体を. editorBody で囲う (本来の<body>相当) -->
+    <div id="editorBodyRoot" class="editorBody" data-editor-split="vertical">
+      <!-- エディタ用ヘッダー (元は<header>) -->
+      <div class="htmlEditorHeader">
+        <button id="editorToggleSplitBtn">Toggle Split</button>
+        <button id="editorToggleDarkBtn">Dark Mode</button>
+        <button id="editorRunBtn">Run</button>
+        <div class="spacer"></div>
+        <span id="editorSizeInfo"></span>
+      </div>
+
+      <!-- メインコンテナ (元:.main-container → .editorMainContainer) -->
+      <div class="editorMainContainer" id="editorMainContainer">
+        <!-- エディタ領域 (元:.editor-container → .editorEditorContainer) -->
+        <div class="editorEditorContainer" id="editorEditorContainer">
+          <!-- テキストエリア (元: #editorTextarea → #editorTextarea2 + .editorTextarea) -->
+          <textarea id="editorTextarea2" class="editorTextarea">
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Sample</title>
+</head>
+<body>
+  <h1>Hello!</h1>
+  <p>You can drag the divider in any direction, even to the right or bottom.</p>
+</body>
+</html>
+          </textarea>
+        </div>
+        <!-- 仕切り線 (元:.divider → .editorDivider, #divider → #editorDivider) -->
+        <div class="editorDivider" id="editorDivider"></div>
+        <!-- プレビュー (元:.preview-container → .editorPreviewContainer, #previewContainer → #editorPreviewContainer) -->
+        <div class="editorPreviewContainer" id="editorPreviewContainer">
+          <!-- iframe (元:#previewIframe → #previewIframe2, class="editorPreview") -->
+          <iframe id="previewIframe2" class="editorPreview"></iframe>
+        </div>
+      </div>
+    </div>
+  </div><!-- #htmlcodeeditor -->
+
+  <!-- =========================== -->
+  <!-- (C) スクリプトまとめ       -->
+  <!-- =========================== -->
   <script>
+    /* --------------------------------------------- */
+    /*  (C1) 既存ポートフォリオのJS (ハッシュルート等) */
+    /* --------------------------------------------- */
     function calculateAge(birthDate) {
       const today = new Date();
       const birth = new Date(birthDate);
       let age = today.getFullYear() - birth.getFullYear();
       const monthDiff = today.getMonth() - birth.getMonth();
       const dayDiff = today.getDate() - birth.getDate();
-      // 誕生日がまだ来ていない場合は年齢を1つ引く
       if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
         age--;
       }
@@ -551,9 +731,10 @@
     }
 
     function displayAge() {
-      const birthDate = "2003-01-14"; // ★ここに生年月日を入力 (YYYY-MM-DD)
+      const birthDate = "2003-01-14"; // ★生年月日
       const age = calculateAge(birthDate);
-      document.getElementById("age").textContent = age;
+      const ageSpan = document.getElementById("age");
+      if(ageSpan) ageSpan.textContent = age;
     }
 
     const menuIcon = document.getElementById('menu-icon');
@@ -561,46 +742,44 @@
     const content = document.getElementById('content');
     const loadingScreen = document.getElementById('loading-screen');
 
-    // ページ内容を切り替えるためのオブジェクト
+    // ページ内容
     const pages = {
       home: `<h1>Ko-Ishizaki's Portfolio</h1>
-      		 <p><br><br><br><br><br></p>
+             <p><br><br><br><br><br></p>
              <h2>Product</h2>
              <p><br></p>
-             <p>〜Ｃｏｍｉｎｇ　Ｓｏｏｎ〜</p>
-            `,
+             <p>〜Ｃｏｍｉｎｇ　Ｓｏｏｎ〜</p>`,
       about:`<h1>Profile</h1>
              <li>Ko-Ishizaki</li>
              <li>2003年生まれ <span id="age"></span>歳</li>
              <li>InHouse Web System Engineer</li>
              <p><br><br><br></p>
              <h1>About</h1>
-              <p>ko-ishizak.github.ioはKo ISHIZAKIのポートフォリオです。<br></p>
-              <p>↓今まで利用した言語一覧</p>
-                <li>ASP.NET, C#, .NET, Visual Basic</li>
-                <li>HTML, CSS, Vanilla JavaScript</li>
-                <li>PHP (Laravel)</li>
-                <li>Python (including Flask)</li>
-                <li>Excel VBA, Apps Script for Google</li>
-              <p><br></p>
-              <li>Windowsアプリの開発(業務ツール)、保守</li>
-              <li>Webシステムの開発・保守・運用</li>
-              <li>VBAやGoogleスプレッドシート等ツール開発</li>
-              `,
+             <p>ko-ishizak.github.ioはKo ISHIZAKIのポートフォリオです。<br></p>
+             <p>↓今まで利用した言語一覧</p>
+             <li>ASP.NET, C#, .NET, Visual Basic</li>
+             <li>HTML, CSS, Vanilla JavaScript</li>
+             <li>PHP (Laravel)</li>
+             <li>Python (including Flask)</li>
+             <li>Excel VBA, Apps Script for Google</li>
+             <p><br></p>
+             <li>Windowsアプリの開発(業務ツール)、保守</li>
+             <li>Webシステムの開発・保守・運用</li>
+             <li>VBAやGoogleスプレッドシート等ツール開発</li>
+            `,
       article: `<h1>Article</h1>`,
       work: `<h1>Work</h1>
              <p>クライアント様に許可をいただけたもののみご紹介させていただきます。</p>
              <div class="projects">
                <div class="project">
                  <h2>乱数生成器</h2>
-                 <p>テストフェーズで利用するための乱数生成ツールをExcelマクロで当初作成しようとしていたクライアント様。プログラミングに疎いということで、当HTMLスクリプトを作成し提供させていただきました。</p>
+                 <p>テストフェーズで利用するための乱数生成ツールです。</p>
                  <button class="openRNGModal">実際に見てみる</button>
                </div>
              </div>`,
-      faq: `<h1>FAQ</h1>
-            <p>This is the FAQ page content.</p>`,
+      faq: `<h1>FAQ</h1><p>This is the FAQ page content.</p>`,
       contactme: `<h1>Contact Me</h1>
-                  <p>お問い合わせの場合は<a href="mailto:koishizakigithubio@gmail.com">koishizakigithubio@gmail.com</a>まで。</p>`
+                  <p>お問い合わせ: <a href="mailto:koishizakigithubio@gmail.com">koishizakigithubio@gmail.com</a></p>`
     };
 
     function updateContent() {
@@ -609,7 +788,7 @@
       const key = hash.substring(1);
       content.innerHTML = pages[key] || pages['home'];
 
-      // Workページの場合、RNGモーダルを開くボタンのイベント設定
+      // Workページの場合、RNGモーダルを開くボタンなど
       if (key === "work") {
         const rngBtn = document.querySelector('.openRNGModal');
         if (rngBtn) {
@@ -618,14 +797,17 @@
           });
         }
       }
-
       // Aboutページが表示されたら年齢を表示
       if (key === "about") {
         displayAge(); 
       }
+      // ★HTML Code Editorはこのルーティングから外し、
+      //  hiddenMenu内のリンク「showHtmlCodeEditor()」で表示する
+      //  (iframeを使わず直接DOMを切り替えるため)
+      hideHtmlCodeEditor(); // 他のページに行くときはエディタを隠す
     }
 
-    // 乱数生成ツール関連
+    // RNGツール関連
     function toggleIntRange(enable) {
       document.getElementById('intPartContainer').style.display = enable ? 'none' : 'block';
       document.getElementById('intRangeContainer').style.display = enable ? 'block' : 'none';
@@ -634,9 +816,7 @@
       document.getElementById('decPartContainer').style.display = enable ? 'none' : 'block';
       document.getElementById('decRangeContainer').style.display = enable ? 'block' : 'none';
     }
-
     document.addEventListener('DOMContentLoaded', function() {
-      // チェックボックスのイベント設定
       document.getElementById('enableIntRange').addEventListener('change', function() {
         toggleIntRange(this.checked);
       });
@@ -644,7 +824,6 @@
         toggleDecRange(this.checked);
       });
     });
-
     function generateNumbers() {
       const numRecords = parseInt(document.getElementById('numRecords').value);
       const intPartEnabled = document.getElementById('enableIntRange').checked;
@@ -662,7 +841,6 @@
         alert('小数部分の桁数の最小値は最大値より小さくする必要があります。');
         return;
       }
-
       const includePlus = document.getElementById('includePlus').checked;
       const includeMinus = document.getElementById('includeMinus').checked;
       const omitLeadingZeros = document.getElementById('omitLeadingZeros').checked;
@@ -674,7 +852,6 @@
         alert('符号が必要です。');
         return;
       }
-
       let signOption = '';
       if (includePlus && includeMinus) {
         signOption = '+-';
@@ -690,10 +867,11 @@
         const decDigits = getRandomInt(decMin, decMax);
         result += generateRandomNumber(intDigits, decDigits, signOption, omitLeadingZeros) + '\n';
       }
-
       document.getElementById('result').textContent = result;
     }
-
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
     function generateRandomNumber(intDigits, decDigits, signOpt, omitLeadingZeros) {
       const excludeNegativeZero = document.getElementById('excludeNegativeZero').checked;
       const excludeZero = document.getElementById('excludeZero').checked;
@@ -703,7 +881,6 @@
       } else if (signOpt === '-') {
         sign = '-';
       }
-
       let intPart;
       do {
         if (omitLeadingZeros && intDigits > 1) {
@@ -714,56 +891,41 @@
             intPart = intPart.padEnd(intDigits, '0');
           }
         } else {
-          intPart = Math.floor(Math.random() * Math.pow(10, intDigits)).toString().padStart(intDigits, '0');
+          intPart = Math.floor(Math.random() * Math.pow(10, intDigits))
+                     .toString().padStart(intDigits, '0');
         }
-
-        let decPart = Math.floor(Math.random() * Math.pow(10, decDigits)).toString().padStart(decDigits, '0');
+        let decPart = Math.floor(Math.random() * Math.pow(10, decDigits))
+                      .toString().padStart(decDigits, '0');
         let number = sign + intPart + (decDigits > 0 ? '.' + decPart : '');
-
-        // -0 や 0 を除外するチェック
-        if ((excludeZero && number === '0') || (excludeNegativeZero && Object.is(parseFloat(number), -0))) {
+        // -0 や 0 を除外
+        if ((excludeZero && number === '0') || 
+            (excludeNegativeZero && Object.is(parseFloat(number), -0))) {
           continue;
         }
         return number;
       } while (true);
     }
-
-    function getRandomInt(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
     function copyToClipboard() {
       const resultText = document.getElementById('result').textContent;
-      navigator.clipboard.writeText(resultText).then(() => {
-        alert("クリップボードにコピーしました!");
-      }).catch(err => {
-        alert("コピーに失敗しました: " + err);
-      });
+      navigator.clipboard.writeText(resultText)
+      .then(() => { alert("クリップボードにコピーしました!"); })
+      .catch(err => { alert("コピーに失敗: " + err); });
     }
-
     function toggleDarkMode() {
       document.getElementById('rngTool').classList.toggle('dark-mode');
     }
-
     function openVersionModal() {
       document.getElementById('versionModalRNG').style.display = 'block';
     }
-
     function closeVersionModal() {
       document.getElementById('versionModalRNG').style.display = 'none';
     }
-
-    // 「×ボタン」を押してRNGモーダルを閉じる
     document.getElementById('rngModalClose').addEventListener('click', function() {
-      console.log("×ボタンがクリックされました - RNGモーダルを閉じます");
       document.getElementById('rngModal').style.display = 'none';
     });
-
-    // 背景クリックでRNGモーダルを閉じる
     window.addEventListener('click', function(event) {
       const rngModal = document.getElementById('rngModal');
       if (event.target === rngModal) {
-        console.log("背景がクリックされました - RNGモーダルを閉じます");
         rngModal.style.display = 'none';
       }
     });
@@ -771,8 +933,8 @@
     window.addEventListener('load', function () {
       setTimeout(() => {
         loadingScreen.classList.add('fade-out');
-        document.body.style.overflow = "auto"; // スクロールを有効化
-        updateContent(); // URLのハッシュに合わせた表示
+        document.body.style.overflow = "auto";
+        updateContent();
       }, 1000);
     });
 
@@ -781,7 +943,6 @@
       menuIcon.classList.toggle('active');
       content.style.marginTop = nav.classList.contains('active') ? nav.offsetHeight + 'px' : '0px';
     });
-
     window.addEventListener('resize', function() {
       if (window.innerWidth >= 825) {
         nav.classList.remove('active');
@@ -789,7 +950,6 @@
         content.style.marginTop = '0px';
       }
     });
-
     document.querySelectorAll('.nav a').forEach(link => {
       link.addEventListener('click', function() {
         if (window.innerWidth < 825) {
@@ -800,27 +960,217 @@
         updateContent();
       });
     });
-
     window.addEventListener('hashchange', updateContent);
-    // 初期表示
-    updateContent();
+    updateContent(); // 初期表示
 
-    // △ボタン押下で秘密のメニューを表示／非表示に切替
+    // △ボタンで秘密のメニューを表示／非表示
     document.getElementById('toggleMenuBtn').addEventListener('click', function(e) {
       e.stopPropagation();
-      var hiddenMenu = document.getElementById('hiddenMenu');
+      const hiddenMenu = document.getElementById('hiddenMenu');
       hiddenMenu.classList.toggle('active');
-      // 表示状態に合わせてボタンの記号を切り替え
       this.innerHTML = hiddenMenu.classList.contains('active') ? '▲' : '△';
     });
-    // ページの他部分をクリックした場合、秘密のメニューを閉じる
+    // ページの他部分クリックで秘密のメニューを閉じる
     document.addEventListener('click', function(e) {
-      var hiddenMenu = document.getElementById('hiddenMenu');
+      const hiddenMenu = document.getElementById('hiddenMenu');
       if (!hiddenMenu.contains(e.target) && e.target.id !== 'toggleMenuBtn') {
         hiddenMenu.classList.remove('active');
         document.getElementById('toggleMenuBtn').innerHTML = '△';
       }
     });
+
+
+    /* --------------------------------------------- */
+    /*  (C2) ドラッグリサイズ エディタのJSロジック   */
+    /*      (元のコードをID/クラスだけリネーム)      */
+    /* --------------------------------------------- */
+
+    let isDraggingEditor = false;
+    let startX = 0, startY = 0;
+    let startEditorW = 0, startEditorH = 0;
+    let editorSplitMode = 'vertical'; // "vertical" or "horizontal"
+
+    function initHtmlCodeEditor() {
+      // 初期レイアウト
+      layoutEditorVertical();
+      updatePreviewEditor();
+    }
+
+    // 「Run」押下 → Preview へ反映
+    document.addEventListener('click', function(e){
+      if(e.target && e.target.id === 'editorRunBtn'){
+        updatePreviewEditor();
+      }
+    });
+
+    function updatePreviewEditor() {
+      const code = document.getElementById('editorTextarea2').value;
+      const previewIframe = document.getElementById('previewIframe2');
+      const doc = previewIframe.contentDocument || previewIframe.contentWindow.document;
+      doc.open();
+      doc.write(code);
+      doc.close();
+      updateSizeInfoEditor();
+    }
+
+    // 「Toggle Split」押下
+    document.addEventListener('click', function(e){
+      if(e.target && e.target.id === 'editorToggleSplitBtn'){
+        if(editorSplitMode === 'vertical'){
+          layoutEditorHorizontal();
+        } else {
+          layoutEditorVertical();
+        }
+        updateSizeInfoEditor();
+      }
+    });
+
+    // 「Dark Mode」押下
+    document.addEventListener('click', function(e){
+      if(e.target && e.target.id === 'editorToggleDarkBtn'){
+        document.getElementById('editorBodyRoot').classList.toggle('dark-mode');
+      }
+    });
+
+    // レイアウト: 左右分割
+    function layoutEditorVertical() {
+      editorSplitMode = 'vertical';
+      const bodyEl = document.getElementById('editorBodyRoot');
+      bodyEl.setAttribute('data-editor-split','vertical');
+
+      const mainContainer = document.getElementById('editorMainContainer');
+      const w = mainContainer.clientWidth;
+      const h = mainContainer.clientHeight;
+
+      const editorW = Math.floor(w * 0.5);
+
+      const editorContainer = document.getElementById('editorEditorContainer');
+      editorContainer.style.left = '0px';
+      editorContainer.style.top = '0px';
+      editorContainer.style.width = editorW + 'px';
+      editorContainer.style.height = h + 'px';
+
+      const divider = document.getElementById('editorDivider');
+      divider.style.left = editorW + 'px';
+      divider.style.top = '0px';
+      divider.style.width = '8px';
+      divider.style.height = h + 'px';
+
+      const previewContainer = document.getElementById('editorPreviewContainer');
+      previewContainer.style.left = (editorW + 8) + 'px';
+      previewContainer.style.top = '0px';
+      previewContainer.style.width = (w - editorW - 8) + 'px';
+      previewContainer.style.height = h + 'px';
+    }
+
+    // レイアウト: 上下分割
+    function layoutEditorHorizontal() {
+      editorSplitMode = 'horizontal';
+      const bodyEl = document.getElementById('editorBodyRoot');
+      bodyEl.setAttribute('data-editor-split','horizontal');
+
+      const mainContainer = document.getElementById('editorMainContainer');
+      const w = mainContainer.clientWidth;
+      const h = mainContainer.clientHeight;
+
+      const editorH = Math.floor(h * 0.5);
+
+      const editorContainer = document.getElementById('editorEditorContainer');
+      editorContainer.style.left = '0px';
+      editorContainer.style.top = '0px';
+      editorContainer.style.width = w + 'px';
+      editorContainer.style.height = editorH + 'px';
+
+      const divider = document.getElementById('editorDivider');
+      divider.style.left = '0px';
+      divider.style.top = editorH + 'px';
+      divider.style.width = w + 'px';
+      divider.style.height = '8px';
+
+      const previewContainer = document.getElementById('editorPreviewContainer');
+      previewContainer.style.left = '0px';
+      previewContainer.style.top = (editorH + 8) + 'px';
+      previewContainer.style.width = w + 'px';
+      previewContainer.style.height = (h - editorH - 8) + 'px';
+    }
+
+    // 仕切り線ドラッグ開始
+    document.getElementById('editorDivider').addEventListener('mousedown', (e) => {
+      isDraggingEditor = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const editorContainer = document.getElementById('editorEditorContainer');
+      startEditorW = parseFloat(editorContainer.style.width) || 0;
+      startEditorH = parseFloat(editorContainer.style.height) || 0;
+      document.body.style.userSelect = 'none';
+      e.preventDefault();
+    });
+
+    // 仕切り線ドラッグ中
+    document.addEventListener('mousemove', (e) => {
+      if(!isDraggingEditor) return;
+
+      const mainContainer = document.getElementById('editorMainContainer');
+      const containerW = mainContainer.clientWidth;
+      const containerH = mainContainer.clientHeight;
+
+      const editorContainer = document.getElementById('editorEditorContainer');
+      const divider = document.getElementById('editorDivider');
+      const previewContainer = document.getElementById('editorPreviewContainer');
+
+      if(editorSplitMode === 'vertical'){
+        // 横ドラッグ
+        const deltaX = e.clientX - startX;
+        let newWidth = startEditorW + deltaX;
+        if(newWidth < 10) newWidth = 10;
+        if(newWidth > containerW - 10) newWidth = containerW - 10;
+        editorContainer.style.width = newWidth + 'px';
+        divider.style.left = newWidth + 'px';
+        previewContainer.style.left = (newWidth + 8) + 'px';
+        previewContainer.style.width = (containerW - newWidth - 8) + 'px';
+      } else {
+        // 縦ドラッグ
+        const deltaY = e.clientY - startY;
+        let newHeight = startEditorH + deltaY;
+        if(newHeight < 10) newHeight = 10;
+        if(newHeight > containerH - 10) newHeight = containerH - 10;
+        editorContainer.style.height = newHeight + 'px';
+        divider.style.top = newHeight + 'px';
+        previewContainer.style.top = (newHeight + 8) + 'px';
+        previewContainer.style.height = (containerH - newHeight - 8) + 'px';
+      }
+      updateSizeInfoEditor();
+    });
+
+    // 仕切り線ドラッグ終了
+    document.addEventListener('mouseup', () => {
+      isDraggingEditor = false;
+      document.body.style.userSelect = 'auto';
+    });
+
+    // サイズ表示
+    function updateSizeInfoEditor() {
+      const previewIframe = document.getElementById('previewIframe2');
+      const rect = previewIframe.getBoundingClientRect();
+      document.getElementById('editorSizeInfo').textContent =
+        `Preview: ${Math.floor(rect.width)} x ${Math.floor(rect.height)}`;
+    }
+
+    /* -------------------------------------- */
+    /*  (C3) #htmlcodeeditor 表示/非表示制御  */
+    /* -------------------------------------- */
+    function showHtmlCodeEditor(){
+      // 他のページコンテンツを消して、#htmlcodeeditor を表示
+      document.getElementById('content').style.display = 'none';
+      document.getElementById('htmlcodeeditor').style.display = 'block';
+      // 初期化処理
+      initHtmlCodeEditor();
+    }
+    function hideHtmlCodeEditor(){
+      // もし既に表示してたら消して、contentを戻す
+      document.getElementById('htmlcodeeditor').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+    }
   </script>
 </body>
 </html>
