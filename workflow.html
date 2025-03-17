@@ -13,7 +13,6 @@
       padding: 0;
       box-sizing: border-box;
     }
-    /* ページ全体は横幅100%に */
     html, body {
       width: 100%;
     }
@@ -23,7 +22,6 @@
       display: flex;
       flex-direction: column;
       min-height: 100vh;
-      /* 横スクロールが発生しないようにする */
       overflow-x: hidden;
     }
     h3 {
@@ -51,7 +49,7 @@
     }
     /* ハンバーガーメニューのコンテナ */
     .hamburger {
-      display: none;  /* PCサイズ(768px以上)では非表示 */
+      display: none;
       width: 30px;
       height: 24px;
       position: relative;
@@ -88,7 +86,7 @@
       display: flex;
       overflow: hidden;
       width: 100%;
-      margin-top: 60px; /* ヘッダーの高さ分の余白 */
+      margin-top: 60px;
     }
     /* ------------------------------------
        サイドメニュー
@@ -186,7 +184,9 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .chart-area h3 { margin-bottom: 10px; font-size: 16px; }
-    /* カレンダーのテーブルはラッパーで横スクロール */
+    /* ------------------------------------
+       カレンダー
+    ------------------------------------ */
     .calendar {
       width: 100%;
       border-collapse: collapse;
@@ -199,7 +199,13 @@
       font-size: 12px;
       white-space: nowrap;
     }
-    /* チケットリスト */
+    /* 今日のハイライト */
+    .calendar td.today {
+      background-color: #ffeb3b;
+    }
+    /* ------------------------------------
+       チケットリスト
+    ------------------------------------ */
     .ticket-list { list-style: none; }
     .ticket-list li {
       padding: 8px;
@@ -220,13 +226,11 @@
     /* ------------------------------------
        レスポンシブ対応
     ------------------------------------ */
-    /* 768px以上 => サイドメニュー常時表示、ハンバーガー非表示 */
     @media (min-width: 768px) {
       .hamburger { display: none; }
       .nav-closed nav { transform: none !important; }
       nav { transform: none; position: static; width: 250px; }
     }
-    /* 768px未満 => 初期状態は閉じる(nav-closed)、ハンバーガーで開閉 */
     @media (max-width: 767px) {
       .hamburger { display: inline-block; }
       nav {
@@ -239,15 +243,37 @@
         transform: translateX(0);
       }
       .nav-closed nav { transform: translateX(-100%); }
-      /* カレンダーコンテナは狭い画面では全幅 */
       .chart-area .calendar-container { width: 100%; }
+    }
+    /* ------------------------------------
+       カレンダー ナビゲーション
+    ------------------------------------ */
+    .calendar-navigation {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .calendar-navigation button {
+      padding: 5px 10px;
+      background-color: #ddd;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .calendar-navigation button:hover {
+      background-color: #ccc;
+    }
+    .calendar-navigation span {
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
   <!-- ヘッダー -->
   <header>
-    <div class="logo">CRM 2025/03/17</div>
+    <!-- id="logo" を追加 -->
+    <div class="logo" id="logo">CRM</div>
     <!-- ハンバーガーメニュー (3本のバー) -->
     <button class="hamburger" id="hamburgerBtn">
       <span class="bar bar1"></span>
@@ -295,9 +321,14 @@
         <!-- カレンダー -->
         <div class="calendar-container">
           <h3>カレンダー</h3>
-          <!-- カレンダー用テーブルをラップして横スクロール可能に -->
+          <div class="calendar-navigation">
+            <button id="prevMonth">前月</button>
+            <button id="currentMonth">今月</button>
+            <button id="nextMonth">次月</button>
+            <span id="monthYearDisplay"></span>
+          </div>
           <div class="table-container">
-            <table class="calendar">
+            <table class="calendar" id="calendarTable">
               <thead>
                 <tr>
                   <th>日</th>
@@ -310,61 +341,7 @@
                 </tr>
               </thead>
               <tbody>
-                <!-- 2025年3月: 1日は土曜日の場合の例 -->
-                <tr>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>2</td>
-                  <td>3</td>
-                  <td>4</td>
-                  <td>5</td>
-                  <td>6</td>
-                  <td>7</td>
-                  <td>8</td>
-                </tr>
-                <tr>
-                  <td>9</td>
-                  <td>10</td>
-                  <td>11</td>
-                  <td>12</td>
-                  <td>13</td>
-                  <td>14</td>
-                  <td>15</td>
-                </tr>
-                <tr>
-                  <td>16</td>
-                  <td>17</td>
-                  <td>18</td>
-                  <td>19</td>
-                  <td>20</td>
-                  <td>21</td>
-                  <td>22</td>
-                </tr>
-                <tr>
-                  <td>23</td>
-                  <td>24</td>
-                  <td>25</td>
-                  <td>26</td>
-                  <td>27</td>
-                  <td>28</td>
-                  <td>29</td>
-                </tr>
-                <tr>
-                  <td>30</td>
-                  <td>31</td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
+                <!-- カレンダーはJSで生成 -->
               </tbody>
             </table>
           </div>
@@ -385,7 +362,7 @@
           </ul>
         </div>
       </div>
-      <!-- 最新データ一覧（テーブル部分のみ横スクロール可能） -->
+      <!-- 最新問い合わせ一覧 -->
       <h3>最新問い合わせ一覧</h3>
       <div class="table-container">
         <table>
@@ -427,9 +404,21 @@
   </footer>
   <!-- スクリプト -->
   <script>
+    // ヘッダーのロゴ部分にローディング時の現在日付を設定
+    document.addEventListener('DOMContentLoaded', () => {
+      const logo = document.getElementById('logo');
+      const today = new Date();
+      const year = today.getFullYear();
+      let month = today.getMonth() + 1;
+      let day = today.getDate();
+      month = month < 10 ? '0' + month : month;
+      day = day < 10 ? '0' + day : day;
+      logo.textContent = 'CRM ' + year + '/' + month + '/' + day;
+    });
+
+    // ハンバーガーメニューの処理
     const body = document.body;
     const hamburgerBtn = document.getElementById('hamburgerBtn');
-    // 初期状態（デスクトップの場合は常に表示、モバイルの場合は非表示）
     let menuOpen = window.innerWidth >= 768 ? true : false;
     let previousWidth = window.innerWidth;
     function updateMenuState() {
@@ -459,6 +448,82 @@
       }
     });
     window.addEventListener('resize', updateMenuState);
+
+    // カレンダー生成処理
+    const calendarTable = document.getElementById('calendarTable');
+    const monthYearDisplay = document.getElementById('monthYearDisplay');
+    const prevMonthBtn = document.getElementById('prevMonth');
+    const currentMonthBtn = document.getElementById('currentMonth');
+    const nextMonthBtn = document.getElementById('nextMonth');
+
+    let todayDate = new Date();
+    let displayedYear = todayDate.getFullYear();
+    let displayedMonth = todayDate.getMonth();
+
+    function generateCalendar(year, month) {
+      const firstDay = new Date(year, month, 1);
+      const startingDay = firstDay.getDay();
+      const lastDate = new Date(year, month + 1, 0).getDate();
+
+      let tbody = document.createElement('tbody');
+      let date = 1;
+      for (let i = 0; i < 6; i++) {
+        const row = document.createElement('tr');
+        for (let j = 0; j < 7; j++) {
+          const cell = document.createElement('td');
+          if (i === 0 && j < startingDay) {
+            cell.textContent = '';
+          } else if (date > lastDate) {
+            cell.textContent = '';
+          } else {
+            cell.textContent = date;
+            if (year === todayDate.getFullYear() && month === todayDate.getMonth() && date === todayDate.getDate()) {
+              cell.classList.add('today');
+            }
+            date++;
+          }
+          row.appendChild(cell);
+        }
+        tbody.appendChild(row);
+        if (date > lastDate) {
+          break;
+        }
+      }
+      const oldTbody = calendarTable.querySelector('tbody');
+      if (oldTbody) {
+        calendarTable.removeChild(oldTbody);
+      }
+      calendarTable.appendChild(tbody);
+
+      const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+      monthYearDisplay.textContent = year + '年 ' + monthNames[month];
+    }
+
+    generateCalendar(displayedYear, displayedMonth);
+
+    prevMonthBtn.addEventListener('click', () => {
+      displayedMonth--;
+      if (displayedMonth < 0) {
+        displayedMonth = 11;
+        displayedYear--;
+      }
+      generateCalendar(displayedYear, displayedMonth);
+    });
+
+    nextMonthBtn.addEventListener('click', () => {
+      displayedMonth++;
+      if (displayedMonth > 11) {
+        displayedMonth = 0;
+        displayedYear++;
+      }
+      generateCalendar(displayedYear, displayedMonth);
+    });
+
+    currentMonthBtn.addEventListener('click', () => {
+      displayedYear = todayDate.getFullYear();
+      displayedMonth = todayDate.getMonth();
+      generateCalendar(displayedYear, displayedMonth);
+    });
   </script>
 </body>
 </html>
