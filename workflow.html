@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>業務システムデザインレイアウト</title>
+  <style>
+    /* ------------------------------------
+       リセットCSS
+    ------------------------------------ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    /* ページ全体は横幅100%に */
+    html, body {
+      width: 100%;
+    }
+    body {
+      font-family: sans-serif;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      /* 横スクロールが発生しないようにする */
+      overflow-x: hidden;
+    }
+    h3 {
+      margin-top: 20px;
+    }
+    /* ------------------------------------
+       ヘッダー
+    ------------------------------------ */
+    header {
+      background-color: #333;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      width: 100%;
+    }
+    .logo {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    /* ハンバーガーメニューのコンテナ */
+    .hamburger {
+      display: none;  /* PCサイズ(768px以上)では非表示 */
+      width: 30px;
+      height: 24px;
+      position: relative;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+    .hamburger .bar {
+      display: block;
+      width: 100%;
+      height: 3px;
+      background-color: #fff;
+      border-radius: 2px;
+      position: absolute;
+      left: 0;
+      transition: all 0.3s ease;
+    }
+    .hamburger .bar1 { top: 0; }
+    .hamburger .bar2 { top: 50%; transform: translateY(-50%); }
+    .hamburger .bar3 { bottom: 0; }
+    .hamburger.open .bar1 {
+      transform: translateY(10.5px) rotate(45deg);
+    }
+    .hamburger.open .bar2 { opacity: 0; }
+    .hamburger.open .bar3 {
+      transform: translateY(-10.5px) rotate(-45deg);
+    }
+    /* ------------------------------------
+       コンテナ (サイドメニュー + メイン)
+    ------------------------------------ */
+    .container {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      width: 100%;
+    }
+    /* ------------------------------------
+       サイドメニュー
+    ------------------------------------ */
+    nav {
+      width: 250px;
+      background-color: #f4f4f4;
+      border-right: 1px solid #ddd;
+      padding: 20px;
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+    nav h2 {
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+    nav ul { list-style: none; }
+    nav li { margin: 10px 0; }
+    nav a {
+      text-decoration: none;
+      color: #333;
+      display: block;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+    }
+    nav a:hover { background-color: #ddd; }
+    /* ------------------------------------
+       メインコンテンツ
+    ------------------------------------ */
+    main {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      width: 100%;
+    }
+    .content-header { margin-bottom: 20px; }
+    .content-header h1 { font-size: 24px; margin-bottom: 5px; }
+    .content-header p { color: #666; }
+    /* カードの例 */
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .card {
+      flex: 1 1 calc(33.3% - 20px);
+      min-width: 250px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+    }
+    .card:hover { transform: translateY(-3px); }
+    /* ------------------------------------
+       テーブル部分の横スクロールラッパー
+    ------------------------------------ */
+    .table-container {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      min-width: 500px;
+    }
+    thead tr { background-color: #f2f2f2; }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    tbody tr:hover { background-color: #f9f9f9; }
+    /* ------------------------------------
+       グラフ表示領域 → カレンダー＆直近チケット
+    ------------------------------------ */
+    .chart-area {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .chart-area .calendar-container,
+    .chart-area .tickets-container {
+      flex: 1 1 300px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .chart-area h3 { margin-bottom: 10px; font-size: 16px; }
+    /* カレンダーのテーブルはラッパーで横スクロール */
+    .calendar {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .calendar th,
+    .calendar td {
+      border: 1px solid #ddd;
+      padding: 5px;
+      text-align: center;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    /* チケットリスト */
+    .ticket-list { list-style: none; }
+    .ticket-list li {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+    .ticket-list li:last-child { border-bottom: none; }
+    /* ------------------------------------
+       フッター
+    ------------------------------------ */
+    footer {
+      padding: 10px 20px;
+      text-align: center;
+      background-color: #f4f4f4;
+      border-top: 1px solid #ddd;
+      width: 100%;
+    }
+    /* ------------------------------------
+       レスポンシブ対応
+    ------------------------------------ */
+    /* 768px以上 => サイドメニュー常時表示、ハンバーガー非表示 */
+    @media (min-width: 768px) {
+      .hamburger { display: none; }
+      .nav-closed nav { transform: none !important; }
+      nav { transform: none; position: static; width: 250px; }
+    }
+    /* 768px未満 => 初期状態は閉じる(nav-closed)、ハンバーガーで開閉 */
+    @media (max-width: 767px) {
+      .hamburger { display: inline-block; }
+      nav {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        width: 250px;
+        height: calc(100vh - 60px);
+        z-index: 999;
+        transform: translateX(0);
+      }
+      .nav-closed nav { transform: translateX(-100%); }
+      /* カレンダーコンテナは狭い画面では全幅 */
+      .chart-area .calendar-container { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ヘッダー -->
+  <header>
+    <div class="logo">CRM 2025/03/17</div>
+    <!-- ハンバーガーメニュー (3本のバー) -->
+    <button class="hamburger" id="hamburgerBtn">
+      <span class="bar bar1"></span>
+      <span class="bar bar2"></span>
+      <span class="bar bar3"></span>
+    </button>
+  </header>
+  <!-- コンテナ (サイドメニュー + メインコンテンツ) -->
+  <div class="container">
+    <!-- サイドメニュー -->
+    <nav>
+      <h2>メニュー</h2>
+      <ul>
+        <li><a href="#">ダッシュボード</a></li>
+        <li><a href="#">レポート</a></li>
+        <li><a href="#">ユーザー管理</a></li>
+        <li><a href="#">設定</a></li>
+        <li><a href="#">ログアウト</a></li>
+      </ul>
+    </nav>
+    <!-- メインコンテンツ -->
+    <main>
+      <!-- コンテンツヘッダー -->
+      <div class="content-header">
+        <h1>Hello</h1>
+        <p>本日の実績はこちらです。</p>
+      </div>
+      <!-- カードの例 -->
+      <div class="cards">
+        <div class="card">
+          <h3>売上</h3>
+          <p>今月の売上: ¥1,200,000</p>
+        </div>
+        <div class="card">
+          <h3>新規ユーザー</h3>
+          <p>今月の登録数: 150件</p>
+        </div>
+        <div class="card">
+          <h3>在庫数</h3>
+          <p>残り: 320点</p>
+        </div>
+      </div>
+      <!-- グラフ表示領域 → カレンダーと直近チケット -->
+      <div class="chart-area">
+        <!-- カレンダー -->
+        <div class="calendar-container">
+          <h3>カレンダー</h3>
+          <!-- カレンダー用テーブルをラップして横スクロール可能に -->
+          <div class="table-container">
+            <table class="calendar">
+              <thead>
+                <tr>
+                  <th>日</th>
+                  <th>月</th>
+                  <th>火</th>
+                  <th>水</th>
+                  <th>木</th>
+                  <th>金</th>
+                  <th>土</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- 2025年3月: 1日は土曜日の場合の例 -->
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>4</td>
+                  <td>5</td>
+                  <td>6</td>
+                  <td>7</td>
+                  <td>8</td>
+                </tr>
+                <tr>
+                  <td>9</td>
+                  <td>10</td>
+                  <td>11</td>
+                  <td>12</td>
+                  <td>13</td>
+                  <td>14</td>
+                  <td>15</td>
+                </tr>
+                <tr>
+                  <td>16</td>
+                  <td>17</td>
+                  <td>18</td>
+                  <td>19</td>
+                  <td>20</td>
+                  <td>21</td>
+                  <td>22</td>
+                </tr>
+                <tr>
+                  <td>23</td>
+                  <td>24</td>
+                  <td>25</td>
+                  <td>26</td>
+                  <td>27</td>
+                  <td>28</td>
+                  <td>29</td>
+                </tr>
+                <tr>
+                  <td>30</td>
+                  <td>31</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- 直近の期限チケット -->
+        <div class="tickets-container">
+          <h3>直近の期限チケット</h3>
+          <ul class="ticket-list">
+            <li>
+              <strong>チケット #101</strong> - 期限: 2025-03-18 - <span>高優先度</span>
+            </li>
+            <li>
+              <strong>チケット #102</strong> - 期限: 2025-03-19 - <span>中優先度</span>
+            </li>
+            <li>
+              <strong>チケット #103</strong> - 期限: 2025-03-20 - <span>低優先度</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <!-- 最新データ一覧（テーブル部分のみ横スクロール可能） -->
+      <h3>最新データ一覧</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>日付</th>
+              <th>注文番号</th>
+              <th>顧客名</th>
+              <th>ステータス</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2025-03-17</td>
+              <td>#A00123</td>
+              <td>株式会社サンプル</td>
+              <td>発送完了</td>
+            </tr>
+            <tr>
+              <td>2025-03-16</td>
+              <td>#A00122</td>
+              <td>個人顧客(山田太郎)</td>
+              <td>処理中</td>
+            </tr>
+            <tr>
+              <td>2025-03-15</td>
+              <td>#A00121</td>
+              <td>個人顧客(鈴木花子)</td>
+              <td>受注</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+  <!-- フッター -->
+  <footer>
+    <p>© 2025 Koo Development Field, Inc.</p>
+  </footer>
+  <!-- スクリプト -->
+  <script>
+    const body = document.body;
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    function handleResize() {
+      if (window.innerWidth >= 768) {
+        body.classList.remove('nav-closed');
+        hamburgerBtn.classList.remove('open');
+      } else {
+        body.classList.add('nav-closed');
+      }
+    }
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    hamburgerBtn.addEventListener('click', () => {
+      body.classList.toggle('nav-closed');
+      hamburgerBtn.classList.toggle('open');
+    });
+  </script>
+</body>
+</html>
