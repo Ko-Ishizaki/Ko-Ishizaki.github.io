@@ -423,20 +423,49 @@
   <script>
     const body = document.body;
     const hamburgerBtn = document.getElementById('hamburgerBtn');
-    function handleResize() {
+
+    // 初期状態（デスクトップの場合は常に表示、モバイルの場合は非表示）
+    let menuOpen = window.innerWidth >= 768 ? true : false;
+    let previousWidth = window.innerWidth;
+
+    function updateMenuState() {
       if (window.innerWidth >= 768) {
+        // デスクトップサイズの場合、常にメニューを表示
         body.classList.remove('nav-closed');
         hamburgerBtn.classList.remove('open');
+        menuOpen = true;
       } else {
-        body.classList.add('nav-closed');
+        // モバイルサイズの場合
+        // 画面幅が広い状態から狭くなった場合は、メニューを強制的に非表示にする
+        if (previousWidth >= 768 && window.innerWidth < 768) {
+          menuOpen = false;
+        }
+        // menuOpen の状態に合わせてクラスを更新
+        if (menuOpen) {
+          body.classList.remove('nav-closed');
+          hamburgerBtn.classList.add('open');
+        } else {
+          body.classList.add('nav-closed');
+          hamburgerBtn.classList.remove('open');
+        }
       }
+      // 現在の幅を記憶
+      previousWidth = window.innerWidth;
     }
-    handleResize();
-    window.addEventListener('resize', handleResize);
+
+    // 初期状態を反映
+    updateMenuState();
+
+    // ハンバーガーボタンのクリックイベント
     hamburgerBtn.addEventListener('click', () => {
-      body.classList.toggle('nav-closed');
-      hamburgerBtn.classList.toggle('open');
+      if (window.innerWidth < 768) {
+        menuOpen = !menuOpen;
+        updateMenuState();
+      }
     });
+
+    // ウィンドウリサイズ時に状態を更新
+    window.addEventListener('resize', updateMenuState);
   </script>
 </body>
 </html>
