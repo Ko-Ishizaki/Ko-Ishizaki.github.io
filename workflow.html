@@ -30,7 +30,7 @@
       margin-top: 20px;
     }
     /* ------------------------------------
-       ヘッダー
+       ヘッダー (画面上部に固定)
     ------------------------------------ */
     header {
       background-color: #333;
@@ -40,6 +40,10 @@
       justify-content: space-between;
       padding: 10px 20px;
       width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
     }
     .logo {
       font-size: 18px;
@@ -77,12 +81,14 @@
     }
     /* ------------------------------------
        コンテナ (サイドメニュー + メイン)
+       ※ヘッダー分の余白を確保
     ------------------------------------ */
     .container {
       flex: 1;
       display: flex;
       overflow: hidden;
       width: 100%;
+      margin-top: 60px; /* ヘッダーの高さ分の余白 */
     }
     /* ------------------------------------
        サイドメニュー
@@ -380,7 +386,7 @@
         </div>
       </div>
       <!-- 最新データ一覧（テーブル部分のみ横スクロール可能） -->
-      <h3>最新データ一覧</h3>
+      <h3>最新問い合わせ一覧</h3>
       <div class="table-container">
         <table>
           <thead>
@@ -423,24 +429,18 @@
   <script>
     const body = document.body;
     const hamburgerBtn = document.getElementById('hamburgerBtn');
-
     // 初期状態（デスクトップの場合は常に表示、モバイルの場合は非表示）
     let menuOpen = window.innerWidth >= 768 ? true : false;
     let previousWidth = window.innerWidth;
-
     function updateMenuState() {
       if (window.innerWidth >= 768) {
-        // デスクトップサイズの場合、常にメニューを表示
         body.classList.remove('nav-closed');
         hamburgerBtn.classList.remove('open');
         menuOpen = true;
       } else {
-        // モバイルサイズの場合
-        // 画面幅が広い状態から狭くなった場合は、メニューを強制的に非表示にする
         if (previousWidth >= 768 && window.innerWidth < 768) {
           menuOpen = false;
         }
-        // menuOpen の状態に合わせてクラスを更新
         if (menuOpen) {
           body.classList.remove('nav-closed');
           hamburgerBtn.classList.add('open');
@@ -449,22 +449,15 @@
           hamburgerBtn.classList.remove('open');
         }
       }
-      // 現在の幅を記憶
       previousWidth = window.innerWidth;
     }
-
-    // 初期状態を反映
     updateMenuState();
-
-    // ハンバーガーボタンのクリックイベント
     hamburgerBtn.addEventListener('click', () => {
       if (window.innerWidth < 768) {
         menuOpen = !menuOpen;
         updateMenuState();
       }
     });
-
-    // ウィンドウリサイズ時に状態を更新
     window.addEventListener('resize', updateMenuState);
   </script>
 </body>
