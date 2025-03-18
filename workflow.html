@@ -253,14 +253,19 @@
       nav {
         position: fixed;
         top: 70px;
-        left: 0;
+        right: 0;
+        left: auto;
         width: 250px;
         height: calc(100vh - 70px);
         z-index: 999;
         transform: translateX(0);
         background-color: #fff;
+        border-left: 1px solid #e0e0e0;
+        border-right: none;
       }
-      .nav-closed nav { transform: translateX(-100%); }
+      .nav-closed nav { 
+        transform: translateX(100%);
+      }
       .chart-area .calendar-container { width: 100%; }
     }
     /* ------------------------------------
