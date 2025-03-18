@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>業務システムデザインレイアウト</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
     /* ------------------------------------
        リセットCSS
@@ -17,12 +18,18 @@
       width: 100%;
     }
     body {
-      font-family: sans-serif;
+      font-family: 'Roboto', sans-serif;
       color: #333;
+      background-color: #fafafa;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
       overflow-x: hidden;
+      line-height: 1.6;
+    }
+    h1, h2, h3 {
+      font-family: 'Playfair Display', serif;
+      color: #222;
     }
     h3 {
       margin-top: 20px;
@@ -31,20 +38,21 @@
        ヘッダー (画面上部に固定)
     ------------------------------------ */
     header {
-      background-color: #333;
+      background: linear-gradient(90deg, #2c3e50, #4ca1af);
       color: #fff;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 20px;
+      padding: 15px 30px;
       width: 100%;
       position: fixed;
       top: 0;
       left: 0;
       z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
     .logo {
-      font-size: 18px;
+      font-size: 22px;
       font-weight: bold;
     }
     /* ハンバーガーメニューのコンテナ */
@@ -79,71 +87,77 @@
     }
     /* ------------------------------------
        コンテナ (サイドメニュー + メイン)
-       ※ヘッダー分の余白を確保
     ------------------------------------ */
     .container {
       flex: 1;
       display: flex;
       overflow: hidden;
       width: 100%;
-      margin-top: 60px;
+      margin-top: 70px;
     }
     /* ------------------------------------
        サイドメニュー
     ------------------------------------ */
     nav {
       width: 250px;
-      background-color: #f4f4f4;
-      border-right: 1px solid #ddd;
+      background-color: #fff;
+      border-right: 1px solid #e0e0e0;
       padding: 20px;
       transition: transform 0.3s ease;
       overflow-y: auto;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.05);
     }
     nav h2 {
-      margin-bottom: 10px;
-      font-size: 18px;
+      margin-bottom: 15px;
+      font-size: 20px;
     }
     nav ul { list-style: none; }
-    nav li { margin: 10px 0; }
+    nav li { margin: 12px 0; }
     nav a {
       text-decoration: none;
-      color: #333;
+      color: #555;
       display: block;
-      padding: 8px 12px;
-      border-radius: 4px;
-      transition: background-color 0.2s ease;
+      padding: 10px 14px;
+      border-radius: 6px;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
-    nav a:hover { background-color: #ddd; }
+    nav a:hover { 
+      background-color: #f0f0f0;
+      color: #222;
+    }
     /* ------------------------------------
        メインコンテンツ
     ------------------------------------ */
     main {
       flex: 1;
-      padding: 20px;
+      padding: 30px;
       overflow-y: auto;
-      width: 100%;
+      background-color: #fff;
     }
-    .content-header { margin-bottom: 20px; }
-    .content-header h1 { font-size: 24px; margin-bottom: 5px; }
-    .content-header p { color: #666; }
-    /* カードの例 */
+    .content-header { margin-bottom: 30px; }
+    .content-header h1 { font-size: 28px; margin-bottom: 8px; }
+    .content-header p { color: #777; font-size: 16px; }
+    /* カード */
     .cards {
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
     }
     .card {
       flex: 1 1 calc(33.3% - 20px);
       min-width: 250px;
-      background-color: #fff;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 15px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease;
+      background: linear-gradient(135deg, #ffffff, #f8f8f8);
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .card:hover { transform: translateY(-3px); }
+    .card:hover { 
+      transform: translateY(-5px); 
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
     /* ------------------------------------
        テーブル部分の横スクロールラッパー
     ------------------------------------ */
@@ -158,13 +172,13 @@
       margin: 20px 0;
       min-width: 500px;
     }
-    thead tr { background-color: #f2f2f2; }
+    thead tr { background-color: #f7f7f7; }
     th, td {
       text-align: left;
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
+      padding: 12px;
+      border-bottom: 1px solid #e0e0e0;
     }
-    tbody tr:hover { background-color: #f9f9f9; }
+    tbody tr:hover { background-color: #fafafa; }
     /* ------------------------------------
        グラフ表示領域 → カレンダー＆直近チケット
     ------------------------------------ */
@@ -172,18 +186,18 @@
       display: flex;
       gap: 20px;
       flex-wrap: wrap;
-      margin-top: 20px;
+      margin-top: 30px;
     }
     .chart-area .calendar-container,
     .chart-area .tickets-container {
       flex: 1 1 300px;
       background-color: #fff;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 15px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
     }
-    .chart-area h3 { margin-bottom: 10px; font-size: 16px; }
+    .chart-area h3 { margin-bottom: 15px; font-size: 18px; }
     /* ------------------------------------
        カレンダー
     ------------------------------------ */
@@ -193,35 +207,38 @@
     }
     .calendar th,
     .calendar td {
-      border: 1px solid #ddd;
-      padding: 5px;
+      border: 1px solid #e0e0e0;
+      padding: 8px;
       text-align: center;
-      font-size: 12px;
+      font-size: 14px;
       white-space: nowrap;
     }
     /* 今日のハイライト */
     .calendar td.today {
-      background-color: #ffeb3b;
+      background-color: #ffd70033;
+      font-weight: bold;
     }
     /* ------------------------------------
        チケットリスト
     ------------------------------------ */
     .ticket-list { list-style: none; }
     .ticket-list li {
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
+      padding: 10px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 15px;
     }
     .ticket-list li:last-child { border-bottom: none; }
     /* ------------------------------------
        フッター
     ------------------------------------ */
     footer {
-      padding: 10px 20px;
+      padding: 15px 30px;
       text-align: center;
       background-color: #f4f4f4;
-      border-top: 1px solid #ddd;
+      border-top: 1px solid #e0e0e0;
       width: 100%;
+      font-size: 14px;
+      color: #777;
     }
     /* ------------------------------------
        レスポンシブ対応
@@ -235,12 +252,13 @@
       .hamburger { display: inline-block; }
       nav {
         position: fixed;
-        top: 60px;
+        top: 70px;
         left: 0;
         width: 250px;
-        height: calc(100vh - 60px);
+        height: calc(100vh - 70px);
         z-index: 999;
         transform: translateX(0);
+        background-color: #fff;
       }
       .nav-closed nav { transform: translateX(-100%); }
       .chart-area .calendar-container { width: 100%; }
@@ -249,32 +267,32 @@
        カレンダー ナビゲーション
     ------------------------------------ */
     .calendar-navigation {
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
     .calendar-navigation button {
-      padding: 5px 10px;
-      background-color: #ddd;
+      padding: 6px 12px;
+      background-color: #e0e0e0;
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      transition: background-color 0.2s ease;
     }
     .calendar-navigation button:hover {
       background-color: #ccc;
     }
     .calendar-navigation span {
       font-weight: bold;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
   <!-- ヘッダー -->
   <header>
-    <!-- id="logo" を追加 -->
     <div class="logo" id="logo">CRM</div>
-    <!-- ハンバーガーメニュー (3本のバー) -->
     <button class="hamburger" id="hamburgerBtn">
       <span class="bar bar1"></span>
       <span class="bar bar2"></span>
@@ -296,10 +314,9 @@
     </nav>
     <!-- メインコンテンツ -->
     <main>
-      <!-- コンテンツヘッダー -->
       <div class="content-header">
         <h1>Hello</h1>
-        <p>本日の実績はこちらです。</p>
+        <p>本日の実績をご確認ください。</p>
       </div>
       <!-- カードの例 -->
       <div class="cards">
