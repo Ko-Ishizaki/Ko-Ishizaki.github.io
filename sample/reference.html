@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <!-- マニュアルとして使えるHTMLドキュメントです。本文を付け足すだけで、自動的にメニューも作成されます。基本構文は見て学べ！です。 -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HTML Documentation</title>
+  <style>
+    /************************************
+     * 1. ベースリセット & 基本デザイン
+     ************************************/
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    /* 
+      ヘッダーが固定なので、body自体に上パディングを入れて
+      コンテンツが被らないようにする（ヘッダー高さ分: 60px など）。
+    */
+    body {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      background-color: #f7f9fc;
+      color: #333;
+      line-height: 1.6;
+      padding-top: 60px; /* ヘッダーの高さに合わせて調整 */
+    }
+
+    /************************************
+     * 2. ヘッダー
+     ************************************/
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #002244, #0055a5);
+      color: #fff;
+      padding: 10px 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 3000; /* サイドバーよりも前面に表示 */
+    }
+
+    /* ハンバーガーメニュー */
+    .menu-toggle {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      /* PC時は非表示、モバイル時は表示 */
+      display: none;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .header-left h1 {
+      font-size: 1.3em;
+      font-weight: bold;
+    }
+
+    /************************************
+     * 3. コンテナ (サイドバー & メイン)
+     ************************************/
+    .container {
+      /* PCレイアウト時は .sidebar を固定表示にするため、
+         .container 自体には余白の指定を最小限にしておく */
+      min-height: 80vh; /* コンテンツ量が少ないときでもある程度の高さを確保 */
+      display: flex;
+      /* デフォルトでは body に padding-top: 60px; を入れているので
+         ここでは margin-top は不要 */
+      margin-top: 0;
+    }
+
+    /************************************
+     * 4. サイドバー
+     ************************************/
+    .sidebar {
+      background-color: #003366;
+      color: #fff;
+      padding: 20px;
+      width: 250px;
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+    .sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      padding-bottom: 10px;
+    }
+    .sidebar ul {
+      list-style: none;
+      margin-top: 5px;
+    }
+    .sidebar li {
+      margin-bottom: 10px;
+    }
+    .sidebar li a {
+      text-decoration: none;
+      color: #fff;
+      padding: 5px;
+      display: block;
+      transition: background 0.2s;
+    }
+    .sidebar li a:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .sidebar li ul {
+      margin-left: 15px;
+      margin-top: 5px;
+    }
+
+    /************************************
+     * 5. メインコンテンツ
+     ************************************/
+     h2, h3 {
+      scroll-margin-top: 100px; /* ヘッダーの高さに合わせて調整 */
+    }
+ 
+    .main-content {
+      flex: 1;
+      background-color: #fff;
+      margin: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+    .main-content article {
+      margin-bottom: 40px;
+    }
+    .main-content h2 {
+      border-bottom: 2px solid #0055a5;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+    .main-content h3 {
+      margin-left: 20px;
+      margin-bottom: 10px;
+      color: #0055a5;
+    }
+
+    /************************************
+     * 6. フッター
+     ************************************/
+    footer {
+      background: #002244;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+    }
+
+    /************************************
+     * 7. レスポンシブ対応 (重要)
+     ************************************/
+    /* PCレイアウト: 幅768px以上 */
+    @media (min-width: 768px) {
+      /* PC時はサイドバーを固定表示にし、縦にスクロール可能にする */
+      .sidebar {
+        position: fixed;
+        top: 60px;                /* ヘッダーの高さを考慮して下げる */
+        left: 0;
+        width: 250px;
+        height: calc(100vh - 60px);
+        overflow-y: auto;         /* サイドバー内だけ縦スクロール */
+        transform: none !important;
+      }
+      /* サイドバー幅を除いた領域をメインコンテンツとして使うため左にマージン */
+      .container {
+        margin-left: 250px;       /* サイドバー分だけ右に寄せる */
+      }
+      /* PC時はハンバーガーメニューを無効化・非表示 */
+      .menu-toggle {
+        display: none;
+      }
+    }
+
+    /* モバイルレイアウト: 幅767px以下 */
+    @media (max-width: 767px) {
+      .menu-toggle {
+        display: block; /* モバイル時はハンバーガーメニュー表示 */
+      }
+
+      /* 縦並びに変更 */
+      .container {
+        flex-direction: column;
+        margin-left: 0;
+      }
+
+      /* サイドバーを右側からスライドインする形に変更 */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        right: 0;        
+        width: 250px;
+        transform: translateX(100%);
+        overflow-y: auto; /* モバイルも必要に応じてスクロール */
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      /* メインコンテンツを全幅にしてサイドバーとの干渉を回避 */
+      .main-content {
+        margin: 20px auto;
+        width: calc(100% - 40px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ヘッダー -->
+  <header>
+    <div class="header-left">
+      <span>WeiWei &</span>
+      <span>WawWaw Documentation</span>
+    </div>
+    <button class="menu-toggle" id="menuToggle">&#9776;</button>
+  </header>
+
+  <!-- コンテナ -->
+  <div class="container">
+    <!-- サイドバー -->
+    <aside class="sidebar" id="sidebar">
+      <h2>目次</h2>
+      <ul id="sidebar-menu">
+        <!-- h2 / h3 から自動生成される目次をここに挿入 -->
+      </ul>
+    </aside>
+
+    <!-- メインコンテンツ -->
+    <main class="main-content" id="main-content">
+      <article>
+        <h2>システム概要</h2>
+        <p>社内システムの基礎概要を示します。</p>
+        <h3>目的</h3>
+        <p>導入の背景や目的など。</p>
+        <h3>特徴</h3>
+        <p>システムの主な機能やメリットを紹介します。</p>
+      </article>
+
+      <article>
+        <h2>操作手順</h2>
+        <p>実際の操作について解説します。</p>
+        <h3>ログイン</h3>
+        <p>ログインの手順を示します。</p>
+        <h3>データ登録</h3>
+        <p>新規データを登録する流れを説明します。</p>
+        <h3>データ更新</h3>
+        <p>既存データを編集・更新する方法を解説します。</p>
+      </article>
+
+      <article>
+        <h2>システム管理</h2>
+        <p>管理者向けの設定や運用情報です。</p>
+        <h3>ユーザー管理</h3>
+        <p>ユーザー追加・削除、権限設定など。</p>
+        <h3>セキュリティ設定</h3>
+        <p>システムを安全に運用するための各種設定を紹介します。</p>
+      </article>
+      <article>
+        <h2>システム管理</h2>
+        <p>管理者向けの設定や運用情報です。</p>
+        <h3>ユーザー管理</h3>
+        <p>ユーザー追加・削除、権限設定など。</p>
+        <h3>セキュリティ設定</h3>
+        <p>システムを安全に運用するための各種設定を紹介します。</p>
+      </article>
+      <article>
+        <h2>システム管理</h2>
+        <p>管理者向けの設定や運用情報です。</p>
+        <h3>ユーザー管理</h3>
+        <p>ユーザー追加・削除、権限設定など。</p>
+        <h3>セキュリティ設定</h3>
+        <p>システムを安全に運用するための各種設定を紹介します。</p>
+      </article>
+    </main>
+  </div>
+
+  <!-- フッター -->
+  <footer>
+    <p>&copy; 2025 SBT CO., LTD. All Rights Reserved.</p>
+  </footer>
+
+  <!-- 目次自動生成とハンバーガーメニューのスクリプト -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      /************************************
+       * ハンバーガーメニューのトグル処理
+       ************************************/
+      const menuToggle = document.getElementById('menuToggle');
+      const sidebar = document.getElementById('sidebar');
+
+      menuToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('open');
+      });
+
+      /************************************
+       * 自動生成サイドメニュー
+       ************************************/
+      const content = document.getElementById('main-content');
+      const sidebarMenu = document.getElementById('sidebar-menu');
+      const headings = content.querySelectorAll('h2, h3');
+      let currentH2Item = null;
+
+      headings.forEach(heading => {
+        // idがない場合はテキストをもとに生成
+        if (!heading.id) {
+          heading.id = heading.textContent
+            .trim()
+            .replace(/\s+/g, '-')
+            .toLowerCase();
+        }
+
+        if (heading.tagName.toLowerCase() === 'h2') {
+          // メインリストアイテム (h2)
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = '#' + heading.id;
+          a.textContent = heading.textContent;
+          li.appendChild(a);
+          sidebarMenu.appendChild(li);
+          currentH2Item = li;
+        } else if (heading.tagName.toLowerCase() === 'h3') {
+          // サブリストアイテム (h3)
+          if (currentH2Item) {
+            let subList = currentH2Item.querySelector('ul');
+            if (!subList) {
+              subList = document.createElement('ul');
+              currentH2Item.appendChild(subList);
+            }
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#' + heading.id;
+            a.textContent = heading.textContent;
+            li.appendChild(a);
+            subList.appendChild(li);
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html> 
