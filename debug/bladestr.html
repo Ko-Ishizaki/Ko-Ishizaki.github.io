@@ -2,107 +2,149 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>🛠 Blade変換ツール</title>
+  <title>配列 → オブジェクト記法変換ツール</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
-
     body {
-      background-color: #0d0d0d;
-      color: #00ffe7;
-      font-family: 'Orbitron', sans-serif;
-      margin: 40px;
+      background-color: #0f0f1f;
+      font-family: 'Courier New', monospace;
+      color: #00ffe0;
+      padding: 40px;
     }
-
-    h2, h3 {
-      color: #00ffe7;
-      text-shadow: 0 0 10px #00ffe7;
+    h1 {
+      color: #00ffcc;
+      text-shadow: 0 0 5px #00ffff;
     }
-
     textarea {
       width: 100%;
-      height: 200px;
-      background: #1a1a1a;
-      color: #00ffe7;
-      border: 1px solid #00ffe7;
-      padding: 15px;
+      height: 300px;
+      background-color: #1c1c2e;
+      color: #00ffe0;
+      border: 1px solid #00ffe0;
+      padding: 10px;
       font-size: 14px;
-      font-family: monospace;
-      border-radius: 6px;
-      box-shadow: 0 0 10px #00ffe766;
+      resize: vertical;
     }
-
     button {
-      background-color: transparent;
-      border: 2px solid #00ffe7;
-      color: #00ffe7;
+      background: #00ffe0;
+      color: #0f0f1f;
       padding: 10px 20px;
-      font-size: 16px;
-      margin-top: 20px;
+      font-weight: bold;
+      border: none;
       cursor: pointer;
-      border-radius: 6px;
-      text-shadow: 0 0 5px #00ffe7;
-      transition: 0.2s ease-in-out;
+      margin-top: 10px;
+      margin-right: 10px;
+      box-shadow: 0 0 10px #00ffe0;
     }
-
     button:hover {
-      background-color: #00ffe711;
-      box-shadow: 0 0 10px #00ffe7;
+      background: #00bba0;
     }
-
-    #result {
-      background: #111;
-      color: #00ffe7;
-      padding: 15px;
+    .output-container {
+      margin-top: 30px;
+    }
+    .info {
+      margin-top: 10px;
+      color: #00e0ff;
+      font-weight: bold;
+    }
+    .exclude-container {
       margin-top: 20px;
-      border: 1px solid #00ffe7;
-      border-radius: 6px;
-      box-shadow: 0 0 10px #00ffe733;
-      white-space: pre-wrap;
-      font-family: monospace;
+      color: #00cfff;
     }
-
-    #copyBtn {
-      display: none;
-      margin-left: 10px;
+    .exclude-container input[type="text"] {
+      width: 100%;
+      padding: 5px;
+      margin-top: 5px;
+      background-color: #1c1c2e;
+      border: 1px solid #00ffe0;
+      color: #00ffe0;
     }
-
-    .buttons {
-      display: flex;
-      align-items: center;
+    .exclude-container label {
+      display: block;
+      margin-bottom: 5px;
     }
   </style>
 </head>
 <body>
+  <h1>配列 → オブジェクト記法変換</h1>
+  <p>以下の記法を一括で変換・復元できます：</p>
+  <ul>
+    <li><code>$obj['key']</code> → <code>$obj->key</code></li>
+    <li><code>$obj[0]['key']</code> → <code>$obj[0]->key</code></li>
+  </ul>
 
-  <h2>⚡ Blade配列 → オブジェクト書き換えツール</h2>
+  <textarea id="input" placeholder="ここにBladeコードを貼ってください"></textarea>
 
-  <textarea id="input" placeholder="ここにBlade/PHPコードを貼ってください"></textarea>
-
-  <div class="buttons">
-    <button onclick="convert()">✨ 変換する！</button>
-    <button id="copyBtn" onclick="copyToClipboard()">📋 コピー</button>
+  <div class="exclude-container">
+    <label>
+      <input type="checkbox" id="excludeCheckbox" checked>
+      ☑ 除外ワードを適用（カンマ区切りで入力）
+    </label>
+    <input type="text" id="excludeWords" placeholder="例: Text1,Text2">
   </div>
 
-  <h3>🧬 結果</h3>
-  <pre id="result"></pre>
+  <button onclick="convert()">変換する</button>
+  <button onclick="restore()">🔁 元に戻す</button>
+
+  <div class="output-container">
+    <h2>✨ 変換結果：</h2>
+    <textarea id="output" readonly></textarea>
+    <br>
+    <button onclick="copyToClipboard()">📋 コピペ</button>
+    <div class="info" id="count"></div>
+  </div>
 
   <script>
+    let originalText = '';
+    let replacementCount = 0;
+
     function convert() {
-      const input = document.getElementById('input').value;
+      const inputElem = document.getElementById('input');
+      const outputElem = document.getElementById('output');
+      const countElem = document.getElementById('count');
+      const excludeChecked = document.getElementById('excludeCheckbox').checked;
+      const excludeRaw = document.getElementById('excludeWords').value;
 
-      const output = input.replace(/(\$\w+)\['([\w\p{L}一-龯ぁ-んァ-ヶー々]+)'\]/gu, '$1->$2');
+      originalText = inputElem.value;
+      let converted = originalText;
+      replacementCount = 0;
 
-      document.getElementById('result').textContent = output;
-      document.getElementById('copyBtn').style.display = 'inline-block';
+      const excludeList = excludeChecked
+        ? excludeRaw.split(',').map(w => w.trim()).filter(w => w !== '')
+        : [];
+
+      const shouldExclude = (key) => excludeList.includes(key);
+
+      // $obj[0]['key'] → $obj[0]->key
+      converted = converted.replace(/(\$\w+\[\d+\])\[['"]([\w\p{L}一-龯ぁ-んァ-ヶー々]+)['"]\]/gu, (_, a, b) => {
+        if (shouldExclude(b)) return `${a}['${b}']`;
+        replacementCount++;
+        return `${a}->${b}`;
+      });
+
+      // $obj['key'] → $obj->key
+      converted = converted.replace(/(\$\w+)\[['"]([\w\p{L}一-龯ぁ-んァ-ヶー々]+)['"]\]/gu, (_, a, b) => {
+        if (shouldExclude(b)) return `${a}['${b}']`;
+        replacementCount++;
+        return `${a}->${b}`;
+      });
+
+      outputElem.value = converted;
+      countElem.innerText = `🔁 変換件数：${replacementCount} 箇所`;
+    }
+
+    function restore() {
+      const outputElem = document.getElementById('output');
+      const countElem = document.getElementById('count');
+      outputElem.value = originalText || '';
+      countElem.innerText = `🪄 元のコードに戻しました`;
     }
 
     function copyToClipboard() {
-      const text = document.getElementById('result').textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        alert("コピーしました！");
-      });
+      const output = document.getElementById('output');
+      output.select();
+      document.execCommand('copy');
+      alert('✅ コピー完了！');
     }
   </script>
-
 </body>
 </html>
