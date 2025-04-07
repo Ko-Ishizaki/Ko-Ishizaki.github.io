@@ -469,6 +469,14 @@
     
     /* スマホレイアウト */
     @media (max-width: 768px) {
+      header {
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #f1faee, #a8dadc, #bde0fe);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        /* backdrop-filter がサポートされない場合のフォールバック */
+        background-color: rgba(241,250,238,0.9);
+        backdrop-filter: blur(8px);
+      }
       nav ul {
         flex-direction: column;
         position: fixed;
