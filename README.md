@@ -8,5 +8,6 @@ Ko ISHIZAKI works as a **Web Engineer** and has experience in the following prog
 - **HTML**, **CSS**, **Vanilla JavaScript**
 - **PHP (Laravel)**
 - **Python (including Flask)**
+- **ExcelVBA**, **AccessVBA** ,**Google Apps Script**
 
 Feel free to explore the portfolio to learn more about their work and projects.
