@@ -1,4 +1,4 @@
-# Ko ISHIZAKI's Portfolio
+# Ko ISHIZAKI
 
 [ko-ishizaki.github.io](https://ko-ishizaki.github.io) is the portfolio site of **Ko ISHIZAKI**.
 
