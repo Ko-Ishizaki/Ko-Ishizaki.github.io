@@ -45,12 +45,12 @@
       font-weight: bold;
       color: var(--accent-color);
     }
-    /* 内部の子ツリー */
+    /* 内部の子ツリー（ファイル／ディレクトリリスト） */
     .child-container {
       margin-left: 20px;
       display: none;
     }
-    /* ツリー用のul */
+    /* ツリー用の ul */
     ul.directory {
       list-style: none;
       padding-left: 0;
@@ -61,14 +61,13 @@
       padding: 4px;
       cursor: pointer;
     }
-    /* マウスオーバー時 */
     ul.directory li:hover {
       background: #f1f8ff;
     }
-    /* クリックやキーボード操作時のデフォルトフォーカス（active, focus）の解除 */
+    /* クリックやフォーカス時に背景色・アウトラインをリセット */
     ul.directory li:active,
     ul.directory li:focus {
-      background-color: transparent;
+      background: transparent;
       outline: none;
     }
     /* toggle ボタン（ディレクトリ用）のスタイル */
@@ -77,11 +76,11 @@
       color: var(--accent-color);
       font-weight: bold;
     }
-    /* ファイル選択時：class "file" のみ selected で背景色を適用 */
+    /* ファイル選択時：ファイル(li.file)にのみ背景色を適用 */
     ul.directory li.file.selected { 
       background-color: var(--selected-bg); 
     }
-    /* 万が一、ファイル以外に selected クラスが付いても背景は透明 */
+    /* 万が一、ファイル以外に selected が付いても背景は透明 */
     ul.directory li:not(.file).selected { 
       background-color: transparent; 
     }
@@ -127,7 +126,7 @@
       return bytes;
     }
     
-    // GitHub API を利用して、指定ユーザーのリポジトリ一覧を表示する関数
+    // GitHub API を利用して指定ユーザーのリポジトリ一覧を表示
     async function fetchRepositories(owner, container) {
       try {
         const resp = await fetch(`https://api.github.com/users/${owner}/repos`);
@@ -144,7 +143,7 @@
           const repoContainer = document.createElement("div");
           repoContainer.className = "repo-container";
           
-          // ヘッダー部分（リポジトリ名＋toggleボタン）
+          // リポジトリヘッダー部分（クリックで展開／折りたたみ）
           const header = document.createElement("div");
           header.className = "repo-header";
           
@@ -164,7 +163,7 @@
           childContainer.className = "child-container";
           repoContainer.appendChild(childContainer);
           
-          // ヘッダークリック：内部ツリーの展開／折りたたみ
+          // ヘッダークリック時：内部ツリーの展開／折りたたみ
           header.addEventListener("click", async (e) => {
             e.stopPropagation();
             if (childContainer.style.display === "none" || childContainer.style.display === "") {
@@ -199,7 +198,7 @@
         items.forEach(item => {
           const li = document.createElement("li");
           if (item.type === "dir") {
-            // ディレクトリの場合：toggle ボタン付きの項目
+            // ディレクトリの場合：toggle ボタン付き
             const toggle = document.createElement("span");
             toggle.className = "toggle";
             toggle.textContent = "[+]";
@@ -227,13 +226,13 @@
               }
             });
           } else if (item.type === "file") {
-            // ファイルの場合：ファイル用のクラスを付与
+            // ファイルの場合は、class "file" を付与しクリック時は自分だけ selected とする
             li.classList.add("file");
             li.textContent = item.name;
             li.addEventListener("click", (e) => {
               e.stopPropagation();
-              // 他のファイル選択状態を解除し、クリックしたファイルにのみハイライト
-              document.querySelectorAll("li.file.selected").forEach(el => el.classList.remove("selected"));
+              // すべての selected クラスを解除（ファイル以外含む）
+              document.querySelectorAll("li.selected").forEach(el => el.classList.remove("selected"));
               li.classList.add("selected");
               loadFile(owner, repo, path ? path + "/" + item.name : item.name);
             });
