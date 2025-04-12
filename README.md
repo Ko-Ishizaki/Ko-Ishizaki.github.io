@@ -5,8 +5,9 @@ This document serves as a self-contained portfolio highlighting key skills and s
 
 ## Skills & Technologies
 
-- **ASP.NET**, **C#**, **.NET**, **Visual Basic**  
-- **HTML**, **CSS**, **Vanilla JavaScript**  
+- **ASP.NET**, **C#**, **.NET**, **Visual Basic**
+- **HTML**, **CSS**, **Vanilla JavaScript**
+- **Rust**
 - **PHP (Laravel)**  
 - **Python (including Flask)**  
 - **Excel VBA**, **Access VBA**, **Google Apps Script**
