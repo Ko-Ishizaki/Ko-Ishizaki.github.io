@@ -1,4 +1,4 @@
-# Ko ISHIZAKI a.k.a. koshzk0
+# koshzk0
 
 **koshzk0** is an up-and-coming Web Engineer with hands-on experience in various programming languages and technologies.  
 This document serves as a self-contained portfolio highlighting key skills and selected projects.
