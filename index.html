@@ -5,80 +5,123 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ko ISHIZAKI | Portfolio</title>
   <style>
+    :root {
+      --bg-color: #f0f4f8;
+      --text-color: #2c3e50;
+      --accent-color: #3498db;
+      --card-bg: #ffffff;
+      --border-color: #dce3ea;
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 2rem;
       line-height: 1.6;
-      margin: 2rem;
-      background-color: #f9f9f9;
-      color: #333;
     }
+
     h1, h2, h3 {
-      color: #222;
+      color: var(--text-color);
     }
+
     a {
-      color: #0366d6;
+      color: var(--accent-color);
       text-decoration: none;
     }
+
     a:hover {
       text-decoration: underline;
     }
+
     ul {
       padding-left: 1.2rem;
     }
-    .repo-list {
-      margin-top: 1rem;
-      padding-left: 1.2rem;
+
+    .section {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .repo-list ul {
+      list-style-type: disc;
+    }
+
+    .contact a {
+      display: block;
+      margin: 0.3rem 0;
+    }
+
+    code {
+      background: #eef1f5;
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      font-family: monospace;
     }
   </style>
 </head>
 <body>
 
-  <h1>Ko ISHIZAKI a.k.a. koshzk0</h1>
-
-  <p><strong>koshzk0</strong> is an up-and-coming Web Engineer with hands-on experience in various programming languages and technologies.<br>
-  This document serves as a self-contained portfolio highlighting key skills and selected projects.</p>
-
-  <h2>Skills & Technologies</h2>
-  <ul>
-    <li><strong>ASP.NET</strong>, <strong>C#</strong>, <strong>.NET</strong>, <strong>Visual Basic</strong></li>
-    <li><strong>HTML</strong>, <strong>CSS</strong>, <strong>Vanilla JavaScript</strong></li>
-    <li><strong>Rust</strong></li>
-    <li><strong>PHP (Laravel)</strong></li>
-    <li><strong>Python (including Flask)</strong></li>
-    <li><strong>Excel VBA</strong>, <strong>Access VBA</strong>, <strong>Google Apps Script</strong></li>
-  </ul>
-
-  <h2>About</h2>
-  <p>
-    koshzk0 has been involved in both front-end and back-end development across small-scale projects and client work.<br>
-    With a background rooted in Microsoft tech stacks, they've also explored modern web development and scripting for automation.<br>
-    From building internal tools to publishing lightweight web apps, Ko continues to grow as an engineer while focusing on practical, maintainable solutions.
-  </p>
-
-  <h2>Projects</h2>
-
-  <h3>Random Number Generator</h3>
-  <p><a href="https://ko-ishizaki.github.io/rng" target="_blank">https://ko-ishizaki.github.io/rng</a><br>
-  <strong>Technologies:</strong> HTML, Vanilla JavaScript<br>
-  Originally intended as an Excel VBA tool for a client, this project evolved into a lightweight web-based solution.<br>
-  By developing a standalone webpage, it streamlined the generation of condition-based random numbers, improving accessibility and efficiency.</p>
-
-  <h3>Shift Management Automation</h3>
-  <p><strong>Technologies:</strong> Google Apps Script, Google Sheets<br>
-  Automated a shift scheduling system that was previously managed manually using Google Sheets.<br>
-  Used Google Apps Script to simplify data entry, generate summaries, and send automated notifications — significantly reducing the time needed for updates and communication.</p>
-
-  <h2>GitHub Repositories</h2>
-  <div id="repos" class="repo-list">
-    <p>Loading repositories...</p>
+  <div class="section">
+    <h1>Ko ISHIZAKI a.k.a. koshzk0</h1>
+    <p><strong>koshzk0</strong> is an up-and-coming Web Engineer with hands-on experience in various programming languages and technologies.<br>
+    This document serves as a self-contained portfolio highlighting key skills and selected projects.</p>
   </div>
 
-  <h2>Contact</h2>
-  <p>
-    📧 Email: <a href="mailto:koishizakigithubio@gmail.com">koishizakigithubio@gmail.com</a><br>
-    📷 Instagram: <a href="https://www.instagram.com/koshzk0" target="_blank">@koshzk0</a><br>
-    💻 GitHub: <a href="https://github.com/ko-ishizaki" target="_blank">https://github.com/ko-ishizaki</a>
-  </p>
+  <div class="section">
+    <h2>Skills & Technologies</h2>
+    <ul>
+      <li><strong>ASP.NET</strong>, <strong>C#</strong>, <strong>.NET</strong>, <strong>Visual Basic</strong></li>
+      <li><strong>HTML</strong>, <strong>CSS</strong>, <strong>Vanilla JavaScript</strong></li>
+      <li><strong>Rust</strong></li>
+      <li><strong>PHP (Laravel)</strong></li>
+      <li><strong>Python (including Flask)</strong></li>
+      <li><strong>Excel VBA</strong>, <strong>Access VBA</strong>, <strong>Google Apps Script</strong></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>About</h2>
+    <p>
+      koshzk0 has been involved in both front-end and back-end development across small-scale projects and client work.<br>
+      With a background rooted in Microsoft tech stacks, they've also explored modern web development and scripting for automation.<br>
+      From building internal tools to publishing lightweight web apps, Ko continues to grow as an engineer while focusing on practical, maintainable solutions.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>Projects</h2>
+
+    <h3>Random Number Generator</h3>
+    <p><a href="https://ko-ishizaki.github.io/rng" target="_blank">https://ko-ishizaki.github.io/rng</a><br>
+    <strong>Technologies:</strong> HTML, Vanilla JavaScript<br>
+    Originally intended as an Excel VBA tool for a client, this project evolved into a lightweight web-based solution.<br>
+    By developing a standalone webpage, it streamlined the generation of condition-based random numbers, improving accessibility and efficiency.</p>
+
+    <h3>Shift Management Automation</h3>
+    <p><strong>Technologies:</strong> Google Apps Script, Google Sheets<br>
+    Automated a shift scheduling system that was previously managed manually using Google Sheets.<br>
+    Used Google Apps Script to simplify data entry, generate summaries, and send automated notifications — significantly reducing the time needed for updates and communication.</p>
+  </div>
+
+  <div class="section">
+    <h2>GitHub Repositories</h2>
+    <div id="repos" class="repo-list">
+      <p>Loading repositories...</p>
+    </div>
+  </div>
+
+  <div class="section contact">
+    <h2>Contact</h2>
+    <a href="mailto:koishizakigithubio@gmail.com">📧 koishizakigithubio@gmail.com</a>
+    <a href="https://www.instagram.com/koshzk0" target="_blank">📷 Instagram: @koshzk0</a>
+    <a href="https://github.com/ko-ishizaki" target="_blank">💻 GitHub: ko-ishizaki</a>
+  </div>
 
   <script>
     const username = "ko-ishizaki";
@@ -103,7 +146,7 @@
           a.target = "_blank";
           li.appendChild(a);
           if (repo.description) {
-            li.innerHTML += ` - ${repo.description}`;
+            li.innerHTML += ` – ${repo.description}`;
           }
           ul.appendChild(li);
         });
