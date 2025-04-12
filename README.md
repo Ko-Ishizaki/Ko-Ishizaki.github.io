@@ -39,4 +39,5 @@ For questions or collaboration opportunities, feel free to get in touch.
 
 📧 Email: [koishizakigithubio@gmail.com](mailto:koishizakigithubio@gmail.com)  
 📷 Instagram: [https://www.instagram.com/koshzk0](https://www.instagram.com/koshzk0)
+💻 GitHub: [https://github.com/ko-ishizaki](https://github.com/ko-ishizaki)
 
