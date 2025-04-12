@@ -11,7 +11,7 @@
       --accent-color: #3498db;
       --card-bg: #ffffff;
       --border-color: #dce3ea;
-      --selected-bg: #dce3ea; /* 選択状態の背景色 */
+      --selected-bg: #dce3ea; /* ファイル選択時の背景色 */
     }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -34,7 +34,7 @@
       margin-bottom: 8px;
       padding: 4px;
     }
-    /* リポジトリヘッダー：リポジトリ名と toggle ボタン */
+    /* リポジトリヘッダー：リポジトリ名＋toggleボタン */
     .repo-header {
       display: flex;
       align-items: center;
@@ -45,18 +45,18 @@
       font-weight: bold;
       color: var(--accent-color);
     }
-    /* 内部のファイル／ディレクトリツリー */
+    /* 内部の子ツリー */
     .child-container {
       margin-left: 20px;
       display: none;
     }
-    /* 内部ツリー用の ul */
+    /* ツリー用のul */
     ul.directory {
       list-style: none;
       padding-left: 0;
       margin: 0;
     }
-    /* li 全体の基本スタイル */
+    /* 基本の li スタイル */
     ul.directory li {
       padding: 4px;
       cursor: pointer;
@@ -64,15 +64,19 @@
     ul.directory li:hover {
       background: #f1f8ff;
     }
-    /* toggle ボタンのスタイル（ディレクトリ用） */
+    /* toggle ボタン（ディレクトリ用） */
     ul.directory li span.toggle {
       margin-right: 6px;
       color: var(--accent-color);
       font-weight: bold;
     }
-    /* ファイル選択時のスタイル */
-    ul.directory li.file.selected {
-      background-color: var(--selected-bg);
+    /* ファイル選択時：class "file" のみselectedで背景色を適用 */
+    ul.directory li.file.selected { 
+      background-color: var(--selected-bg); 
+    }
+    /* 万が一、ファイル以外に selected クラスが付いても背景を消す */
+    ul.directory li:not(.file).selected { 
+      background-color: transparent; 
     }
     /* ファイル表示エリア */
     #fileViewer {
@@ -101,7 +105,7 @@
   </div>
 
   <script>
-    // 固定パラメータ：ユーザー名とエンコーディング（UTF-8 固定）
+    // 固定パラメータ：ユーザー名とエンコーディング（UTF-8固定）
     const owner = "ko-ishizaki";
     const encoding = "utf-8";
     
@@ -116,7 +120,7 @@
       return bytes;
     }
     
-    // GitHub API を利用して、指定ユーザーのリポジトリ一覧を表示
+    // GitHub API を利用して、ユーザーのリポジトリ一覧を表示する関数
     async function fetchRepositories(owner, container) {
       try {
         const resp = await fetch(`https://api.github.com/users/${owner}/repos`);
@@ -133,7 +137,7 @@
           const repoContainer = document.createElement("div");
           repoContainer.className = "repo-container";
           
-          // リポジトリヘッダー部分
+          // ヘッダー部分（リポジトリ名＋toggleボタン）
           const header = document.createElement("div");
           header.className = "repo-header";
           
@@ -148,12 +152,12 @@
           
           repoContainer.appendChild(header);
           
-          // 内部のツリー表示用コンテナ（初期状態は非表示）
+          // 内部ツリー表示用コンテナ（初期は非表示）
           const childContainer = document.createElement("div");
           childContainer.className = "child-container";
           repoContainer.appendChild(childContainer);
           
-          // ヘッダークリックで展開／折りたたみ
+          // ヘッダークリック：内部ツリーの展開／折りたたみ
           header.addEventListener("click", async (e) => {
             e.stopPropagation();
             if (childContainer.style.display === "none" || childContainer.style.display === "") {
@@ -188,7 +192,7 @@
         items.forEach(item => {
           const li = document.createElement("li");
           if (item.type === "dir") {
-            // ディレクトリの場合
+            // ディレクトリの場合：toggleボタン付きの項目
             const toggle = document.createElement("span");
             toggle.className = "toggle";
             toggle.textContent = "[+]";
@@ -198,7 +202,7 @@
             text.textContent = item.name;
             li.appendChild(text);
             
-            // 子要素表示用のコンテナ
+            // 子要素表示用コンテナ
             const childDiv = document.createElement("div");
             childDiv.className = "child-container";
             li.appendChild(childDiv);
@@ -216,12 +220,12 @@
               }
             });
           } else if (item.type === "file") {
-            // ファイルの場合
+            // ファイルの場合：ファイル用のクラスを付与
             li.classList.add("file");
             li.textContent = item.name;
             li.addEventListener("click", (e) => {
               e.stopPropagation();
-              // すべてのファイル選択状態を解除してから、クリックしたファイルにのみ selected クラスを追加
+              // 他のファイルの選択状態を解除し、クリックしたファイルのみハイライト
               document.querySelectorAll("li.file.selected").forEach(el => el.classList.remove("selected"));
               li.classList.add("selected");
               loadFile(owner, repo, path ? path + "/" + item.name : item.name);
