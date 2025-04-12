@@ -11,6 +11,7 @@
       --accent-color: #3498db;
       --card-bg: #ffffff;
       --border-color: #dce3ea;
+      --selected-bg: #dce3ea; /* 選択状態の背景色 */
     }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -33,7 +34,7 @@
       margin-bottom: 8px;
       padding: 4px;
     }
-    /* リポジトリヘッダー：リポジトリ名と toggle ボタンを表示 */
+    /* リポジトリヘッダー：リポジトリ名と toggle ボタン */
     .repo-header {
       display: flex;
       align-items: center;
@@ -44,7 +45,7 @@
       font-weight: bold;
       color: var(--accent-color);
     }
-    /* リポジトリ内部の子要素（ファイル／ディレクトリツリー） */
+    /* 内部のファイル／ディレクトリツリー */
     .child-container {
       margin-left: 20px;
       display: none;
@@ -55,6 +56,7 @@
       padding-left: 0;
       margin: 0;
     }
+    /* li 全体の基本スタイル */
     ul.directory li {
       padding: 4px;
       cursor: pointer;
@@ -62,10 +64,15 @@
     ul.directory li:hover {
       background: #f1f8ff;
     }
+    /* toggle ボタンのスタイル（ディレクトリ用） */
     ul.directory li span.toggle {
       margin-right: 6px;
       color: var(--accent-color);
       font-weight: bold;
+    }
+    /* ファイル選択時のスタイル */
+    ul.directory li.file.selected {
+      background-color: var(--selected-bg);
     }
     /* ファイル表示エリア */
     #fileViewer {
@@ -109,7 +116,7 @@
       return bytes;
     }
     
-    // GitHub API を利用して、指定されたユーザーのリポジトリ一覧を表示
+    // GitHub API を利用して、指定ユーザーのリポジトリ一覧を表示
     async function fetchRepositories(owner, container) {
       try {
         const resp = await fetch(`https://api.github.com/users/${owner}/repos`);
@@ -120,15 +127,13 @@
           container.textContent = "No public repositories found.";
           return;
         }
-        // リポジトリを ul のリストとして作成
         const ul = document.createElement("ul");
         ul.className = "directory";
         repos.forEach(repo => {
-          // 各リポジトリごとにコンテナを作成
           const repoContainer = document.createElement("div");
           repoContainer.className = "repo-container";
           
-          // ヘッダー部分（リポジトリ名＋toggle ボタン）
+          // リポジトリヘッダー部分
           const header = document.createElement("div");
           header.className = "repo-header";
           
@@ -143,18 +148,17 @@
           
           repoContainer.appendChild(header);
           
-          // 内部ツリー表示用コンテナ（初期状態は非表示）
+          // 内部のツリー表示用コンテナ（初期状態は非表示）
           const childContainer = document.createElement("div");
           childContainer.className = "child-container";
           repoContainer.appendChild(childContainer);
           
-          // ヘッダークリックで内部ツリーを展開／折りたたむ
+          // ヘッダークリックで展開／折りたたみ
           header.addEventListener("click", async (e) => {
             e.stopPropagation();
             if (childContainer.style.display === "none" || childContainer.style.display === "") {
               childContainer.style.display = "block";
               toggle.textContent = "[-]";
-              // ルートディレクトリを取得して表示
               await fetchDirectory(owner, repo.name, "", childContainer);
             } else {
               childContainer.style.display = "none";
@@ -171,7 +175,7 @@
       }
     }
     
-    // 指定されたリポジトリ内のディレクトリ／ファイル一覧を取得して表示する関数
+    // 指定されたリポジトリ内のディレクトリ／ファイル一覧を表示する関数
     async function fetchDirectory(owner, repo, path, container) {
       try {
         const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents${path ? "/" + path : ""}`;
@@ -184,7 +188,7 @@
         items.forEach(item => {
           const li = document.createElement("li");
           if (item.type === "dir") {
-            // ディレクトリの場合、toggle ボタン付きのリスト項目を作成
+            // ディレクトリの場合
             const toggle = document.createElement("span");
             toggle.className = "toggle";
             toggle.textContent = "[+]";
@@ -194,12 +198,11 @@
             text.textContent = item.name;
             li.appendChild(text);
             
-            // このディレクトリ内の子要素を格納するコンテナ
+            // 子要素表示用のコンテナ
             const childDiv = document.createElement("div");
             childDiv.className = "child-container";
             li.appendChild(childDiv);
             
-            // li 自体にクリックイベントを設定（子要素展開／折りたたみ）
             li.addEventListener("click", async (e) => {
               e.stopPropagation();
               if (childDiv.style.display === "none" || childDiv.style.display === "") {
@@ -213,10 +216,14 @@
               }
             });
           } else if (item.type === "file") {
-            // ファイルの場合はリスト項目として作成
+            // ファイルの場合
+            li.classList.add("file");
             li.textContent = item.name;
             li.addEventListener("click", (e) => {
               e.stopPropagation();
+              // すべてのファイル選択状態を解除してから、クリックしたファイルにのみ selected クラスを追加
+              document.querySelectorAll("li.file.selected").forEach(el => el.classList.remove("selected"));
+              li.classList.add("selected");
               loadFile(owner, repo, path ? path + "/" + item.name : item.name);
             });
           }
