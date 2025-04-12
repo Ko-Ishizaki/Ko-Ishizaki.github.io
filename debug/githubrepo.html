@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>GitHub Repository Explorer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background-color: #f6f8fa;
+      color: #24292e;
+      margin: 0;
+      padding: 20px;
+    }
+    /* コンテナで中央揃えと最大幅指定 */
+    .container {
+      background: #fff;
+      border: 1px solid #e1e4e8;
+      border-radius: 6px;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #e1e4e8;
+      padding-bottom: 8px;
+    }
+    label, input, select, button {
+      font-size: 14px;
+    }
+    input, select {
+      padding: 6px;
+      border: 1px solid #d1d5da;
+      border-radius: 4px;
+      margin-left: 4px;
+      margin-right: 12px;
+    }
+    button {
+      padding: 6px 12px;
+      border: 1px solid #d1d5da;
+      border-radius: 6px;
+      background-color: #eff3f6;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #e1e4e8;
+    }
+    /* リスト（ツリー）のスタイル */
+    ul {
+      list-style-type: none;
+      padding-left: 20px;
+      margin: 0;
+    }
+    li {
+      cursor: pointer;
+      margin: 5px 0;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    li:hover {
+      background-color: #f1f8ff;
+    }
+    .folder:before { content: "📁 "; }
+    .file:before { content: "📄 "; }
+    .toggle {
+      margin-right: 5px;
+      cursor: pointer;
+      color: #0366d6;
+    }
+    /* ファイル内容表示エリア */
+    #fileViewer {
+      white-space: pre-wrap;
+      border: 1px solid #e1e4e8;
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 20px;
+      background: #fafbfc;
+      max-height: 400px;
+      overflow: auto;
+      font-family: Consolas, monospace;
+      font-size: 14px;
+    }
+    /* スマホ対応: 画面幅600px以下で文字サイズやパディングを調整 */
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+      .container {
+        padding: 10px;
+      }
+      h1 {
+        font-size: 20px;
+      }
+      input, select, button {
+        font-size: 12px;
+      }
+      #fileViewer {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>GitHub Repository Explorer</h1>
+    <div>
+      <label>Owner:
+        <input type="text" id="owner" value="ko-ishizaki">
+      </label>
+      <label>Encoding:
+        <select id="encoding">
+          <option value="shift_jis">Shift-JIS</option>
+          <option value="utf-8" selected>UTF-8</option>
+        </select>
+      </label>
+      <button id="loadRepos">Load Repositories</button>
+    </div>
+    <div id="treeContainer"></div>
+    <div id="fileViewer"></div>
+  </div>
+  <script>
+    function base64ToUint8Array(base64) {
+      const binaryString = window.atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes;
+    }
+
+    async function fetchRepositories(owner, container) {
+      try {
+        const apiUrl = "https://api.github.com/users/" + owner + "/repos";
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          container.innerHTML = "Error: " + response.statusText;
+          return;
+        }
+        const repos = await response.json();
+        const ul = document.createElement("ul");
+        repos.forEach(repo => {
+          const li = document.createElement("li");
+          li.classList.add("folder");
+          const toggleButton = document.createElement("span");
+          toggleButton.textContent = "[+]";
+          toggleButton.className = "toggle";
+          toggleButton.addEventListener("click", async (e) => {
+            e.stopPropagation(); // 親要素へのクリック伝播を防ぐ
+            if (toggleButton.textContent === "[+]") {
+              toggleButton.textContent = "[-]";
+              const subContainer = document.createElement("div");
+              subContainer.style.marginLeft = "20px";
+              li.appendChild(subContainer);
+              await fetchDirectory(owner, repo.name, "", subContainer);
+            } else {
+              toggleButton.textContent = "[+]";
+              const sub = li.querySelector("div");
+              if (sub) li.removeChild(sub);
+            }
+          });
+          li.prepend(toggleButton);
+          li.appendChild(document.createTextNode(repo.name));
+          ul.appendChild(li);
+        });
+        container.appendChild(ul);
+      } catch (error) {
+        container.innerHTML = "Error: " + error;
+      }
+    }
+
+    async function fetchDirectory(owner, repo, path, container) {
+      try {
+        const apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/contents" + (path ? "/" + path : "");
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          container.innerHTML = "Error: " + response.statusText;
+          return;
+        }
+        const data = await response.json();
+        const ul = document.createElement("ul");
+        data.forEach(item => {
+          const li = document.createElement("li");
+          if (item.type === "dir") {
+            li.classList.add("folder");
+            const toggleButton = document.createElement("span");
+            toggleButton.textContent = "[+]";
+            toggleButton.className = "toggle";
+            toggleButton.addEventListener("click", async (e) => {
+              e.stopPropagation();
+              if (toggleButton.textContent === "[+]") {
+                toggleButton.textContent = "[-]";
+                const subContainer = document.createElement("div");
+                subContainer.style.marginLeft = "20px";
+                li.appendChild(subContainer);
+                await fetchDirectory(owner, repo, path ? path + "/" + item.name : item.name, subContainer);
+              } else {
+                toggleButton.textContent = "[+]";
+                const sub = li.querySelector("div");
+                if (sub) li.removeChild(sub);
+              }
+            });
+            li.prepend(toggleButton);
+            li.appendChild(document.createTextNode(item.name));
+          } else if (item.type === "file") {
+            li.classList.add("file");
+            li.textContent = item.name;
+            li.addEventListener("click", () => {
+              loadFile(owner, repo, path ? path + "/" + item.name : item.name);
+            });
+          }
+          ul.appendChild(li);
+        });
+        container.appendChild(ul);
+      } catch (error) {
+        container.innerHTML = "Error: " + error;
+      }
+    }
+    
+    async function loadFile(owner, repo, filePath) {
+      const viewer = document.getElementById("fileViewer");
+      viewer.innerHTML = "Loading...";
+      try {
+        const apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/" + filePath;
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          viewer.innerHTML = "Error: " + response.statusText;
+          return;
+        }
+        const data = await response.json();
+        if (data.encoding === "base64") {
+          const encoding = document.getElementById("encoding").value;
+          const base64Str = data.content.replace(/\n/g, '');
+          const bytes = base64ToUint8Array(base64Str);
+          const decoder = new TextDecoder(encoding);
+          const decodedContent = decoder.decode(bytes);
+          viewer.textContent = decodedContent;
+        } else {
+          viewer.textContent = data.content;
+        }
+      } catch (error) {
+        viewer.innerHTML = "Error: " + error;
+      }
+    }
+
+    document.getElementById("loadRepos").addEventListener("click", () => {
+      const container = document.getElementById("treeContainer");
+      container.innerHTML = "";
+      const owner = document.getElementById("owner").value;
+      fetchRepositories(owner, container);
+      document.getElementById("fileViewer").innerHTML = "";
+    });
+  </script>
+</body>
+</html>
