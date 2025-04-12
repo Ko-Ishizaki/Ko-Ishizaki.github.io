@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>画像アップロードと拡大縮小</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    /* ドラッグ＆ドロップエリア（幅は画面サイズに応じて調整） */
+    #drop-area {
+      border: 2px dashed #aaa;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      margin: 20px auto;
+    }
+    #drop-area.hover {
+      background-color: #f0f0f0;
+    }
+    /* 画像表示の設定（実際のサイズで表示） */
+    #preview {
+      display: block;
+      margin: 20px auto;
+    }
+    /* 拡大縮小コントロールを画像の上部に配置 */
+    #scale-controls {
+      text-align: center;
+      margin: 10px auto;
+      width: 90%;
+      max-width: 400px;
+    }
+    #scale-controls label {
+      margin: 0 10px;
+    }
+    /* スライダーは画面幅に応じて調整 */
+    #scale-slider {
+      width: 80%;
+      max-width: 300px;
+      vertical-align: middle;
+    }
+    #scale-number {
+      width: 60px;
+      text-align: center;
+    }
+    #info {
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2 style="text-align:center;">画像の貼り付けまたはアップロード</h2>
+  <div id="drop-area">
+    <p>ここに画像をドラッグ＆ドロップしてください</p>
+    <p>または</p>
+    <input type="file" id="file-input" accept="image/jpeg, image/png">
+    <p>(対応形式: jpeg, jpg, png)</p>
+  </div>
+  
+  <div id="info"></div>
+  
+  <!-- 拡大縮小コントロール（画像の上部に配置） -->
+  <div id="scale-controls">
+    <label for="scale-slider">拡大率:</label>
+    <input type="range" id="scale-slider" min="10" max="300" value="100">
+    <input type="number" id="scale-number" min="10" max="300" value="100"> %
+  </div>
+  
+  <img id="preview" alt="プレビュー画像" src="">
+  
+  <script>
+    // オリジナル画像情報を保持する変数
+    let originalImg = new Image();
+    let originalWidth = 0, originalHeight = 0, originalFileType = "";
+    
+    function handleFile(file) {
+      if (!file.type.match('image/jpeg') && !file.type.match('image/png')) {
+        alert("対応している画像形式はjpeg, jpg, pngのみです。");
+        return;
+      }
+      originalFileType = file.type;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const dataURL = e.target.result;
+        originalImg = new Image();
+        originalImg.onload = function() {
+          originalWidth = originalImg.naturalWidth;
+          originalHeight = originalImg.naturalHeight;
+          // 初期倍率 100% で更新
+          updateImageScale(100);
+          
+          // 画像情報の表示
+          const fileSizeKB = (file.size / 1024).toFixed(2);
+          const infoDiv = document.getElementById('info');
+          infoDiv.innerHTML = "<p>画像形式: " + file.type + "</p>" +
+                              "<p>ファイルサイズ: " + fileSizeKB + " KB</p>" +
+                              "<p>画像サイズ: " + originalWidth + " × " + originalHeight + " px</p>";
+        };
+        originalImg.src = dataURL;
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    // 指定倍率 (パーセント) でオリジナル画像から新たな data URL を生成し、img の src を更新
+    function updateImageScale(scalePercent) {
+      if (!originalWidth || !originalHeight) return;
+      const newWidth = originalWidth * (scalePercent / 100);
+      const newHeight = originalHeight * (scalePercent / 100);
+      const canvas = document.createElement("canvas");
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(originalImg, 0, 0, newWidth, newHeight);
+      const newDataURL = canvas.toDataURL(originalFileType);
+      document.getElementById("preview").src = newDataURL;
+    }
+    
+    // ファイル入力イベント
+    const fileInput = document.getElementById("file-input");
+    fileInput.addEventListener("change", function(e) {
+      if (e.target.files && e.target.files[0]) {
+        handleFile(e.target.files[0]);
+      }
+    });
+    
+    // ドラッグ＆ドロップのイベント設定
+    const dropArea = document.getElementById("drop-area");
+    dropArea.addEventListener("dragover", function(e) {
+      e.preventDefault();
+      dropArea.classList.add("hover");
+    });
+    dropArea.addEventListener("dragleave", function(e) {
+      e.preventDefault();
+      dropArea.classList.remove("hover");
+    });
+    dropArea.addEventListener("drop", function(e) {
+      e.preventDefault();
+      dropArea.classList.remove("hover");
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+    
+    // クリップボードからの貼り付けイベント
+    document.addEventListener("paste", function(e) {
+      const items = (e.clipboardData || window.clipboardData).items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].kind === "file" && items[i].type.match("image.*")) {
+          const file = items[i].getAsFile();
+          handleFile(file);
+          break;
+        }
+      }
+    });
+    
+    // 拡大縮小コントロール（スライダーと数値入力）のイベント設定
+    const scaleSlider = document.getElementById("scale-slider");
+    const scaleNumber = document.getElementById("scale-number");
+    
+    scaleSlider.addEventListener("input", function() {
+      const value = parseInt(this.value, 10);
+      scaleNumber.value = value;
+      updateImageScale(value);
+    });
+    
+    scaleNumber.addEventListener("input", function() {
+      let value = parseInt(this.value, 10);
+      if (isNaN(value)) {
+        value = 100;
+      } else if (value < parseInt(scaleNumber.min, 10)) {
+        value = parseInt(scaleNumber.min, 10);
+      } else if (value > parseInt(scaleNumber.max, 10)) {
+        value = parseInt(scaleNumber.max, 10);
+      }
+      this.value = value;
+      scaleSlider.value = value;
+      updateImageScale(value);
+    });
+  </script>
+</body>
+</html>
