@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ko ISHIZAKI | Portfolio</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 2rem;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1, h2, h3 {
+      color: #222;
+    }
+    a {
+      color: #0366d6;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    ul {
+      padding-left: 1.2rem;
+    }
+    .repo-list {
+      margin-top: 1rem;
+      padding-left: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Ko ISHIZAKI a.k.a. koshzk0</h1>
+
+  <p><strong>koshzk0</strong> is an up-and-coming Web Engineer with hands-on experience in various programming languages and technologies.<br>
+  This document serves as a self-contained portfolio highlighting key skills and selected projects.</p>
+
+  <h2>Skills & Technologies</h2>
+  <ul>
+    <li><strong>ASP.NET</strong>, <strong>C#</strong>, <strong>.NET</strong>, <strong>Visual Basic</strong></li>
+    <li><strong>HTML</strong>, <strong>CSS</strong>, <strong>Vanilla JavaScript</strong></li>
+    <li><strong>Rust</strong></li>
+    <li><strong>PHP (Laravel)</strong></li>
+    <li><strong>Python (including Flask)</strong></li>
+    <li><strong>Excel VBA</strong>, <strong>Access VBA</strong>, <strong>Google Apps Script</strong></li>
+  </ul>
+
+  <h2>About</h2>
+  <p>
+    koshzk0 has been involved in both front-end and back-end development across small-scale projects and client work.<br>
+    With a background rooted in Microsoft tech stacks, they've also explored modern web development and scripting for automation.<br>
+    From building internal tools to publishing lightweight web apps, Ko continues to grow as an engineer while focusing on practical, maintainable solutions.
+  </p>
+
+  <h2>Projects</h2>
+
+  <h3>Random Number Generator</h3>
+  <p><a href="https://ko-ishizaki.github.io/rng" target="_blank">https://ko-ishizaki.github.io/rng</a><br>
+  <strong>Technologies:</strong> HTML, Vanilla JavaScript<br>
+  Originally intended as an Excel VBA tool for a client, this project evolved into a lightweight web-based solution.<br>
+  By developing a standalone webpage, it streamlined the generation of condition-based random numbers, improving accessibility and efficiency.</p>
+
+  <h3>Shift Management Automation</h3>
+  <p><strong>Technologies:</strong> Google Apps Script, Google Sheets<br>
+  Automated a shift scheduling system that was previously managed manually using Google Sheets.<br>
+  Used Google Apps Script to simplify data entry, generate summaries, and send automated notifications — significantly reducing the time needed for updates and communication.</p>
+
+  <h2>GitHub Repositories</h2>
+  <div id="repos" class="repo-list">
+    <p>Loading repositories...</p>
+  </div>
+
+  <h2>Contact</h2>
+  <p>
+    📧 Email: <a href="mailto:koishizakigithubio@gmail.com">koishizakigithubio@gmail.com</a><br>
+    📷 Instagram: <a href="https://www.instagram.com/koshzk0" target="_blank">@koshzk0</a><br>
+    💻 GitHub: <a href="https://github.com/ko-ishizaki" target="_blank">https://github.com/ko-ishizaki</a>
+  </p>
+
+  <script>
+    const username = "ko-ishizaki";
+
+    fetch(`https://api.github.com/users/${username}/repos?sort=updated`)
+      .then(response => response.json())
+      .then(repos => {
+        const container = document.getElementById('repos');
+        container.innerHTML = "";
+
+        if (repos.length === 0) {
+          container.innerHTML = "<p>No public repositories found.</p>";
+          return;
+        }
+
+        const ul = document.createElement('ul');
+        repos.forEach(repo => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = repo.html_url;
+          a.textContent = repo.name;
+          a.target = "_blank";
+          li.appendChild(a);
+          if (repo.description) {
+            li.innerHTML += ` - ${repo.description}`;
+          }
+          ul.appendChild(li);
+        });
+        container.appendChild(ul);
+      })
+      .catch(error => {
+        document.getElementById('repos').innerHTML = "<p>Failed to load repositories.</p>";
+        console.error(error);
+      });
+  </script>
+
+</body>
+</html>
