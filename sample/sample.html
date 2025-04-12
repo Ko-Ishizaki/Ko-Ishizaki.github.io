@@ -27,62 +27,44 @@
       padding: 16px;
       margin-bottom: 20px;
     }
-    /* リポジトリ全体のコンテナ */
-    .repo-container {
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      margin-bottom: 8px;
-      padding: 4px;
-    }
-    /* リポジトリヘッダー：リポジトリ名＋toggleボタン */
-    .repo-header {
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-    }
-    .repo-header span.toggle {
-      margin-right: 8px;
-      font-weight: bold;
-      color: var(--accent-color);
-    }
-    /* 内部の子ツリー（ファイル／ディレクトリリスト） */
-    .child-container {
-      margin-left: 20px;
-      display: none;
-    }
-    /* ツリー用の ul */
+    /* ツリー全体の ul */
     ul.directory {
       list-style: none;
       padding-left: 0;
       margin: 0;
     }
-    /* 基本の li スタイル */
-    ul.directory li {
+    /* ここから、各フォルダ（ディレクトリ）のコンテナ */
+    .dir-container {
+      margin-bottom: 4px;
+    }
+    /* フォルダヘッダー（クリックで展開／折りたたみする部分）は独立した要素 */
+    .dir-header {
       padding: 4px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
     }
-    ul.directory li:hover {
-      background: #f1f8ff;
-    }
-    /* クリックやフォーカス時に背景色・アウトラインをリセット */
-    ul.directory li:active,
-    ul.directory li:focus {
-      background: transparent;
-      outline: none;
-    }
-    /* toggle ボタン（ディレクトリ用）のスタイル */
-    ul.directory li span.toggle {
+    .dir-header span.toggle {
       margin-right: 6px;
       color: var(--accent-color);
       font-weight: bold;
     }
-    /* ファイル選択時：ファイル(li.file)にのみ背景色を適用 */
-    ul.directory li.file.selected { 
-      background-color: var(--selected-bg); 
+    /* 子リスト（フォルダ内部のアイテム）は、ヘッダーの兄弟要素 */
+    .child-container {
+      margin-left: 20px;
+      display: none;
     }
-    /* 万が一、ファイル以外に selected が付いても背景は透明 */
-    ul.directory li:not(.file).selected { 
-      background-color: transparent; 
+    /* ファイル用リストアイテム */
+    li.file {
+      padding: 4px;
+      cursor: pointer;
+    }
+    li.file:hover {
+      background: #f1f8ff;
+    }
+    /* ファイル選択時のみ selected 背景 */
+    li.file.selected {
+      background-color: var(--selected-bg);
     }
     /* ファイル表示エリア */
     #fileViewer {
@@ -115,7 +97,7 @@
     const owner = "ko-ishizaki";
     const encoding = "utf-8";
     
-    // base64文字列をUint8Arrayに変換するユーティリティ関数
+    // base64 文字列を Uint8Array に変換するユーティリティ
     function base64ToUint8Array(base64) {
       const binaryString = window.atob(base64);
       const len = binaryString.length;
@@ -140,30 +122,28 @@
         const ul = document.createElement("ul");
         ul.className = "directory";
         repos.forEach(repo => {
+          // リポジトリもフォルダと同様の構造とする
           const repoContainer = document.createElement("div");
-          repoContainer.className = "repo-container";
+          repoContainer.className = "dir-container";
           
-          // リポジトリヘッダー部分（クリックで展開／折りたたみ）
+          // ヘッダー部分（クリックで展開／折りたたむ）
           const header = document.createElement("div");
-          header.className = "repo-header";
-          
+          header.className = "dir-header";
           const toggle = document.createElement("span");
           toggle.className = "toggle";
           toggle.textContent = "[+]";
           header.appendChild(toggle);
-          
-          const repoName = document.createElement("span");
-          repoName.textContent = repo.name;
-          header.appendChild(repoName);
-          
+          const nameSpan = document.createElement("span");
+          nameSpan.textContent = repo.name;
+          header.appendChild(nameSpan);
           repoContainer.appendChild(header);
           
-          // 内部ツリー表示用コンテナ（初期は非表示）
+          // 子リスト（ルートディレクトリ）
           const childContainer = document.createElement("div");
           childContainer.className = "child-container";
           repoContainer.appendChild(childContainer);
           
-          // ヘッダークリック時：内部ツリーの展開／折りたたみ
+          // ヘッダークリックイベント（フォルダ展開／折りたたみ）
           header.addEventListener("click", async (e) => {
             e.stopPropagation();
             if (childContainer.style.display === "none" || childContainer.style.display === "") {
@@ -179,6 +159,7 @@
           
           ul.appendChild(repoContainer);
         });
+        container.innerHTML = "";
         container.appendChild(ul);
       } catch (err) {
         container.textContent = "Error: " + err;
@@ -196,48 +177,50 @@
         const ul = document.createElement("ul");
         ul.className = "directory";
         items.forEach(item => {
-          const li = document.createElement("li");
           if (item.type === "dir") {
-            // ディレクトリの場合：toggle ボタン付き
+            // ディレクトリの場合は、ヘッダーと子リストを分離した構造にする
+            const dirContainer = document.createElement("div");
+            dirContainer.className = "dir-container";
+            const header = document.createElement("div");
+            header.className = "dir-header";
             const toggle = document.createElement("span");
             toggle.className = "toggle";
             toggle.textContent = "[+]";
-            li.appendChild(toggle);
-            
-            const text = document.createElement("span");
-            text.textContent = item.name;
-            li.appendChild(text);
-            
-            // 子要素表示用コンテナ
-            const childDiv = document.createElement("div");
-            childDiv.className = "child-container";
-            li.appendChild(childDiv);
-            
-            li.addEventListener("click", async (e) => {
+            header.appendChild(toggle);
+            const nameSpan = document.createElement("span");
+            nameSpan.textContent = item.name;
+            header.appendChild(nameSpan);
+            dirContainer.appendChild(header);
+            const childContainer = document.createElement("div");
+            childContainer.className = "child-container";
+            dirContainer.appendChild(childContainer);
+            header.addEventListener("click", async (e) => {
               e.stopPropagation();
-              if (childDiv.style.display === "none" || childDiv.style.display === "") {
-                childDiv.style.display = "block";
+              if (childContainer.style.display === "none" || childContainer.style.display === "") {
+                childContainer.style.display = "block";
                 toggle.textContent = "[-]";
-                await fetchDirectory(owner, repo, path ? path + "/" + item.name : item.name, childDiv);
+                await fetchDirectory(owner, repo, path ? path + "/" + item.name : item.name, childContainer);
               } else {
-                childDiv.style.display = "none";
+                childContainer.style.display = "none";
                 toggle.textContent = "[+]";
-                childDiv.innerHTML = "";
+                childContainer.innerHTML = "";
               }
             });
+            ul.appendChild(dirContainer);
           } else if (item.type === "file") {
-            // ファイルの場合は、class "file" を付与しクリック時は自分だけ selected とする
+            // ファイルの場合：li 要素に class "file" を付与し、クリック時のみ自分に selected を付与
+            const li = document.createElement("li");
             li.classList.add("file");
             li.textContent = item.name;
             li.addEventListener("click", (e) => {
               e.stopPropagation();
-              // すべての selected クラスを解除（ファイル以外含む）
-              document.querySelectorAll("li.selected").forEach(el => el.classList.remove("selected"));
+              // 他のファイルの選択状態を解除
+              document.querySelectorAll("li.file.selected").forEach(el => el.classList.remove("selected"));
               li.classList.add("selected");
               loadFile(owner, repo, path ? path + "/" + item.name : item.name);
             });
+            ul.appendChild(li);
           }
-          ul.appendChild(li);
         });
         container.innerHTML = "";
         container.appendChild(ul);
@@ -267,7 +250,6 @@
       }
     }
     
-    // ページ読み込み時にリポジトリ一覧を取得
     document.addEventListener("DOMContentLoaded", () => {
       const repoContainer = document.getElementById("repos");
       fetchRepositories(owner, repoContainer);
