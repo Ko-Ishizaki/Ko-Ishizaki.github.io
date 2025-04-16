@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>グリッドデータ縦一列整形</title>
+<style>
+  table {
+    border-collapse: collapse;
+    width: 30%;
+    margin: 20px auto;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  textarea {
+    width: 100%;
+    height: 150px;
+    margin-bottom: 10px;
+  }
+  button {
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  #lineCount {
+    margin-top: 10px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+  <h1>グリッドデータ縦一列整形</h1>
+
+  <p>グリッドデータを下のテキストエリアにコピー＆ペーストして、「整形」ボタンを押してください。</p>
+
+  <textarea id="excelData" placeholder="ここにグリッドデータを貼り付けてください"></textarea>
+
+  <button onclick="formatDataVertical()">整形</button>
+
+  <div id="clipboardButtonContainer"></div> <div id="lineCountContainer"></div> <div id="result"></div>
+
+  <script>
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('整形結果をクリップボードにコピーしました！');
+      } catch (err) {
+        console.error('クリップボードへのコピーに失敗しました: ', err);
+        alert('クリップボードへのコピーに失敗しました。');
+      }
+    }
+
+    function formatDataVertical() {
+      const excelData = document.getElementById("excelData").value;
+      const lines = excelData.trim().split('\n');
+      let html = '<table>';
+      let formattedText = '';
+      let lineCounter = 0;
+
+      for (const line of lines) {
+        const cells = line.split('\t');
+        for (const cell of cells) {
+          const trimmedCell = cell.trim();
+          if (trimmedCell !== '') {
+            html += '<tr><td>' + trimmedCell + '</td></tr>';
+            formattedText += trimmedCell + '\n';
+            lineCounter++;
+          }
+        }
+      }
+
+      html += '</table>';
+      document.getElementById("result").innerHTML = html;
+
+      // クリップボードコピーボタンを生成
+      const clipboardButtonContainer = document.getElementById("clipboardButtonContainer");
+      clipboardButtonContainer.innerHTML = '';
+
+      const copyButton = document.createElement('button');
+      copyButton.textContent = 'クリップボードにコピー';
+      copyButton.onclick = function() {
+        copyToClipboard(formattedText.trim());
+      };
+
+      clipboardButtonContainer.appendChild(copyButton);
+
+      // 行数を表示
+      const lineCountContainer = document.getElementById("lineCountContainer");
+      lineCountContainer.innerHTML = ''; // 既存の表示をクリア
+
+      const lineCountElement = document.createElement('p');
+      lineCountElement.id = 'lineCount';
+      lineCountElement.textContent = '生成された行数: ' + lineCounter + '行';
+
+      lineCountContainer.appendChild(lineCountElement);
+    }
+  </script>
+
+</body>
+</html>
