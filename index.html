@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ko ISHIZAKI | Portfolio</title>
+
   <style>
     :root {
       --bg-color: #f0f4f8;
@@ -32,14 +33,9 @@
       color: var(--accent-color);
       text-decoration: none;
     }
+    a:hover { text-decoration: underline; }
 
-    a:hover {
-      text-decoration: underline;
-    }
-
-    ul {
-      padding-left: 1.2rem;
-    }
+    ul { padding-left: 1.2rem; }
 
     .section {
       background-color: var(--card-bg);
@@ -62,21 +58,16 @@
       font-family: monospace;
     }
 
-    /* ▼ ここからツリー表示用のCSS */
-    /* ツリー全体の ul */
-    ul.directory {
+    /* ▼ ここからツリー表示用の CSS */
+    ul.directory {               /* ツリー全体の ul */
       list-style: none;
       padding-left: 0;
       margin: 0;
     }
 
-    /* 各フォルダ（ディレクトリ）のコンテナ */
-    .dir-container {
-      margin-bottom: 4px;
-    }
+    .dir-container { margin-bottom: 4px; }              /* 各フォルダのコンテナ */
 
-    /* フォルダヘッダー（クリックで展開／折りたたみする部分）は独立した要素 */
-    .dir-header {
+    .dir-header {                                       /* クリックで展開／折りたたみ */
       padding: 4px;
       cursor: pointer;
       display: flex;
@@ -89,54 +80,62 @@
       font-weight: bold;
     }
 
-    /* ディレクトリヘッダーが選択されたときの見た目 */
-    .dir-header.selected {
-      background-color: var(--selected-bg);
-    }
+    .dir-header.selected { background-color: var(--selected-bg); }
 
-    /* 子リスト（フォルダ内部のアイテム）は、ヘッダーの兄弟要素 */
-    .child-container {
+    .child-container {                                  /* 子リスト */
       margin-left: 20px;
       display: none;
     }
 
-    /* ファイル用リストアイテム */
     li.file {
       padding: 4px;
       cursor: pointer;
     }
+    li.file:hover   { background: #f1f8ff; }
+    li.file.selected{ background-color: var(--selected-bg); }
 
-    li.file:hover {
-      background: #f1f8ff;
-    }
-
-    /* ファイルが選択されたとき */
-    li.file.selected {
-      background-color: var(--selected-bg);
-    }
-
-    /* ファイル表示エリア */
-    #fileViewer {
-      white-space: pre-wrap;
+    /* ▼ プレビュー用コンテナとヘッダー（×ボタン付き） */
+    #fileViewerContainer {
+      display: none;
       border: 1px solid var(--border-color);
       border-radius: 4px;
-      padding: 8px;
+      background: #fafbfc;
       margin-top: 12px;
       max-height: 300px;
       overflow: auto;
-      font-family: Consolas, monospace;
-      background: #fafbfc;
+      position: relative;
     }
-    /* ▲ ここまでツリー表示用のCSS */
+    #fileViewerHeader {
+      padding: 4px 8px;
+      border-bottom: 1px solid var(--border-color);
+      font-weight: bold;
+      display: flex;
+      justify-content: flex-end;
+    }
+    #closeViewer {
+      cursor: pointer;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+    #closeViewer:hover { color: var(--accent-color); }
+
+    #fileViewer {                 /* 実際のコード表示エリア */
+      white-space: pre-wrap;
+      padding: 8px;
+      font-family: Consolas, monospace;
+      background: transparent;
+    }
+    /* ▲ ここまでツリー表示用の CSS */
   </style>
 </head>
+
 <body>
 
   <!-- ===== Profile ===== -->
   <div class="section">
     <h1>Ko ISHIZAKI <br> a.k.a. koshzk0</h1>
-    <p><strong>koshzk0</strong> is an up-and-coming Web Engineer with hands-on experience in various programming languages and technologies.<br>
-    This document serves as a self-contained portfolio highlighting key skills and selected projects.</p>
+    <p><strong>koshzk0</strong> is an up‑and‑coming Web Engineer with hands‑on experience in various programming languages and technologies.<br>
+    This document serves as a self‑contained portfolio highlighting key skills and selected projects.</p>
   </div>
 
   <!-- ===== Skills ===== -->
@@ -156,7 +155,7 @@
   <div class="section">
     <h2>About</h2>
     <p>
-      koshzk0 has been involved in both front-end and back-end development across small-scale projects and client work.<br>
+      koshzk0 has been involved in both front‑end and back‑end development across small‑scale projects and client work.<br>
       With a background rooted in Microsoft tech stacks, they've also explored modern web development and scripting for automation.<br>
       From building internal tools to publishing lightweight web apps, Ko continues to grow as an engineer while focusing on practical, maintainable solutions.
     </p>
@@ -169,8 +168,8 @@
     <h3>Random Number Generator</h3>
     <p><a href="https://ko-ishizaki.github.io/rng" target="_blank">https://ko-ishizaki.github.io/rng</a><br>
     <strong>Technologies:</strong> HTML, Vanilla JavaScript<br>
-    Originally intended as an Excel VBA tool for a client, this project evolved into a lightweight web-based solution.<br>
-    By developing a standalone webpage, it streamlined the generation of condition-based random numbers, improving accessibility and efficiency.</p>
+    Originally intended as an Excel VBA tool for a client, this project evolved into a lightweight web‑based solution.<br>
+    By developing a standalone webpage, it streamlined the generation of condition‑based random numbers, improving accessibility and efficiency.</p>
 
     <h3>Shift Management Automation</h3>
     <p><strong>Technologies:</strong> Google Apps Script, Google Sheets<br>
@@ -181,9 +180,17 @@
   <!-- ===== GitHub Repositories ===== -->
   <div class="section">
     <h2>GitHub Repositories</h2>
-    <!-- ▼ ここから差し替え部分：ツリー表示＆ファイルビュー -->
+
+    <!-- ▼ リポジトリツリー -->
     <div id="repos">Loading repositories...</div>
-    <div id="fileViewer"></div>
+
+    <!-- ▼ コードプレビュー（×ボタン付き） -->
+    <div id="fileViewerContainer">
+      <div id="fileViewerHeader">
+        <span id="closeViewer" title="Close">×</span>
+      </div>
+      <pre id="fileViewer"></pre>
+    </div>
   </div>
 
   <!-- ===== Contact ===== -->
@@ -194,43 +201,58 @@
     <a href="https://github.com/ko-ishizaki" target="_blank">💻 GitHub: ko-ishizaki</a>
   </div>
 
-  <!-- ▼ 新しいスクリプト：GitHubリポジトリをツリー構造で表示 -->
+  <!-- ▼ GitHub リポジトリをツリー構造で表示するスクリプト -->
   <script>
-    // 固定パラメータ：ユーザー名とエンコーディング（UTF-8 固定）
-    const owner = "ko-ishizaki";
+    /* 固定パラメータ */
+    const owner    = "ko-ishizaki";
     const encoding = "utf-8";
 
-    // base64 文字列を Uint8Array に変換するユーティリティ
+    /* DOM 参照 */
+    const viewerContainer = document.getElementById("fileViewerContainer");
+    const viewer          = document.getElementById("fileViewer");
+    const closeBtn        = document.getElementById("closeViewer");
+
+    /* base64 → Uint8Array */
     function base64ToUint8Array(base64) {
-      const binaryString = window.atob(base64);
-      const len = binaryString.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
+      const binary = atob(base64);
+      const len    = binary.length;
+      const bytes  = new Uint8Array(len);
+      for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
       return bytes;
     }
 
-    // GitHub API を利用して指定ユーザーのリポジトリ一覧を表示
+    /* プレビューを閉じる */
+    function closeViewer() {
+      viewerContainer.style.display = "none";
+      viewer.textContent = "";
+      document
+        .querySelectorAll("li.file.selected, .dir-header.selected")
+        .forEach(el => el.classList.remove("selected"));
+    }
+    closeBtn.addEventListener("click", closeViewer);
+
+    /* リポジトリ一覧を取得して表示 */
     async function fetchRepositories(owner, container) {
       try {
         const resp = await fetch(`https://api.github.com/users/${owner}/repos`);
         if (!resp.ok) throw new Error(resp.statusText);
+
         const repos = await resp.json();
         container.innerHTML = "";
+
         if (repos.length === 0) {
           container.textContent = "No public repositories found.";
           return;
         }
+
         const ul = document.createElement("ul");
         ul.className = "directory";
 
         repos.forEach(repo => {
-          // リポジトリもフォルダと同様の構造とする
+          /* 各リポジトリをフォルダ風に */
           const repoContainer = document.createElement("div");
           repoContainer.className = "dir-container";
 
-          // ヘッダー部分（クリックで展開／折りたたむ）
           const header = document.createElement("div");
           header.className = "dir-header";
 
@@ -245,26 +267,20 @@
 
           repoContainer.appendChild(header);
 
-          // 子リスト（ルートディレクトリ）
           const childContainer = document.createElement("div");
           childContainer.className = "child-container";
           repoContainer.appendChild(childContainer);
 
-          // ヘッダークリックイベント（選択＋展開／折りたたみ）
-          header.addEventListener("click", async (e) => {
-            // イベント伝搬を最小限に抑える
-            e.preventDefault();
-            e.stopImmediatePropagation();
+          /* ヘッダクリックで展開/折りたたみ */
+          header.addEventListener("click", async e => {
+            e.preventDefault(); e.stopImmediatePropagation();
 
-            // 他の選択状態を解除（ファイルとディレクトリ両方）
-            document.querySelectorAll("li.file.selected, .dir-header.selected")
+            document
+              .querySelectorAll("li.file.selected, .dir-header.selected")
               .forEach(el => el.classList.remove("selected"));
-
-            // クリックしたヘッダーを選択
             header.classList.add("selected");
 
-            // 展開／折りたたみの処理
-            if (childContainer.style.display === "none" || childContainer.style.display === "") {
+            if (childContainer.style.display === "none" || !childContainer.style.display) {
               childContainer.style.display = "block";
               toggle.textContent = "[-]";
               await fetchDirectory(owner, repo.name, "", childContainer);
@@ -284,20 +300,20 @@
       }
     }
 
-    // 指定されたリポジトリ内のディレクトリ／ファイル一覧を表示する関数
+    /* 指定リポジトリのディレクトリ/ファイル一覧を取得 */
     async function fetchDirectory(owner, repo, path, container) {
       try {
         const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents${path ? "/" + path : ""}`;
-        const resp = await fetch(apiUrl);
+        const resp   = await fetch(apiUrl);
         if (!resp.ok) throw new Error(resp.statusText);
-        const items = await resp.json();
 
-        const ul = document.createElement("ul");
+        const items = await resp.json();
+        const ul    = document.createElement("ul");
         ul.className = "directory";
 
         items.forEach(item => {
           if (item.type === "dir") {
-            // ディレクトリの場合
+            /* ディレクトリ */
             const dirContainer = document.createElement("div");
             dirContainer.className = "dir-container";
 
@@ -319,19 +335,23 @@
             childContainer.className = "child-container";
             dirContainer.appendChild(childContainer);
 
-            // ディレクトリヘッダーのクリックイベント
-            header.addEventListener("click", async (e) => {
-              e.preventDefault();
-              e.stopImmediatePropagation();
+            header.addEventListener("click", async e => {
+              e.preventDefault(); e.stopImmediatePropagation();
 
-              document.querySelectorAll("li.file.selected, .dir-header.selected")
+              document
+                .querySelectorAll("li.file.selected, .dir-header.selected")
                 .forEach(el => el.classList.remove("selected"));
               header.classList.add("selected");
 
-              if (childContainer.style.display === "none" || childContainer.style.display === "") {
+              if (childContainer.style.display === "none" || !childContainer.style.display) {
                 childContainer.style.display = "block";
                 toggle.textContent = "[-]";
-                await fetchDirectory(owner, repo, path ? path + "/" + item.name : item.name, childContainer);
+                await fetchDirectory(
+                  owner,
+                  repo,
+                  path ? `${path}/${item.name}` : item.name,
+                  childContainer
+                );
               } else {
                 childContainer.style.display = "none";
                 toggle.textContent = "[+]";
@@ -342,22 +362,24 @@
             ul.appendChild(dirContainer);
 
           } else if (item.type === "file") {
-            // ファイルの場合
+            /* ファイル */
             const li = document.createElement("li");
-            li.classList.add("file");
+            li.className = "file";
             li.textContent = item.name;
 
-            // ファイルクリック時の選択
-            li.addEventListener("click", (e) => {
-              e.preventDefault();
-              e.stopImmediatePropagation();
+            li.addEventListener("click", e => {
+              e.preventDefault(); e.stopImmediatePropagation();
 
-              document.querySelectorAll("li.file.selected, .dir-header.selected")
+              document
+                .querySelectorAll("li.file.selected, .dir-header.selected")
                 .forEach(el => el.classList.remove("selected"));
               li.classList.add("selected");
 
-              // ファイルの内容を読み込み
-              loadFile(owner, repo, path ? path + "/" + item.name : item.name);
+              loadFile(
+                owner,
+                repo,
+                path ? `${path}/${item.name}` : item.name
+              );
             });
 
             ul.appendChild(li);
@@ -366,26 +388,27 @@
 
         container.innerHTML = "";
         container.appendChild(ul);
+
       } catch (err) {
         container.innerHTML = "Error: " + err;
       }
     }
 
-    // GitHub API からファイル内容を取得し、UTF-8 でデコードして表示する関数
+    /* ファイル内容を取得して表示 */
     async function loadFile(owner, repo, filePath) {
-      const viewer = document.getElementById("fileViewer");
       viewer.textContent = "Loading...";
+      viewerContainer.style.display = "block";      /* ← ここでビューワを開く */
       try {
         const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
-        const resp = await fetch(apiUrl);
+        const resp   = await fetch(apiUrl);
         if (!resp.ok) throw new Error(resp.statusText);
+
         const data = await resp.json();
         if (data.encoding === "base64") {
           const bytes = base64ToUint8Array(data.content.replace(/\n/g, ""));
-          const text = new TextDecoder(encoding).decode(bytes);
+          const text  = new TextDecoder(encoding).decode(bytes);
           viewer.textContent = text;
         } else {
-          // encoding が base64 以外の場合
           viewer.textContent = data.content;
         }
       } catch (err) {
@@ -393,13 +416,13 @@
       }
     }
 
-    // ページ読み込み時にリポジトリ一覧を取得
+    /* ページ読み込み時にリポジトリ一覧を取得 */
     document.addEventListener("DOMContentLoaded", () => {
       const repoContainer = document.getElementById("repos");
       fetchRepositories(owner, repoContainer);
     });
   </script>
-  <!-- ▲ 新しいスクリプトここまで -->
+  <!-- ▲ スクリプトここまで -->
 
 </body>
 </html>
