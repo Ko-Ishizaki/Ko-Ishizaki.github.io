@@ -1,2 +1,4 @@
 permalink: pretty
 timezone: Asia/Tokyo
+plugins:
+  - jekyll-sitemap
