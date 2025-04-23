@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>GridPalette</title>
+  <style>
+    /* カラーパレット定義 */
+    :root {
+      --bg-page: #f5f6f8;
+      --bg-card: #ffffff;
+      --color-text: #333333;
+      --color-header-bg: #2f3e4e;
+      --color-header-text: #ffffff;
+      --color-border: #d1d5db;
+      --color-accent: #5a9bd4;
+      --color-accent-light: #c8e1ff;
+      --color-button-bg: #5a9bd4;
+      --color-button-hover: #497fae;
+      --color-button-text: #ffffff;
+      --radius: 6px;
+      --shadow-card: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg-page);
+      color: var(--color-text);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+      font-weight: 400;
+      color: var(--color-header-bg);
+    }
+    h2 {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 24px;
+      font-weight: 300;
+      color: var(--color-text);
+      font-size: 1.1rem;
+    }
+
+    #controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      background: var(--bg-card);
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-card);
+      margin-bottom: 16px;
+      gap: 8px;
+    }
+    #controls select,
+    #controls button {
+      font-size: 0.95rem;
+      padding: 6px 12px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      outline: none;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    #controls select {
+      background: #fff;
+      cursor: pointer;
+    }
+    #controls button {
+      background: var(--color-button-bg);
+      color: var(--color-button-text);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    #controls button:hover {
+      background: var(--color-button-hover);
+    }
+
+    #input {
+      width: 100%;
+      height: 100px;
+      padding: 8px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      resize: vertical;
+      font-family: monospace;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 16px;
+    }
+
+    #tableWrap {
+      overflow: auto;
+      background: var(--bg-card);
+      padding: 16px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-card);
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 400px;
+    }
+    th, td {
+      border: 1px solid var(--color-border);
+      padding: 8px 12px;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    th {
+      background: var(--color-header-bg);
+      color: var(--color-header-text);
+      font-weight: 500;
+      cursor: pointer;
+      user-select: none;
+    }
+    td {
+      background: var(--bg-card);
+      cursor: text;
+    }
+    tr:nth-child(even) td {
+      background: #fafbfc;
+    }
+    tr:hover td {
+      background: #eef3f8;
+    }
+    .selected {
+      background: var(--color-accent-light) !important;
+    }
+  </style>
+</head>
+<body>
+  <h1>GridPalette</h1>
+
+  <div id="controls">
+    <label for="delimiter">区切り文字：</label>
+    <select id="delimiter">
+      <option value="tab">タブ</option>
+      <option value=",">カンマ</option>
+      <option value="|">パイプ</option>
+    </select>
+    <button id="load">テーブルに変換</button>
+    <button id="clearSel">選択解除</button>
+  </div>
+
+  <textarea id="input" placeholder="ここにタブ区切りなどのデータを貼り付け…"></textarea>
+  <div id="tableWrap"></div>
+
+  <script>
+    const loadBtn   = document.getElementById('load');
+    const clearBtn  = document.getElementById('clearSel');
+    const tableWrap = document.getElementById('tableWrap');
+    let table, isSelecting = false, startCell = null, selectedCol = null;
+
+    // 1) テーブルへの変換
+    loadBtn.addEventListener('click', () => {
+      const raw = document.getElementById('input').value.trim();
+      const key = document.getElementById('delimiter').value;
+      const delim = key === 'tab' ? '\t' : key;
+      const rows = raw.split(/\r?\n/).map(r => r.split(delim));
+
+      tableWrap.innerHTML = '';
+      table = document.createElement('table');
+      tableWrap.appendChild(table);
+
+      // ヘッダ
+      const thead = table.createTHead();
+      const headerRow = thead.insertRow();
+      const colCount = Math.max(...rows.map(r => r.length));
+      for (let ci = 0; ci < colCount; ci++) {
+        const th = document.createElement('th');
+        th.textContent = `Col ${ci+1}`;
+        th.dataset.col = ci;
+        th.addEventListener('click', onHeaderClick);
+        headerRow.appendChild(th);
+      }
+
+      // データ行
+      const tbody = table.createTBody();
+      rows.forEach((row, ri) => {
+        const tr = tbody.insertRow();
+        row.length = colCount;
+        row.forEach((cellText, ci) => {
+          const td = tr.insertCell();
+          td.contentEditable = 'true';
+          td.dataset.row = ri;
+          td.dataset.col = ci;
+          td.textContent = (cellText||'').trim();
+          td.addEventListener('mousedown', onCellMouseDown);
+        });
+      });
+    });
+
+    // 2) ドラッグ＆列選択ロジック
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    clearBtn.addEventListener('click', clearSelection);
+
+    function onHeaderClick(e) {
+      const ci = e.currentTarget.dataset.col;
+      clearSelection();
+      selectedCol = Number(ci);
+      table.querySelectorAll(`th[data-col="${ci}"], td[data-col="${ci}"]`)
+           .forEach(el => el.classList.add('selected'));
+    }
+    function onCellMouseDown(e) {
+      if (e.button !== 0) return;
+      clearSelection();
+      isSelecting = true;
+      startCell   = e.currentTarget;
+      highlightRect(startCell, startCell);
+      e.preventDefault();
+    }
+    function onMouseMove(e) {
+      if (!isSelecting) return;
+      const td = e.target.closest('td');
+      if (td && td !== startCell) highlightRect(startCell, td);
+    }
+    function onMouseUp() {
+      isSelecting = false;
+    }
+    function highlightRect(a, b) {
+      clearSelection();
+      const r1 = +a.dataset.row, c1 = +a.dataset.col;
+      const r2 = +b.dataset.row, c2 = +b.dataset.col;
+      const [rmin, rmax] = [r1, r2].sort((x,y)=>x-y);
+      const [cmin, cmax] = [c1, c2].sort((x,y)=>x-y);
+      for (let ri = rmin; ri <= rmax; ri++) {
+        for (let ci = cmin; ci <= cmax; ci++) {
+          const sel = table.querySelector(`td[data-row="${ri}"][data-col="${ci}"]`);
+          if (sel) sel.classList.add('selected');
+        }
+      }
+    }
+    function clearSelection() {
+      selectedCol = null;
+      tableWrap.querySelectorAll('.selected')
+               .forEach(el => el.classList.remove('selected'));
+    }
+
+    // 3) 《ココが重要》ドキュメント全体でコピーイベントを捕まえる
+    document.addEventListener('copy', onTableCopy);
+    function onTableCopy(e) {
+      // 「.selected」がひとつも無く、列選択も無ければ通常コピー
+      const selCells = table?.querySelectorAll('td.selected') || [];
+      if (!selCells.length && selectedCol === null) return;
+
+      e.preventDefault();
+      let text = '';
+
+      if (selectedCol !== null) {
+        // 列全体コピー
+        const lines = [];
+        table.tBodies[0].rows.forEach(tr => {
+          const td = tr.querySelector(`td[data-col="${selectedCol}"]`);
+          lines.push(td ? td.textContent.trim() : '');
+        });
+        text = lines.join('\n');
+      } else {
+        // 矩形範囲コピー
+        const rows = Array.from(selCells).map(td => +td.dataset.row);
+        const cols = Array.from(selCells).map(td => +td.dataset.col);
+        const [rmin, rmax] = [Math.min(...rows), Math.max(...rows)];
+        const [cmin, cmax] = [Math.min(...cols), Math.max(...cols)];
+        const lines = [];
+        for (let ri = rmin; ri <= rmax; ri++) {
+          const rowVals = [];
+          for (let ci = cmin; ci <= cmax; ci++) {
+            const td = table.querySelector(`td[data-row="${ri}"][data-col="${ci}"]`);
+            rowVals.push(td ? td.textContent.trim() : '');
+          }
+          lines.push(rowVals.join('\t'));
+        }
+        text = lines.join('\n');
+      }
+
+      e.clipboardData.setData('text/plain', text);
+    }
+  </script>
+</body>
+</html>
