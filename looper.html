@@ -219,13 +219,17 @@ VALUES
       })
       .filter(p => p.key)
     };
-      jsonArea.value = JSON.stringify(cfg, null, 2);
+      const comment = '// https://ko-ishizaki.github.io/looperで使うJSONファイルです。\n';
+      jsonArea.value = comment + JSON.stringify(cfg, null, 2);
     });
 
     // JSON テキストエリア → UI
     importBtn.addEventListener('click', () => {
-      let cfg;
-      try { cfg = JSON.parse(jsonArea.value); }
+    let raw = jsonArea.value;
+    // 先頭にコメント行があれば取り除く。なんでも追加できるようにしております。
+    raw = raw.replace(/^\s*\/\/.*(\r?\n)/, '');
+    let cfg;
+    try { cfg = JSON.parse(raw); }
       catch {
         alert('JSONの形式を確認してください');
         return;
