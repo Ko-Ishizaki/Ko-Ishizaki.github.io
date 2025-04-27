@@ -208,15 +208,17 @@ VALUES
 
     // UI → JSON テキストエリア
     exportBtn.addEventListener('click', () => {
-      const cfg = {
-        template: tplArea.value,
-        mode: modeSel.value,
-        placeholders: Array.from(phContainer.children).map(div => ({
-          key: div.querySelector('input[type=text]').value.trim(),
-          vals: div.querySelector('textarea').value
-                   .split('\n').map(s=>s.trim()).filter(s=>s!=='')
-        })).filter(p=>p.key && p.vals.length)
-      };
+    const cfg = {
+      template: tplArea.value,
+      mode: modeSel.value,
+      placeholders: Array.from(phContainer.children).map(div => {
+        const key = div.querySelector('input[type=text]').value.trim();
+        const vals = div.querySelector('textarea').value
+                      .split('\n').map(s => s.trim()).filter(s => s !== '');
+        return { key, vals };
+      })
+      .filter(p => p.key)
+    };
       jsonArea.value = JSON.stringify(cfg, null, 2);
     });
 
