@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>シングルページ ブログ（パンくず＋タグ＋検索）</title>
+  <style>
+    :root {
+      --color-bg:    #f5f7fa;
+      --color-white: #ffffff;
+      --color-gray:  #6c757d;
+      --color-dark:  #343a40;
+      --color-primary:   #4e73df;
+      --color-primary-hover: #2e59d9;
+      --color-success:   #1cc88a;
+      --color-success-hover: #17a673;
+      --font-base: 'Helvetica Neue', Arial, sans-serif;
+      --transition: 0.3s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      font-family: var(--font-base);
+      background: var(--color-bg);
+      color: var(--color-dark);
+      line-height: 1.6;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; height: auto; }
+    .container { max-width: 960px; margin:0 auto; padding:2rem 1rem; }
+    .breadcrumb {
+      font-size: .9rem; margin-bottom: 1.5rem;
+    }
+    .breadcrumb a { color: var(--color-primary); transition: color var(--transition); }
+    .breadcrumb a:hover { color: var(--color-primary-hover); }
+    .breadcrumb span + a::before {
+      content: '›'; margin: 0 .5rem; color: var(--color-gray);
+    }
+
+    /* ② 検索バー */
+    #search {
+      width: 100%;
+      padding: .6rem 1rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--color-gray);
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border-color var(--transition);
+    }
+    #search:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+
+    /* ③ 投稿カード */
+    .post-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .post-card {
+      background: var(--color-white);
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .post-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .post-card img {
+      width: 100%; height: 160px; object-fit: cover;
+    }
+    .post-card .body {
+      flex:1; padding:1rem; display:flex; flex-direction:column;
+    }
+    .post-card h2 {
+      font-size:1.25rem; margin-bottom:.5rem; color:var(--color-dark);
+    }
+    .post-card p {
+      flex:1; color:var(--color-gray); margin-bottom:1rem;
+    }
+    .post-card button {
+      align-self:flex-start;
+      background:var(--color-success); color:var(--color-white);
+      border:none; padding:.6rem 1.2rem; border-radius:4px;
+      font-size:.95rem; cursor:pointer;
+      transition: background var(--transition);
+    }
+    .post-card button:hover,
+    .post-card button:focus {
+      background: var(--color-success-hover);
+    }
+
+    /* ④ ハッシュタグ表示 */
+    .hashtags {
+      margin-bottom: .8rem;
+    }
+    .hashtag {
+      display:inline-block;
+      margin-right:.5rem; margin-bottom:.5rem;
+      padding:.2rem .5rem;
+      background: var(--color-bg);
+      border:1px solid var(--color-gray);
+      border-radius:3px;
+      font-size:.85rem;
+      color: var(--color-primary);
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+    }
+    .hashtag:hover {
+      background: var(--color-primary);
+      color: var(--color-white);
+    }
+
+    /* ⑤ 記事ページ */
+    .article {
+      animation: fadeIn 0.4s ease;
+    }
+    .article h1 {
+      margin-bottom: .5rem;
+      font-size: 2rem;
+      color: var(--color-primary);
+    }
+    .article .hashtags { margin-bottom:1.5rem; }
+    .article p,
+    .article ul { margin-bottom:1rem; color:var(--color-gray); }
+    .article ul li {
+      margin-left:1.2rem; list-style-type:disc;
+    }
+    .back-button {
+      display:inline-block; margin-top:2rem;
+      color:var(--color-primary); font-weight:bold;
+      cursor:pointer; transition:color var(--transition);
+    }
+    .back-button:hover { color:var(--color-primary-hover); }
+    @keyframes fadeIn {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .page { display:none; }
+    .page.active { display:block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- パンくず -->
+    <nav class="breadcrumb"></nav>
+
+    <!-- 検索バー -->
+    <input type="text" id="search" placeholder="タグやキーワードで検索…">
+
+    <!-- ページ群 -->
+    <div id="pages">
+      <!-- ホーム（一覧） -->
+      <section id="home" class="page active" data-title="ホーム">
+        <h1>ブログ一覧</h1>
+        <div class="post-list">
+          <!-- 投稿カード -->
+          <div class="post-card" data-id="post1" data-title="はじめての投稿"
+               data-tags="ポートフォリオ,HTML,JavaScript">
+            <img src="https://via.placeholder.com/400x300?text=Image+1" alt="">
+            <div class="body">
+              <div class="hashtags"></div>
+              <h2>はじめての投稿</h2>
+              <p>シングルページブログシステムを作ってみました。</p>
+              <button class="read-btn">続きを読む</button>
+            </div>
+          </div>
+          <div class="post-card" data-id="post2" data-title="第二の記事"
+               data-tags="パンくず,UI,CSS">
+            <img src="https://via.placeholder.com/400x300?text=Image+2" alt="">
+            <div class="body">
+              <div class="hashtags"></div>
+              <h2>第二の記事</h2>
+              <p>パンくずリストでページ分けのサンプルです。</p>
+              <button class="read-btn">続きを読む</button>
+            </div>
+          </div>
+          <!-- …さらに増やせます -->
+        </div>
+      </section>
+
+      <!-- 記事1 -->
+      <section id="post1" class="page article" data-title="はじめての投稿"
+               data-tags="ポートフォリオ,HTML,JavaScript">
+        <h1>はじめての投稿</h1>
+        <div class="hashtags"></div>
+        <img src="https://via.placeholder.com/800x400?text=詳細画像+1" alt="">
+        <p>これは「はじめての投稿」の本文です。タグと検索機能を追加しました。</p>
+        <div class="back-button" data-target="home">&larr; 一覧に戻る</div>
+      </section>
+
+      <!-- 記事2 -->
+      <section id="post2" class="page article" data-title="第二の記事"
+               data-tags="パンくず,UI,CSS">
+        <h1>第二の記事</h1>
+        <div class="hashtags"></div>
+        <img src="https://via.placeholder.com/800x400?text=詳細画像+2" alt="">
+        <p>こちらはタグ付き＆検索対応のブログシステムサンプルです。</p>
+        <ul>
+          <li>タグをクリックするとそのタグで絞り込み</li>
+          <li>検索バーでタイトル・プレビュー・タグを横断検索</li>
+        </ul>
+        <div class="back-button" data-target="home">&larr; 一覧に戻る</div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const pages    = document.querySelectorAll('.page');
+    const bc       = document.querySelector('.breadcrumb');
+    const homeId   = 'home';
+    const searchEl = document.getElementById('search');
+    const cards    = document.querySelectorAll('.post-card');
+
+    // パンくず更新
+    function updateBreadcrumb(trail) {
+      bc.innerHTML = trail.map((i, idx) => {
+        if (idx < trail.length - 1) {
+          return `<a href="#" data-target="${i.id}">${i.title}</a>`;
+        } else {
+          return `<span>${i.title}</span>`;
+        }
+      }).join('<span> / </span>');
+      bc.querySelectorAll('a').forEach(a=>
+        a.addEventListener('click', e=>{
+          e.preventDefault();
+          showPage(a.dataset.target);
+        })
+      );
+    }
+
+    // ハッシュタグを描画
+    function renderHashtags(container, tagsCsv) {
+      container.innerHTML = '';
+      tagsCsv.split(',').forEach(tag=>{
+        const span = document.createElement('span');
+        span.className = 'hashtag';
+        span.textContent = `#${tag}`;
+        span.addEventListener('click', ()=> {
+          searchEl.value = tag;
+          filterCards(tag);
+        });
+        container.appendChild(span);
+      });
+    }
+
+    // ページ切替
+    function showPage(id) {
+      pages.forEach(p=>p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      // パンくず
+      const trail = [{ id: homeId, title: document.getElementById(homeId).dataset.title }];
+      if (id !== homeId) trail.push({ id, title: document.getElementById(id).dataset.title });
+      updateBreadcrumb(trail);
+      // 記事ページのタグ描画
+      if (id !== homeId) {
+        const sec = document.getElementById(id);
+        const tags = sec.dataset.tags || '';
+        renderHashtags(sec.querySelector('.hashtags'), tags);
+      }
+    }
+
+    // カード一覧のタグ描画
+    cards.forEach(card=>{
+      const tags = card.dataset.tags || '';
+      renderHashtags(card.querySelector('.hashtags'), tags);
+    });
+
+    // フィルタ（検索 or タグクリック）
+    function filterCards(term) {
+      const q = term.trim().toLowerCase();
+      cards.forEach(card=>{
+        const title   = card.dataset.title.toLowerCase();
+        const preview = card.querySelector('p').textContent.toLowerCase();
+        const tags    = card.dataset.tags.toLowerCase();
+        const match   = [title, preview, tags].some(str=> str.includes(q));
+        card.style.display = match ? '' : 'none';
+      });
+    }
+    searchEl.addEventListener('input', e=> filterCards(e.target.value));
+
+    // 「続きを読む」／「一覧に戻る」設定
+    document.querySelectorAll('.read-btn').forEach(btn=>
+      btn.addEventListener('click', e=>
+        showPage(e.target.closest('.post-card').dataset.id)
+      )
+    );
+    document.querySelectorAll('.back-button').forEach(btn=>
+      btn.addEventListener('click', ()=> showPage(btn.dataset.target))
+    );
+
+    // 初期設定
+    updateBreadcrumb([{ id: homeId, title: document.getElementById(homeId).dataset.title }]);
+  </script>
+</body>
+</html>
