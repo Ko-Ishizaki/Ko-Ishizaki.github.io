@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>テキストリピーター</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: sans-serif;
+    }
+    /* 左上端にまとめたパネル */
+    .panel {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      width: 240px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+    }
+    .panel input[type="text"],
+    .panel input[type="number"],
+    .panel button {
+      width: 100%;
+      padding: 6px 8px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .panel textarea {
+      width: 100%;
+      height: 150px;
+      resize: none;
+      font-size: 14px;
+      line-height: 1.4;
+      padding: 6px 8px;
+      box-sizing: border-box;
+    }
+    .panel button {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="panel">
+    <input type="text" id="inputText" placeholder="例: Hello, world!" />
+    <input type="number" id="lineCount" value="1" min="1" />
+    <button id="generateBtn">生成</button>
+    <button id="copyBtn">コピー</button>
+    <textarea id="output" readonly placeholder="ここに結果が表示されます"></textarea>
+  </div>
+
+  <script>
+    const inputText   = document.getElementById('inputText');
+    const lineCount   = document.getElementById('lineCount');
+    const generateBtn = document.getElementById('generateBtn');
+    const copyBtn     = document.getElementById('copyBtn');
+    const output      = document.getElementById('output');
+
+    generateBtn.addEventListener('click', () => {
+      const text  = inputText.value.trim();
+      const count = Math.max(0, parseInt(lineCount.value, 10) || 0);
+      output.value = Array(count).fill(text).join('\n');
+    });
+
+    copyBtn.addEventListener('click', () => {
+      if (!output.value) return alert('まずは「生成」を押してください');
+      navigator.clipboard.writeText(output.value)
+        .then(() => alert('クリップボードにコピーしました'))
+        .catch(() => alert('コピーに失敗しました'));
+    });
+  </script>
+
+</body>
+</html>
