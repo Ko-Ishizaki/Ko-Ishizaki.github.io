@@ -99,7 +99,16 @@
   <!-- ==== 設定パネル ==== -->
   <div id="config">
     <h2>ジェネレータ設定</h2>
-
+    <p>
+      <a href="#" id="openRepeater"
+         style="display:inline-block;padding:4px 8px;
+                background:#eee;color:black;
+                border-radius:3px;text-decoration:none;
+                border: 1px solid #888;
+                font-size:0.9em;">
+        テキストリピータを使用する
+      </a>
+    </p>
     <!-- JSON 入出力セクション -->
     <label for="config-json">JSON設定（手動編集可）</label>
     <textarea id="config-json" rows="6"
@@ -335,6 +344,15 @@ VALUES
           document.execCommand('copy');
           alert('コピーしました');
         });
+    });
+    document.getElementById('openRepeater').addEventListener('click', function(e) {
+      e.preventDefault();
+      window.open(
+        'https://ko-ishizaki.github.io/debug/text_repeater',
+        'テキストリピーター',
+        'width=290,height=370' +
+        ',menubar=no,toolbar=no,location=no,status=no'
+      );
     });
   </script>
 </body>
