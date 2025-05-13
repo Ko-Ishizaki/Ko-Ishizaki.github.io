@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>memo</title>
+  <style>
+    /* 共通 */
+    body {
+      margin: 0; padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+    }
+    :root {
+      --bg: #f9f9f9;
+      --text: #333;
+      --card-bg: #fff;
+      --card-border: #ddd;
+      --accent: #1a73e8;
+    }
+    .dark {
+      --bg: #181a1b;
+      --text: #e8eaed;
+      --card-bg: #242526;
+      --card-border: #3a3b3c;
+      --accent: #8ab4f8;
+    }
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 24px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+    }
+    header .controls {
+      display: flex; align-items: center;
+      gap: 16px;
+    }
+    header button, header .toggle label {
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: var(--text);
+    }
+    .notes-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      padding: 24px;
+    }
+    .note {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 12px 12px 24px;
+      position: relative;
+      display: flex; flex-direction: column;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: box-shadow 0.2s;
+    }
+    .note.pinned {
+      border-left-color: gold;
+    }
+    .note:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .note .text { flex-grow: 1; white-space: pre-wrap; word-break: break-word; }
+    .note .tags { margin: 8px 0; font-size: 0.8rem; color: var(--accent); }
+    .note .actions {
+      position: absolute; top: 8px; right: 8px;
+      display: flex; gap: 8px;
+    }
+    .note .actions button {
+      background: none; border: none;
+      cursor: pointer; font-size: 1rem;
+      color: var(--text);
+    }
+    .note .hash {
+      font-size: 0.7rem;
+      color: var(--text);
+      margin-top: auto;
+      word-break: break-all;
+    }
+    .fab {
+      position: fixed; right: 24px; bottom: 24px;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--accent); color: #fff; border: none;
+      font-size: 32px; line-height: 0; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .modal {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      display: none; justify-content: center; align-items: center;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 20px;
+      width: 90%; max-width: 400px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .modal-content textarea {
+      resize: vertical; min-height: 100px;
+      padding: 8px; font-size: 1rem;
+      border: 1px solid var(--card-border);
+      border-radius: 4px;
+      background: var(--bg); color: var(--text);
+    }
+    .modal-content input[type="text"],
+    .modal-content input[type="color"] {
+      padding: 6px; font-size: 0.9rem;
+      border: 1px solid var(--card-border);
+      border-radius: 4px;
+      background: var(--bg); color: var(--text);
+    }
+    .modal-content .row { display: flex; align-items: center; gap: 8px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .modal-actions button {
+      padding: 6px 12px; font-size: 0.9rem;
+      border: none; border-radius: 4px;
+      cursor: pointer;
+    }
+    .save-btn { background: var(--accent); color: #fff; }
+    .cancel-btn { background: var(--card-border); color: var(--text); }
+  </style>
+</head>
+<body>
+<header>
+  <div>memo lite</div>
+  <div class="controls">
+    <button onclick="clearAll()">すべて削除</button>
+    <div class="toggle">
+      <input type="checkbox" id="darkToggle" onchange="toggleDarkMode()">
+      <label for="darkToggle">ダークモード</label>
+    </div>
+  </div>
+</header>
+
+<div class="notes-container" id="noteList"></div>
+<button class="fab" onclick="openModal()">＋</button>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <textarea id="memoInput" placeholder="メモを入力..."></textarea>
+    <div class="row">
+      <input type="text" id="tagInput" placeholder="タグ(カンマ区切り)">
+    </div>
+    <div class="row">
+      <label for="colorInput">色:</label>
+      <input type="color" id="colorInput" value="#ffffff">
+      <label for="pinInput">固定:</label>
+      <input type="checkbox" id="pinInput">
+    </div>
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeModal()">キャンセル</button>
+      <button class="save-btn" onclick="saveMemo()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let editingId = null;
+
+  function getMemos() {
+    return JSON.parse(localStorage.getItem('memos') || '[]');
+  }
+  function setMemos(m) { localStorage.setItem('memos', JSON.stringify(m)); }
+  function getDarkMode() {
+    return localStorage.getItem('darkMode') === 'true';
+  }
+  function setDarkMode(val) {
+    localStorage.setItem('darkMode', val);
+  }
+
+  async function hashText(text) {
+    const buf = new TextEncoder().encode(text);
+    const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+    return [...new Uint8Array(hashBuf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+
+  function openModal(id=null) {
+    editingId = id;
+    const mInput = document.getElementById('memoInput');
+    const tInput = document.getElementById('tagInput');
+    const cInput = document.getElementById('colorInput');
+    const pInput = document.getElementById('pinInput');
+    if(id!==null) {
+      const memo = getMemos().find(x=>x.id===id);
+      mInput.value = memo.text;
+      tInput.value = memo.tags.join(',');
+      cInput.value = memo.color;
+      pInput.checked = memo.pinned;
+    } else {
+      mInput.value = ''; tInput.value = ''; cInput.value='#ffffff'; pInput.checked=false;
+    }
+    document.getElementById('modal').classList.add('active');
+  }
+  function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+    editingId=null;
+  }
+
+  async function saveMemo() {
+    const text = document.getElementById('memoInput').value.trim();
+    if(!text) return;
+    const tags = document.getElementById('tagInput').value.split(',').map(s=>s.trim()).filter(Boolean);
+    const color = document.getElementById('colorInput').value;
+    const pinned = document.getElementById('pinInput').checked;
+    const hash = await hashText(text);
+    const memos = getMemos();
+    if(editingId!==null) {
+      const idx = memos.findIndex(x=>x.id===editingId);
+      memos[idx] = { id: editingId, text, tags, color, pinned, hash };
+    } else {
+      memos.push({ id: Date.now(), text, tags, color, pinned, hash });
+    }
+    setMemos(memos);
+    renderMemos(); closeModal();
+  }
+  function deleteMemo(id) {
+    setMemos(getMemos().filter(x=>x.id!==id));
+    renderMemos();
+  }
+  function clearAll() {
+    if(confirm('すべてのメモを削除しますか？')) {
+      localStorage.removeItem('memos'); renderMemos();
+    }
+  }
+  function toggleDarkMode() {
+    const dm= document.getElementById('darkToggle').checked;
+    document.body.classList.toggle('dark', dm);
+    setDarkMode(dm);
+  }
+  function applyDarkMode() {
+    const dm = getDarkMode();
+    document.body.classList.toggle('dark', dm);
+    document.getElementById('darkToggle').checked = dm;
+  }
+
+  function renderMemos() {
+    const list = document.getElementById('noteList');
+    const memos = getMemos().sort((a,b)=> (b.pinned - a.pinned) || (b.id - a.id));
+    list.innerHTML = '';
+    memos.forEach(m=>{
+      const d= document.createElement('div'); d.className='note'+(m.pinned?' pinned':'');
+      d.style.borderLeftColor = m.pinned ? 'gold' : m.color;
+      const t= document.createElement('div'); t.className='text'; t.textContent=m.text;
+      const tg= document.createElement('div'); tg.className='tags'; tg.textContent= m.tags.join(' ');
+      const h= document.createElement('div'); h.className='hash'; h.textContent=m.hash;
+      const act= document.createElement('div'); act.className='actions';
+      const eBtn=document.createElement('button'); eBtn.textContent='✏️'; eBtn.onclick=()=>openModal(m.id);
+      const dBtn=document.createElement('button'); dBtn.textContent='🗑️'; dBtn.onclick=()=>deleteMemo(m.id);
+      act.append(eBtn,dBtn);
+      d.append(act,t, tg, h);
+      list.append(d);
+    });
+  }
+
+  window.onload = ()=>{ applyDarkMode(); renderMemos(); }  
+</script>
+</body>
+</html>
