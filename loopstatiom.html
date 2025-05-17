@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ループステーション</title>
+  <style>
+    body { background:#111; color:#fff; font-family:sans-serif; text-align:center; padding:2rem; }
+    #controls { margin-bottom:1rem; }
+    button, select, label { margin:0.3rem; font-size:1rem; vertical-align:middle; }
+    .pad-container { display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; margin-top:1rem; }
+    .pad {
+      background:#222; border:2px solid #555; border-radius:8px; padding:0.8rem;
+      position:relative;
+    }
+    .pad.recording { border-color:#f33; }
+    .pad.playing   { border-color:#3f3; }
+    .pad h3 { margin:0.3rem 0; }
+    .pad button { width:100%; margin:0.2rem 0; padding:0.5rem; cursor:pointer; }
+    .pad canvas { width:100%; height:80px; background:#000; display:block; margin-top:0.5rem; border:1px solid #333; }
+    #status { margin-top:1rem; font-size:0.9rem; }
+  </style>
+</head>
+<body>
+  <h1>ループステーション</h1>
+  <div id="controls">
+    ループ長：
+    <select id="loopDuration">
+      <option value="2">2秒</option>
+      <option value="4" selected>4秒</option>
+      <option value="8">8秒</option>
+    </select>
+    <label><input type="checkbox" id="syncRecord"> 同期録音</label>
+    <button id="startAll">▶️ 全体再生</button>
+    <button id="stopAll">⏹️ 全体停止</button>
+  </div>
+  <div class="pad-container" id="pads"></div>
+  <div id="status">準備完了</div>
+
+  <script>
+    const NUM_PADS = 4;
+    let LOOP_DURATION = 4;
+    const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    let micStream = null;
+    let globalPlaying = false;
+    let loopStartTime = 0;
+
+    const syncCheckbox = document.getElementById('syncRecord');
+    const pads = [];
+
+    // マイク取得
+    async function getMic() {
+      if (!micStream) {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio:true });
+      }
+      return micStream;
+    }
+
+    // Pad生成
+    function createPad(i) {
+      const div = document.createElement('div');
+      div.className = 'pad';
+      div.innerHTML = `
+        <h3>Pad ${i+1}</h3>
+        <button class="rec">🎙️ 録音</button>
+        <button class="play">▶️ 再生</button>
+        <button class="clear">❌ クリア</button>
+        <canvas></canvas>
+      `;
+      document.getElementById('pads').appendChild(div);
+
+      const canvas = div.querySelector('canvas');
+      const ctx    = canvas.getContext('2d');
+      canvas.width  = 300;
+      canvas.height = 80;
+
+      const pad = {
+        div, canvas, ctx,
+        buffer: null, source: null,
+        waveform: [], isRecording:false, isPlaying:false,
+        recordStart: 0, playStart: 0
+      };
+
+      // 録音
+      div.querySelector('.rec').onclick = () => recordPad(i);
+
+      // 再生／停止
+      div.querySelector('.play').onclick = () => playPad(i);
+
+      // クリア
+      div.querySelector('.clear').onclick = () => {
+        stopPad(i);
+        pad.buffer = null;
+        pad.waveform = [];
+        pad.isRecording = pad.isPlaying = false;
+        div.classList.remove('recording','playing');
+        drawPad(pad);
+        document.getElementById('status').textContent = `Pad ${i+1} をクリア`;
+      };
+
+      pads.push(pad);
+      drawPad(pad);
+    }
+
+    // 録音処理
+    async function recordPad(idx) {
+      const pad = pads[idx];
+      if (pad.isRecording) return;
+      const syncMode = syncCheckbox.checked;
+
+      const stream = await getMic();
+      const micSrc = audioCtx.createMediaStreamSource(stream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      micSrc.connect(analyser);
+
+      // 録音用Dest
+      const dest = audioCtx.createMediaStreamDestination();
+      micSrc.connect(dest);
+
+      // 同期録音なら既存Padをモニター＆ミックス
+      if (syncMode) {
+        pads.forEach((p,j) => {
+          if (j!==idx && p.buffer) {
+            const mon = audioCtx.createBufferSource();
+            mon.buffer = p.buffer;
+            mon.loop   = false;
+            mon.connect(audioCtx.destination);
+            mon.connect(dest);
+            mon.start(audioCtx.currentTime);
+            mon.stop(audioCtx.currentTime + LOOP_DURATION);
+          }
+        });
+      }
+
+      const recorder = new MediaRecorder(dest.stream);
+      const chunks = [];
+      recorder.ondataavailable = e => chunks.push(e.data);
+      recorder.onstop = async () => {
+        const blob = new Blob(chunks,{type:'audio/webm'});
+        const buf  = await blob.arrayBuffer();
+        pad.buffer  = await audioCtx.decodeAudioData(buf);
+        pad.isRecording = false;
+        pad.div.classList.remove('recording');
+        document.getElementById('status').textContent = `Pad ${idx+1} 録音完了`;
+      };
+
+      // 録音開始
+      pad.isRecording  = true;
+      pad.recordStart  = audioCtx.currentTime;
+      pad.waveform      = [];
+      pad.div.classList.add('recording');
+      recorder.start();
+
+      // 波形サンプリング
+      (function sample() {
+        if (!pad.isRecording) return;
+        const data = new Uint8Array(analyser.fftSize);
+        analyser.getByteTimeDomainData(data);
+        let sum=0;
+        for (let i=0;i<data.length;i++){
+          const v=(data[i]-128)/128;
+          sum += v*v;
+        }
+        pad.waveform.push(Math.sqrt(sum/data.length));
+        setTimeout(sample, 1000/60);
+      })();
+
+      // 自動停止
+      setTimeout(() => recorder.stop(), LOOP_DURATION*1000);
+    }
+
+    // 再生処理
+    function playPad(idx) {
+      const pad = pads[idx];
+      if (!pad.buffer) return;
+      if (pad.isPlaying) {
+        stopPad(idx);
+        return;
+      }
+      const now = audioCtx.currentTime;
+      let startT = now;
+      // 既に全体再生中なら次境界でスタート
+      if (globalPlaying) {
+        startT = loopStartTime;
+      }
+      const src = audioCtx.createBufferSource();
+      src.buffer = pad.buffer;
+      src.loop   = true;
+      src.connect(audioCtx.destination);
+      src.start(startT);
+
+      pad.source    = src;
+      pad.playStart = startT;
+      pad.isPlaying = true;
+      pad.div.classList.add('playing');
+
+      if (!globalPlaying) {
+        globalPlaying = true;
+        loopStartTime = startT + LOOP_DURATION;
+      }
+
+      document.getElementById('status').textContent = `Pad ${idx+1} を再生`;
+    }
+
+    // 単体停止
+    function stopPad(idx) {
+      const pad = pads[idx];
+      if (pad.source) {
+        try { pad.source.stop(); } catch {}
+        pad.source.disconnect();
+        pad.source = null;
+      }
+      pad.isPlaying = false;
+      pad.div.classList.remove('playing');
+      if (!pads.some(p=>p.isPlaying)) {
+        globalPlaying = false;
+        document.getElementById('status').textContent = '全停止';
+      }
+    }
+
+    // 全体再生
+    function startAll() {
+      if (globalPlaying) return;
+      const now = audioCtx.currentTime;
+      const startT = now;
+      pads.forEach((pad,i) => {
+        if (pad.buffer && !pad.isPlaying) {
+          const src = audioCtx.createBufferSource();
+          src.buffer = pad.buffer;
+          src.loop   = true;
+          src.connect(audioCtx.destination);
+          src.start(startT);
+          pad.source    = src;
+          pad.playStart = startT;
+          pad.isPlaying = true;
+          pad.div.classList.add('playing');
+        }
+      });
+      globalPlaying = true;
+      loopStartTime = startT + LOOP_DURATION;
+      document.getElementById('status').textContent = '全体ループ再生中…';
+    }
+
+    // 全体停止
+    function stopAll() {
+      pads.forEach((_,i)=>stopPad(i));
+    }
+
+    // 描画：波形＋秒目盛り＋針ゲージ
+    function drawPad(pad) {
+      const { ctx, canvas, waveform, isRecording, isPlaying, recordStart, playStart } = pad;
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0,0,w,h);
+
+      // 波形（上半分）
+      const waveH = h * 0.5;
+      ctx.fillStyle = '#0f0';
+      const L = waveform.length;
+      for (let i=0; i<L; i++) {
+        const x = (i / (L-1||1)) * w;
+        const barH = waveform[i] * waveH;
+        ctx.fillRect(x, (waveH-barH)/2, 2, barH);
+      }
+
+      // タイムライン目盛り
+      const baseY = waveH;
+      ctx.strokeStyle = '#888';
+      ctx.fillStyle = '#fff';
+      ctx.lineWidth = 1;
+      ctx.textAlign = 'center';
+      ctx.font = '12px sans-serif';
+      for (let t=0; t<=LOOP_DURATION; t++) {
+        const x = (t/LOOP_DURATION)*w;
+        ctx.beginPath();
+        ctx.moveTo(x, baseY);
+        ctx.lineTo(x, baseY+6);
+        ctx.stroke();
+        ctx.fillText(t+'s', x, h-4);
+      }
+
+      // 針ゲージ
+      const now = audioCtx.currentTime;
+      let elapsed = 0;
+      if (isRecording) {
+        elapsed = Math.min(now - recordStart, LOOP_DURATION);
+      } else if (isPlaying) {
+        elapsed = ((now - playStart) % LOOP_DURATION + LOOP_DURATION) % LOOP_DURATION;
+      }
+      const gx = (elapsed/LOOP_DURATION)*w;
+      ctx.strokeStyle = isRecording ? 'red' : (isPlaying ? 'lime' : 'transparent');
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(gx, 0);
+      ctx.lineTo(gx, h);
+      ctx.stroke();
+    }
+
+    // アニメループ
+    function animate() {
+      pads.forEach(drawPad);
+      requestAnimationFrame(animate);
+    }
+
+    // 初期化
+    for (let i=0; i<NUM_PADS; i++) createPad(i);
+    document.getElementById('startAll').onclick = startAll;
+    document.getElementById('stopAll').onclick  = stopAll;
+    document.getElementById('loopDuration').onchange = e => LOOP_DURATION = +e.target.value;
+    animate();
+  </script>
+</body>
+</html>
