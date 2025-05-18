@@ -164,17 +164,43 @@
   <!-- ===== Projects ===== -->
   <div class="section">
     <h2>Projects</h2>
-
-    <h3>Random Number Generator</h3>
-    <p><a href="https://ko-ishizaki.github.io/rng" target="_blank">https://ko-ishizaki.github.io/rng</a>  (The URL is a demo.)<br>
-    <strong>Technologies:</strong> HTML, Vanilla JavaScript<br>
-    Originally intended as an Excel VBA tool for a client, this project evolved into a lightweight web‑based solution.<br>
-    By developing a standalone webpage, it streamlined the generation of condition‑based random numbers, improving accessibility and efficiency.</p>
-
-    <h3>Shift Management Automation</h3>
-    <p><strong>Technologies:</strong> Google Apps Script, Google Sheets<br>
-    Automated a shift scheduling system that was previously managed manually using Google Sheets.<br>
-    Used Google Apps Script to simplify data entry, generate summaries, and send automated notifications — significantly reducing the time needed for updates and communication.</p>
+  
+    <details>
+      <summary><strong>Random Number Generator</strong> — Web-based number picker</summary>
+      <p><a href="https://ko-ishizaki.github.io/rng" target="_blank">https://ko-ishizaki.github.io/rng</a> (The URL is a demo.)<br>
+      <strong>Technologies:</strong> HTML, Vanilla JavaScript<br>
+      Originally intended as an Excel VBA tool for a client, this project evolved into a lightweight web‑based solution.<br>
+      By developing a standalone webpage, it streamlined the generation of condition‑based random numbers, improving accessibility and efficiency.</p>
+    </details>
+  
+    <details>
+      <summary><strong>Shift Management Automation</strong> — Auto-scheduling in Google Sheets</summary>
+      <p><strong>Technologies:</strong> Google Apps Script, Google Sheets<br>
+      Automated a shift scheduling system that was previously managed manually using Google Sheets.<br>
+      Used Google Apps Script to simplify data entry, generate summaries, and send automated notifications — significantly reducing the time needed for updates and communication.</p>
+    </details>
+  
+    <details>
+      <summary><strong>Dummy Image Generator</strong> — Custom placeholder image service</summary>
+      <p><a href="https://dummyimage.kdf-jp.tokyo/400x200.png?text=Test1&bg=white&fg=black&fontSize=100" target="_blank">https://dummyimage.kdf-jp.tokyo</a><br>
+      <strong>Technologies:</strong> Node.js, Express.js<br>
+      This is a self-hosted dummy image generator built as an alternative to <code>via.placeholder.com</code>, which stopped functioning properly. It provides dynamically generated placeholder images with customizable text, dimensions, and colors.<br>
+      The base domain <code>dummyimage.kdf-jp.tokyo</code> redirects to <code>ko-ishizaki.github.io</code> when accessed directly, but image URLs work as expected when structured correctly.</p>
+  
+      <p><strong>Example usage:</strong><br>
+      <code>https://dummyimage.kdf-jp.tokyo/400x200.png?text=Test1&bg=white&fg=black&fontSize=100</code></p>
+  
+      <p><strong>URL structure:</strong></p>
+      <ul>
+        <li><code>/{width}x{height}</code> – image dimensions and format (currently PNG supported)</li>
+        <li><code>?text=YourText</code> – text to be displayed (URL-encoded)</li>
+        <li><code>&bg=BackgroundColor</code> – background color (HTML color name or hex code)</li>
+        <li><code>&fg=TextColor</code> – text color (HTML color name or hex code)</li>
+        <li><code>&fontSize=Size</code> – font size in pixels</li>
+      </ul>
+  
+      <p>Color values can be standard CSS color names like <code>white</code>, <code>black</code>, or hexadecimal codes such as <code>#ffcc00</code>. The system is designed to be simple and flexible for developers needing placeholder images in prototyping or documentation.</p>
+    </details>
   </div>
 
   <!-- ===== GitHub Repositories ===== -->
