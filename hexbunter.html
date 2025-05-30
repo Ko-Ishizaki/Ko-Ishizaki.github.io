@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>HexHunter</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 20px; }
+    canvas { border: 1px solid #ccc; margin-top: 10px; cursor: crosshair; }
+    #colorDisplay { margin-top: 10px; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <h2>HexHunter</h2>
+  <canvas id="canvas"></canvas>
+  <div id="colorDisplay">Click to get color</div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const colorDisplay = document.getElementById('colorDisplay');
+
+    // ペースト時の処理
+    window.addEventListener('paste', (event) => {
+      const items = event.clipboardData.items;
+      for (const item of items) {
+        if (item.type.indexOf("image") === 0) {
+          const file = item.getAsFile();
+          const img = new Image();
+          const reader = new FileReader();
+
+          reader.onload = function (e) {
+            img.onload = function () {
+              canvas.width = img.width;
+              canvas.height = img.height;
+              ctx.drawImage(img, 0, 0);
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    });
+
+    // キャンバスクリック時の処理
+    canvas.addEventListener('click', function (e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const pixel = ctx.getImageData(x, y, 1, 1).data;
+      const [r, g, b] = pixel;
+      const hex = "#" + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+      colorDisplay.textContent = `RGB: (${r}, ${g}, ${b}) | HEX: ${hex}`;
+      colorDisplay.style.color = hex;
+    });
+  </script>
+</body>
+</html>
