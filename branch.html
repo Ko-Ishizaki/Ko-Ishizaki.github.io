@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Branch</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    font-family: monospace;
+    background: #0f0f0f;
+    color: #cfd2d6;
+    box-sizing: border-box;
+  }
+
+  body {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  textarea, #viewer {
+    width: 50%;
+    height: 100%;
+    border: none;
+    padding: 1rem;
+    background: #1e1e1e;
+    color: #cfd2d6;
+    box-sizing: border-box;
+    flex: 1;
+  }
+
+  textarea {
+    resize: none;
+    outline: none;
+  }
+
+  #viewer {
+    overflow: auto;
+    white-space: pre;
+  }
+
+  .msg {
+    opacity: 0.6;
+  }
+
+  button#copyBtn {
+    position: fixed;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 1000;
+    padding: 0.3rem 0.8rem;
+    border: none;
+    background: #2d2d2d;
+    color: #cfd2d6;
+    cursor: pointer;
+  }
+
+  button#copyBtn:active {
+    background: #444;
+  }
+
+  @media (max-width: 600px) {
+    body {
+      flex-direction: column;
+      padding-top: 3rem; /* ボタンのスペース */
+    }
+
+    textarea, #viewer {
+      width: 100%;
+      min-height: 200px;
+    }
+  }
+</style>
+</head>
+<body>
+<button id="copyBtn">Copy</button>
+
+<textarea id="source" spellcheck="false"
+  placeholder="Enter Tree..."></textarea>
+
+<pre id="viewer" class="msg">awaiting input...</pre>
+
+<script>
+function parse(text){
+  const lines = text.replace(/\t/g,"  ").split(/\r?\n/).filter(l=>l.trim());
+  const root = {level:-1,text:"",children:[]}, stack=[root];
+  for(const line of lines){
+    const level = (line.match(/^ */)[0].length)/2;
+    const node  = {level,text:line.trim(),children:[]};
+    while(stack.length-1 > level) stack.pop();
+    stack[stack.length-1].children.push(node);
+    stack.push(node);
+  }
+  return root.children;
+}
+
+function buildAscii(nodes,prefix=""){
+  return nodes.map((n,i)=>{
+    const last = i===nodes.length-1;
+    const branch = prefix + (last?"└── ":"├── ") + n.text + "\n";
+    const nextPrefix = prefix + (last?"    ":"│   ");
+    return branch + buildAscii(n.children,nextPrefix);
+  }).join("");
+}
+
+const src = document.getElementById("source");
+const viewer = document.getElementById("viewer");
+
+function update(){
+  if(src.value.trim()){
+    const ascii = buildAscii(parse(src.value));
+    viewer.textContent = ascii;
+    viewer.classList.remove("msg");
+  } else {
+    viewer.textContent = "awaiting input...";
+    viewer.classList.add("msg");
+  }
+  const encoded = encodeURIComponent(btoa(unescape(encodeURIComponent(src.value))));
+  history.replaceState(null, "", src.value ? `?t=${encoded}` : location.pathname);
+}
+
+src.addEventListener("input", update);
+
+src.addEventListener("keydown", e => {
+  if(e.key === "Tab"){
+    e.preventDefault();
+    const { selectionStart: s, selectionEnd: ePos, value: v } = src;
+    src.value = v.slice(0, s) + "  " + v.slice(ePos);
+    src.selectionStart = src.selectionEnd = s + 2;
+    update();
+  } else if(e.key === "Enter"){
+    e.preventDefault();
+    const { selectionStart: s, value: v } = src;
+    const indent = (v.slice(0, s).match(/(^|\n)( *)[^\n]*$/) || ["", ""]).pop();
+    const ins = "\n" + indent;
+    src.value = v.slice(0, s) + ins + v.slice(s);
+    const pos = s + ins.length;
+    src.selectionStart = src.selectionEnd = pos;
+    update();
+  }
+});
+
+document.getElementById("copyBtn").onclick = async () => {
+  if(viewer.textContent.trim()){
+    try {
+      await navigator.clipboard.writeText(viewer.textContent);
+      alert("Copied!");
+    } catch {
+      alert("Failed to copy. Please paste it manually.");
+    }
+  }
+};
+
+(() => {
+  const p = new URLSearchParams(location.search).get("t");
+  if(p){
+    try {
+      src.value = decodeURIComponent(escape(atob(p)));
+    } catch {}
+  }
+  update();
+})();
+</script>
+</body>
+</html>
+ 
