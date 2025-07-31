@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>looper Sample</title>
+  <title>looper</title>
   <style>
     /* 基本リセット＆レイアウト */
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -109,6 +109,7 @@
         テキストリピータを使用する
       </a>
     </p>
+
     <!-- JSON 入出力セクション -->
     <label for="config-json">JSON設定（手動編集可）</label>
     <textarea id="config-json" rows="6"
@@ -119,6 +120,12 @@
       <button id="export-json">JSONエクスポート</button>
       <button id="download-json-file">JSONダウンロード</button>
     </div>
+
+    <!-- 共有リンク表示エリア -->
+    <label for="share-link">共有リンク</label>
+    <input type="text" id="share-link" readonly placeholder="JSONエクスポートで生成されます">
+
+    <!-- ファイルからのインポート -->
     <label for="import-file">JSONファイルからインポート</label>
     <input type="file" id="import-file" accept=".json">
     <button id="import-json">JSONインポート</button>
@@ -162,21 +169,22 @@ VALUES
 
 
   <script>
-    const tplArea     = document.getElementById('template');
-    const modeSel     = document.getElementById('mode');
-    const phContainer = document.getElementById('placeholders');
-    const addPhBtn    = document.getElementById('add-placeholder');
-    const genBtn      = document.getElementById('generate');
-    const outArea     = document.getElementById('output');
-    const copyBtn     = document.getElementById('copy-output');
-    const jsonArea    = document.getElementById('config-json');
-    const exportBtn   = document.getElementById('export-json');
-    const importBtn   = document.getElementById('import-json');
-    const downloadBtn = document.getElementById('download-json-file');
-    const importFile  = document.getElementById('import-file');
-    const filenameIn  = document.getElementById('json-filename');
+    const tplArea       = document.getElementById('template');
+    const modeSel       = document.getElementById('mode');
+    const phContainer   = document.getElementById('placeholders');
+    const addPhBtn      = document.getElementById('add-placeholder');
+    const genBtn        = document.getElementById('generate');
+    const outArea       = document.getElementById('output');
+    const copyBtn       = document.getElementById('copy-output');
+    const jsonArea      = document.getElementById('config-json');
+    const exportBtn     = document.getElementById('export-json');
+    const importBtn     = document.getElementById('import-json');
+    const downloadBtn   = document.getElementById('download-json-file');
+    const importFile    = document.getElementById('import-file');
+    const filenameIn    = document.getElementById('json-filename');
+    const shareLinkIn   = document.getElementById('share-link');
 
-    // —————————————————————————
+    // ——————————————
     // プレースホルダー要素を作成
     function createPlaceholder(key = '', vals = []) {
       const phDiv = document.createElement('div');
@@ -216,9 +224,10 @@ VALUES
     // プレースホルダー追加
     addPhBtn.addEventListener('click', () => createPlaceholder());
 
-    // —————————————————————————
+    // ——————————————
     // UI → JSON テキストエリア
     exportBtn.addEventListener('click', () => {
+      // 既存の JSON エクスポート処理
       const cfg = {
         template: tplArea.value,
         mode: modeSel.value,
@@ -230,14 +239,24 @@ VALUES
         }).filter(p => p.key)
       };
       const comment = '// https://ko-ishizaki.github.io/looperで使うJSONファイルです。\n';
-      jsonArea.value = comment + JSON.stringify(cfg, null, 2);
+      const jsonStr = JSON.stringify(cfg, null, 2);
+      jsonArea.value = comment + jsonStr;
+
+      // ★★ 追加部分：Base64 化してリンク生成 ★★
+      try {
+        const b64 = btoa(jsonStr);
+        const shareUrl = location.origin + location.pathname + '?config=' + encodeURIComponent(b64);
+        shareLinkIn.value = shareUrl;
+      } catch (e) {
+        console.error('共有リンク生成に失敗', e);
+        shareLinkIn.value = 'リンク生成エラー';
+      }
     });
 
-    // —————————————————————————
+    // ——————————————
     // JSON テキストエリア → UI
     importBtn.addEventListener('click', () => {
-      let raw = jsonArea.value;
-      raw = raw.replace(/^\s*\/\/.*(\r?\n)/, '');
+      let raw = jsonArea.value.replace(/^\s*\/\/.*(\r?\n)/, '');
       let cfg;
       try { cfg = JSON.parse(raw); }
       catch {
@@ -252,7 +271,7 @@ VALUES
       });
     });
 
-    // —————————————————————————
+    // ——————————————
     // ファイル → UI 読み込み
     importFile.addEventListener('change', e => {
       const file = e.target.files[0];
@@ -266,7 +285,7 @@ VALUES
       reader.readAsText(file);
     });
 
-    // —————————————————————————
+    // ——————————————
     // JSON ダウンロード
     downloadBtn.addEventListener('click', () => {
       if (!jsonArea.value.trim()) {
@@ -281,8 +300,8 @@ VALUES
       URL.revokeObjectURL(link.href);
     });
 
-    // —————————————————————————
-    // 生成処理
+    // ——————————————
+    // 生成処理（既存まま）
     genBtn.addEventListener('click', () => {
       const template = tplArea.value.trim();
       if (!template) { alert('テンプレートを入力してください'); return; }
@@ -304,7 +323,6 @@ VALUES
         }
       }
 
-      // 組み合わせ生成
       let combos = [];
       if (mode === 'zip') {
         for (let i = 0; i < phs[0].vals.length; i++) {
@@ -323,7 +341,6 @@ VALUES
         combos = cart(phs);
       }
 
-      // テンプレート置換→1行化
       const lines = combos.map(c => {
         let txt = template;
         for (const k in c) {
@@ -336,7 +353,7 @@ VALUES
       outArea.value = lines.join('\n');
     });
 
-    // —————————————————————————
+    // ——————————————
     // 出力コピー処理
     copyBtn.addEventListener('click', () => {
       const text = outArea.value;
@@ -360,16 +377,16 @@ VALUES
       );
     });
 
-    // —————————————————————————
-    // ★★ 追加機能: URLクエリパラメータから Base64 JSON を読み込んでインポート ★★
+    // ——————————————
+    // URL からの自動読み込み（既存の機能）
     function parseQueryParams() {
       const params = new URLSearchParams(location.search);
       const cfgEnc = params.get('config');
       if (!cfgEnc) return;
       try {
         const jsonStr = atob(cfgEnc);
-        jsonArea.value = jsonStr;    // JSON テキストエリアにセット
-        importBtn.click();           // 自動で UI に反映
+        jsonArea.value = jsonStr;
+        importBtn.click();
       } catch (e) {
         console.error('config 読み込み失敗', e);
         alert('URL の設定読み込みに失敗しました');
