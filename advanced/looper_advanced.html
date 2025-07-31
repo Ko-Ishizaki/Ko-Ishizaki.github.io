@@ -1,0 +1,400 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>looper Advanced</title>
+  <style>
+    /* 基本リセット＆レイアウト */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      display: flex;
+      height: 100vh;
+      font-family: sans-serif;
+      background: #f4f4f4;
+    }
+    #config, #output-container {
+      padding: 16px;
+      overflow-y: auto;
+      background: #fff;
+    }
+    #config {
+      width: 360px;
+      border-right: 1px solid #ddd;
+    }
+    #output-container {
+      flex: 1;
+    }
+    h2 {
+      margin-bottom: 12px;
+      font-size: 1.2em;
+      color: #333;
+    }
+
+    /* 共通フォーム要素 */
+    label {
+      display: block;
+      margin: 8px 0 4px;
+      font-weight: bold;
+      color: #555;
+    }
+    input[type="text"], textarea, select, input[type="file"] {
+      width: 100%;
+      padding: 6px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      background: #fafafa;
+    }
+    textarea { resize: vertical; }
+    input[type="file"] { background: #fff; }
+
+    /* ボタン */
+    button, .tpl-add-btn {
+      display: inline-block;
+      margin: 8px 4px 0 0;
+      padding: 6px 12px;
+      font-size: 14px;
+      border: 1px solid #888;
+      border-radius: 3px;
+      background: #eee;
+      cursor: pointer;
+    }
+    button:hover, .tpl-add-btn:hover {
+      background: #ddd;
+    }
+
+    /* プレースホルダー */
+    .placeholder {
+      position: relative;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 8px;
+      margin-bottom: 12px;
+      background: #fafafa;
+    }
+    .placeholder .remove-btn {
+      position: absolute;
+      top: 6px; right: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #c33;
+    }
+
+    /* 出力 */
+    #output {
+      width: 100%;
+      height: calc(100% - 72px);
+      font-family: monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==== 設定パネル ==== -->
+  <div id="config">
+    <h2>ジェネレータ設定</h2>
+    <p>
+      <a href="#" id="openRepeater"
+         style="display:inline-block;padding:4px 8px;
+                background:#eee;color:black;
+                border-radius:3px;text-decoration:none;
+                border: 1px solid #888;
+                font-size:0.9em;">
+        テキストリピータを使用する
+      </a>
+    </p>
+
+    <!-- JSON 入出力セクション -->
+    <label for="config-json">JSON設定（手動編集可）</label>
+    <textarea id="config-json" rows="6"
+      placeholder="ここに JSON が表示されます／貼り付けてインポート"></textarea>
+    <label for="json-filename">ダウンロード用ファイル名</label>
+    <input type="text" id="json-filename" value="config.json" placeholder="例: config.json">
+    <div>
+      <button id="export-json">JSONエクスポート</button>
+      <button id="download-json-file">JSONダウンロード</button>
+    </div>
+
+    <!-- 共有リンク表示エリア -->
+    <label for="share-link">共有リンク</label>
+    <input type="text" id="share-link" readonly placeholder="JSONエクスポートで生成されます">
+
+    <!-- ファイルからのインポート -->
+    <label for="import-file">JSONファイルからインポート</label>
+    <input type="file" id="import-file" accept=".json">
+    <button id="import-json">JSONインポート</button>
+
+    <!-- テンプレート -->
+    <h2>テンプレート</h2>
+    <textarea id="template" rows="8"
+      placeholder="例：
+INSERT INTO {table}
+  ({cols})
+VALUES
+  ('{col1}', '{col2}', '{col3}');">
+    </textarea>
+
+    <!-- 出力モード -->
+    <h2>出力モード</h2>
+    <select id="mode">
+      <option value="zip">Zip（同行番号ごと）</option>
+      <option value="cross">Cross-product（全組み合わせ）</option>
+    </select>
+
+    <!-- プレースホルダー定義 -->
+    <h2>プレースホルダー一覧</h2>
+    <div id="placeholders"></div>
+    <button class="tpl-add-btn" id="add-placeholder">＋ プレースホルダー追加</button>
+
+    <!-- 生成ボタン -->
+    <div>
+      <button id="generate">▶ 生成</button>
+    </div>
+  </div>
+
+  <!-- ==== 出力パネル ==== -->
+  <div id="output-container">
+    <h2>出力結果（一行ずつ）</h2>
+    <div>
+      <button id="copy-output">クリップボードにコピー</button>
+    </div>
+    <textarea id="output" readonly placeholder="ここに行ごとのコードが表示されます"></textarea>
+  </div>
+
+
+  <script>
+    const tplArea       = document.getElementById('template');
+    const modeSel       = document.getElementById('mode');
+    const phContainer   = document.getElementById('placeholders');
+    const addPhBtn      = document.getElementById('add-placeholder');
+    const genBtn        = document.getElementById('generate');
+    const outArea       = document.getElementById('output');
+    const copyBtn       = document.getElementById('copy-output');
+    const jsonArea      = document.getElementById('config-json');
+    const exportBtn     = document.getElementById('export-json');
+    const importBtn     = document.getElementById('import-json');
+    const downloadBtn   = document.getElementById('download-json-file');
+    const importFile    = document.getElementById('import-file');
+    const filenameIn    = document.getElementById('json-filename');
+    const shareLinkIn   = document.getElementById('share-link');
+
+    // ——————————————
+    // プレースホルダー要素を作成
+    function createPlaceholder(key = '', vals = []) {
+      const phDiv = document.createElement('div');
+      phDiv.className = 'placeholder';
+
+      const rm = document.createElement('span');
+      rm.textContent = '✕';
+      rm.className = 'remove-btn';
+      rm.title = '削除';
+      rm.onclick = () => phDiv.remove();
+      phDiv.appendChild(rm);
+
+      const nameLabel = document.createElement('label');
+      nameLabel.textContent = '名前:';
+      phDiv.appendChild(nameLabel);
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.placeholder = '例: col2';
+      nameInput.value = key;
+      phDiv.appendChild(nameInput);
+
+      const valLabel = document.createElement('label');
+      valLabel.textContent = '値リスト（改行区切り）:';
+      phDiv.appendChild(valLabel);
+      const valArea = document.createElement('textarea');
+      valArea.rows = 4;
+      valArea.placeholder = '例:\nB\nC\nD\nE';
+      valArea.value = vals.join('\n');
+      phDiv.appendChild(valArea);
+
+      phContainer.appendChild(phDiv);
+    }
+
+    // 初期で1つ追加
+    window.addEventListener('DOMContentLoaded', () => createPlaceholder());
+
+    // プレースホルダー追加
+    addPhBtn.addEventListener('click', () => createPlaceholder());
+
+    // ——————————————
+    // UI → JSON テキストエリア
+    exportBtn.addEventListener('click', () => {
+      // 既存の JSON エクスポート処理
+      const cfg = {
+        template: tplArea.value,
+        mode: modeSel.value,
+        placeholders: Array.from(phContainer.children).map(div => {
+          const key = div.querySelector('input[type=text]').value.trim();
+          const vals = div.querySelector('textarea').value
+                        .split('\n').map(s => s.trim()).filter(s => s !== '');
+          return { key, vals };
+        }).filter(p => p.key)
+      };
+      const comment = '// https://ko-ishizaki.github.io/looperで使うJSONファイルです。\n';
+      const jsonStr = JSON.stringify(cfg, null, 2);
+      jsonArea.value = comment + jsonStr;
+
+      // ★★ 追加部分：Base64 化してリンク生成 ★★
+      try {
+        const b64 = btoa(jsonStr);
+        const shareUrl = location.origin + location.pathname + '?config=' + encodeURIComponent(b64);
+        shareLinkIn.value = shareUrl;
+      } catch (e) {
+        console.error('共有リンク生成に失敗', e);
+        shareLinkIn.value = 'リンク生成エラー';
+      }
+    });
+
+    // ——————————————
+    // JSON テキストエリア → UI
+    importBtn.addEventListener('click', () => {
+      let raw = jsonArea.value.replace(/^\s*\/\/.*(\r?\n)/, '');
+      let cfg;
+      try { cfg = JSON.parse(raw); }
+      catch {
+        alert('JSONの形式を確認してください');
+        return;
+      }
+      tplArea.value = cfg.template || '';
+      modeSel.value = cfg.mode || 'zip';
+      phContainer.innerHTML = '';
+      (cfg.placeholders||[]).forEach(p => {
+        if (p.key && Array.isArray(p.vals)) createPlaceholder(p.key, p.vals);
+      });
+    });
+
+    // ——————————————
+    // ファイル → UI 読み込み
+    importFile.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        jsonArea.value = reader.result;
+        importBtn.click();
+      };
+      reader.onerror = () => alert('ファイル読み込みに失敗しました');
+      reader.readAsText(file);
+    });
+
+    // ——————————————
+    // JSON ダウンロード
+    downloadBtn.addEventListener('click', () => {
+      if (!jsonArea.value.trim()) {
+        alert('まず「JSONエクスポート」を実行してください');
+        return;
+      }
+      const blob = new Blob([jsonArea.value], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filenameIn.value.trim() || 'config.json';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+
+    // ——————————————
+    // 生成処理（既存まま）
+    genBtn.addEventListener('click', () => {
+      const template = tplArea.value.trim();
+      if (!template) { alert('テンプレートを入力してください'); return; }
+
+      const phs = Array.from(phContainer.children).map(div => ({
+        key: div.querySelector('input[type=text]').value.trim(),
+        vals: div.querySelector('textarea').value
+                 .split('\n').map(s=>s.trim()).filter(s=>s!=='')
+      })).filter(p=>p.key && p.vals.length);
+
+      if (!phs.length) { alert('プレースホルダーを定義してください'); return; }
+
+      const mode = modeSel.value;
+      if (mode === 'zip') {
+        const lens = phs.map(p=>p.vals.length);
+        if ((new Set(lens)).size !== 1) {
+          alert('Zipモードではすべてのリストの行数を揃えてください');
+          return;
+        }
+      }
+
+      let combos = [];
+      if (mode === 'zip') {
+        for (let i = 0; i < phs[0].vals.length; i++) {
+          const obj = {}; phs.forEach(p => obj[p.key] = p.vals[i]);
+          combos.push(obj);
+        }
+      } else {
+        function cart(arr, idx=0) {
+          if (idx === arr.length) return [{}];
+          const rest = cart(arr, idx+1), out = [];
+          arr[idx].vals.forEach(v => rest.forEach(r =>
+            out.push(Object.assign({}, r, { [arr[idx].key]: v }))
+          ));
+          return out;
+        }
+        combos = cart(phs);
+      }
+
+      const lines = combos.map(c => {
+        let txt = template;
+        for (const k in c) {
+          txt = txt.replace(new RegExp(`\\{${k}\\}`, 'g'), c[k]);
+        }
+        return txt.replace(/\r?\n/g, ' ')
+                  .replace(/\s+/g, ' ')
+                  .trim();
+      });
+      outArea.value = lines.join('\n');
+    });
+
+    // ——————————————
+    // 出力コピー処理
+    copyBtn.addEventListener('click', () => {
+      const text = outArea.value;
+      if (!text) { alert('出力が空です'); return; }
+      navigator.clipboard.writeText(text)
+        .then(() => { alert('クリップボードにコピーしました'); })
+        .catch(() => {
+          outArea.select();
+          document.execCommand('copy');
+          alert('コピーしました');
+        });
+    });
+
+    // テキストリピータ起動
+    document.getElementById('openRepeater').addEventListener('click', function(e) {
+      e.preventDefault();
+      window.open(
+        'https://ko-ishizaki.github.io/debug/text_repeater',
+        'テキストリピーター',
+        'width=290,height=370,menubar=no,toolbar=no,location=no,status=no'
+      );
+    });
+
+    // ——————————————
+    // URL からの自動読み込み（既存の機能）
+    function parseQueryParams() {
+      const params = new URLSearchParams(location.search);
+      const cfgEnc = params.get('config');
+      if (!cfgEnc) return;
+      try {
+        const jsonStr = atob(cfgEnc);
+        jsonArea.value = jsonStr;
+        importBtn.click();
+      } catch (e) {
+        console.error('config 読み込み失敗', e);
+        alert('URL の設定読み込みに失敗しました');
+      }
+    }
+    window.addEventListener('DOMContentLoaded', parseQueryParams);
+
+  </script>
+</body>
+</html>
