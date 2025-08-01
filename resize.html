@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>画像リサイズ → Base64(Data URL)</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 2rem; }
+  .controls { display: grid; gap: .75rem; grid-template-columns: repeat(6, minmax(0, 1fr)); align-items: center; }
+  .controls > * { min-width: 0; }
+  label { font-size: .9rem; color: #333; }
+  input[type="number"] { width: 100%; }
+  .row { margin-top: 1rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  .drop { border: 2px dashed #999; padding: 1.5rem; text-align: center; border-radius: 8px; }
+  textarea { width: 100%; height: 10rem; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  img { max-width: 300px; max-height: 300px; border-radius: 6px; }
+  small { color: #666; }
+  button { padding: .5rem 1rem; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+</style>
+</head>
+<body>
+<h1>画像リサイズ → Base64(Data URL)</h1>
+
+<div class="row">
+  <input id="file" type="file" accept="image/*">
+  <button id="paste">クリップボードから貼り付け</button>
+  <small>※ 大きい画像は先に縮小・圧縮するとURLが短くなります。</small>
+</div>
+
+<div class="controls">
+  <label>最大幅(px)<br><input id="maxW" type="number" value="1280" min="1"></label>
+  <label>最大高(px)<br><input id="maxH" type="number" value="1280" min="1"></label>
+  <label>フォーマット<br>
+    <select id="format">
+      <option value="auto" selected>自動（元と同じ/透明は維持）</option>
+      <option value="image/webp">WebP</option>
+      <option value="image/jpeg">JPEG</option>
+      <option value="image/png">PNG</option>
+    </select>
+  </label>
+  <label>品質(0〜1, JPEG/WebP)<br><input id="quality" type="number" step="0.05" min="0.1" max="1" value="0.8"></label>
+  <label>リサイズモード<br>
+    <select id="fit">
+      <option value="contain" selected>長辺を合わせる（アスペクト維持）</option>
+      <option value="cover">短辺を合わせる（はみ出しトリミングなし）</option>
+      <option value="none">サイズ変更しない</option>
+    </select>
+  </label>
+  <label>出力上限(MB)※超えたら警告<br><input id="maxMB" type="number" value="2.5" step="0.1" min="0.5"></label>
+</div>
+
+<div id="drop" class="drop" tabindex="0">
+  ここに画像をドラッグ＆ドロップ<br>または「ファイルを選択」を使用
+</div>
+
+<div class="row">
+  <img id="preview" alt="preview" />
+  <div>
+    <div>元サイズ: <span id="origInfo" class="mono">-</span></div>
+    <div>出力サイズ: <span id="outInfo" class="mono">-</span></div>
+  </div>
+</div>
+
+<div class="row">
+  <label for="output">生成された Data URL</label>
+  <button id="copy">コピー</button>
+  <a id="open" href="#" target="_blank" rel="noopener">新規タブで開く</a>
+</div>
+<textarea id="output" readonly></textarea>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const fileInput = $('file'), dropZone = $('drop'), preview = $('preview');
+const output = $('output'), copyBtn = $('copy'), openLink = $('open');
+const origInfo = $('origInfo'), outInfo = $('outInfo');
+
+async function loadImageFromFile(file) {
+  const url = URL.createObjectURL(file);
+  // Try createImageBitmap for orientation (some browsers honor EXIF)
+  try {
+    const bmp = await createImageBitmap(await (await fetch(url)).blob(), { imageOrientation: 'from-image' });
+    const canvas = document.createElement('canvas');
+    canvas.width = bmp.width; canvas.height = bmp.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bmp, 0, 0);
+    const dataURL = canvas.toDataURL('image/png'); // temp PNG to feed <img>
+    bmp.close();
+    URL.revokeObjectURL(url);
+    return await blobToImage(await (await fetch(dataURL)).blob());
+  } catch {
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = url;
+    await img.decode();
+    URL.revokeObjectURL(url);
+    return img;
+  }
+}
+function blobToImage(blob) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.src = url;
+  });
+}
+function computeSize(sw, sh, maxW, maxH, mode) {
+  if (mode === 'none') return { w: sw, h: sh };
+  const ar = sw / sh;
+  const boxAR = maxW / maxH;
+  let w, h;
+  if (mode === 'contain') {
+    if (ar > boxAR) { w = Math.min(sw, maxW); h = Math.round(w / ar); }
+    else { h = Math.min(sh, maxH); w = Math.round(h * ar); }
+  } else { // cover（実質はみ出しなしで最短辺合わせ）
+    if (ar > boxAR) { h = Math.min(sh, maxH); w = Math.round(h * ar); }
+    else { w = Math.min(sw, maxW); h = Math.round(w / ar); }
+    // ここではトリミングせず、そのまま出力（キャンバス拡大だけ）
+  }
+  return { w, h };
+}
+function drawToCanvas(img, w, h) {
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  // 高品質リサイズ
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, w, h);
+  return canvas;
+}
+function mimeOf(file, preferred) {
+  if (preferred && preferred !== 'auto') return preferred;
+  // 自動判定：透過がありそうな拡張子ならPNG/WebP、そうでなければ元のMIME→JPEG/WebPへ
+  const t = (file.type || '').toLowerCase();
+  if (t === 'image/webp') return 'image/webp';
+  if (t === 'image/png' || t === 'image/svg+xml') return 'image/png';
+  if (t === 'image/gif') return 'image/png'; // アニメは非対応（1枚目のみ）
+  return 'image/jpeg';
+}
+function approxBytesFromDataURL(dataURL) {
+  // base64長さから概算バイト数（= 3/4*(len - ヘッダ)）
+  const comma = dataURL.indexOf(',');
+  const b64len = dataURL.length - (comma + 1);
+  return Math.floor(b64len * 0.75);
+}
+function human(n) {
+  if (n >= 1024*1024) return (n/1024/1024).toFixed(2) + ' MB';
+  if (n >= 1024) return (n/1024).toFixed(1) + ' KB';
+  return n + ' B';
+}
+
+async function handleFile(file) {
+  if (!file || !file.type.startsWith('image/')) { alert('画像ファイルを選んでください'); return; }
+  const img = await loadImageFromFile(file);
+  preview.src = URL.createObjectURL(file);
+  origInfo.textContent = `${img.naturalWidth}×${img.naturalHeight}px, ${human(file.size)}`;
+
+  const maxW = Number($('maxW').value) || 1280;
+  const maxH = Number($('maxH').value) || 1280;
+  const fit = $('fit').value;
+  const q = Math.min(1, Math.max(0.1, Number($('quality').value) || 0.8));
+  const type = mimeOf(file, $('format').value);
+
+  const { w, h } = computeSize(img.naturalWidth, img.naturalHeight, maxW, maxH, fit);
+  const canvas = drawToCanvas(img, w, h);
+
+  let dataURL;
+  try {
+    dataURL = canvas.toDataURL(type, (type === 'image/jpeg' || type === 'image/webp') ? q : undefined);
+  } catch {
+    // フォールバック
+    dataURL = canvas.toDataURL('image/jpeg', q);
+  }
+
+  output.value = dataURL;
+  openLink.href = dataURL;
+
+  const bytes = approxBytesFromDataURL(dataURL);
+  outInfo.textContent = `${w}×${h}px, 約 ${human(bytes)}（Base64文字列: ${dataURL.length.toLocaleString()} 文字）`;
+
+  const maxMB = Number($('maxMB').value) || 2.5;
+  if (bytes > maxMB * 1024 * 1024) {
+    alert(`出力が約 ${human(bytes)} です。アドレスバーや一部環境では長すぎる可能性があります。\n幅/品質を下げるか、WebP/JPEGに変更してください。`);
+  }
+}
+
+fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+// D&D
+;['dragenter','dragover'].forEach(evt =>
+  dropZone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); dropZone.style.borderColor = '#555'; })
+);
+;['dragleave','drop'].forEach(evt =>
+  dropZone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); dropZone.style.borderColor = '#999'; })
+);
+dropZone.addEventListener('drop', (e) => handleFile(e.dataTransfer.files[0]));
+
+// クリップボードから貼り付け
+$('paste').addEventListener('click', async () => {
+  if (!navigator.clipboard || !navigator.clipboard.read) { alert('このブラウザは画像の貼り付けに未対応です'); return; }
+  try {
+    const items = await navigator.clipboard.read();
+    for (const item of items) {
+      for (const type of item.types) {
+        if (type.startsWith('image/')) {
+          const blob = await item.getType(type);
+          const file = new File([blob], 'pasted-image', { type });
+          return handleFile(file);
+        }
+      }
+    }
+    alert('クリップボードに画像が見つかりません');
+  } catch (e) {
+    console.error(e);
+    alert('貼り付けに失敗しました（権限が必要な場合があります）');
+  }
+});
+
+// コピー
+$('copy').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(output.value);
+    copyBtn.textContent = 'コピーしました';
+    setTimeout(() => (copyBtn.textContent = 'コピー'), 1200);
+  } catch {
+    alert('コピーに失敗しました');
+  }
+});
+</script>
+</body>
+</html>
