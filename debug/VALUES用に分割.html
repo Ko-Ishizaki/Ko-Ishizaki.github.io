@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>分割</title>
+<style>
+  body { font-family: monospace; padding: 20px; }
+  textarea { width: 100%; height: 150px; }
+  input { width: 60px; }
+  pre { background: #f4f4f4; padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<h2>VALUESに入れるもので指定行数で分割</h2>
+
+<textarea id="input">
+※サンプルですので、最初に消してください。
+(22023377,43435),
+(222434367,15434),
+(2243434,14343),
+(22323223,4343);</textarea>
+<br><br>
+
+行数: <input type="number" id="lines" value="3" min="1">
+<button onclick="splitData()">変換</button>
+
+<h3>結果:</h3>
+<pre id="output"></pre>
+
+<script>
+function splitData() {
+  const text = document.getElementById("input").value;
+  let items = text.replace(/[\n;]/g, "").split(",").map(s => s.trim()).filter(s => s);
+
+  // ペアでまとめ直す（例: "(1903472,6000)"）
+  let pairs = [];
+  for (let i = 0; i < items.length; i += 2) {
+    if (i + 1 < items.length) {
+      pairs.push(items[i] + "," + items[i + 1]);
+    } else {
+      pairs.push(items[i]); // 奇数個の場合はそのまま
+    }
+  }
+
+  const rows = parseInt(document.getElementById("lines").value);
+  let result = "";
+  const base = Math.floor(pairs.length / rows);
+  let extra = pairs.length % rows; // 割り切れなかった分
+
+  let idx = 0;
+  for (let r = 0; r < rows; r++) {
+    let count = base + (extra > 0 ? 1 : 0);
+    extra--;
+    result += pairs.slice(idx, idx + count).join(", ") + (r === rows - 1 ? ";" : ",") + "\n";
+    idx += count;
+  }
+
+  document.getElementById("output").textContent = result;
+}
+</script>
+</body>
+</html>
