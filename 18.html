@@ -1,1 +1,98 @@
-<!doctype html> <html lang="ja"> <head>   <meta charset="utf-8" />   <meta name="viewport" content="width=device-width,initial-scale=1" />   <title>18時までカウントダウン</title>   <style>     :root { --fg: #111; --bg: #f7f7f7; --muted:#6b6b6b; }     @media (prefers-color-scheme: dark){       :root { --fg:#f5f5f5; --bg:#0e0e0e; --muted:#9a9a9a; }     }     html,body{ height:100%; margin:0; background:var(--bg); color:var(--fg); font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", "Meiryo", sans-serif; }     .wrap{ min-height:100%; display:flex; align-items:center; justify-content:center; }     .card{ text-align:center; padding:8vmin 6vmin; }     .title{ font-size: clamp(20px, 3.2vmin, 28px); letter-spacing:.03em; margin-bottom:1.2rem; font-weight:600; }     .count{ font-variant-numeric: tabular-nums; font-weight:700; letter-spacing:.04em; font-size: clamp(32px, 12vmin, 120px); line-height:1; }     .sub{ margin-top:1rem; font-size: clamp(12px, 2.2vmin, 16px); color:var(--muted); }     .badge{ display:inline-block; border:1px solid currentColor; border-radius:999px; padding:.25em .7em; font-size:.9em; margin-bottom:.75rem; }     .hidden{ display:none; }   </style> </head> <body>   <div class="wrap">     <div class="card">       <div id="modeBadge" class="badge">カウントダウン中</div>       <div id="title" class="title">今日の18:00まで</div>       <div id="count" class="count">--:--:--</div>       <div id="sub" class="sub">ローカル時間で動作します</div>     </div>   </div>   <script>     const countEl = document.getElementById('count');     const badgeEl = document.getElementById('modeBadge');     const titleEl = document.getElementById('title');     const subEl = document.getElementById('sub');     function two(n){ return n.toString().padStart(2,'0'); }     function todayAt(hour, minute=0, second=0, ms=0){       const n = new Date();       return new Date(n.getFullYear(), n.getMonth(), n.getDate(), hour, minute, second, ms);     }     function tomorrowAt(hour, minute=0, second=0, ms=0){       const n = new Date();       const d = new Date(n.getFullYear(), n.getMonth(), n.getDate()+1, hour, minute, second, ms);       return d;     }     function fmtHMS(ms){       if (ms < 0) ms = 0;       const s = Math.floor(ms/1000);       const h = Math.floor(s/3600);       const m = Math.floor((s%3600)/60);       const sec = s%60;       return `${two(h)}:${two(m)}:${two(sec)}`;     }     function tick(){       const now = new Date();       const cutoff = todayAt(18,0,0,0);       const endOfDay = todayAt(23,59,59,999);       if (now < cutoff) {         const diff = cutoff - now;         badgeEl.textContent = 'カウントダウン中';         titleEl.textContent = '今日の18:00まで';         countEl.textContent = fmtHMS(diff);         subEl.textContent = '18:00になると事後表示に切り替わります';       } else if (now <= endOfDay) {         badgeEl.textContent = '終了です〜';         titleEl.textContent = '本日のイベントは終了しました';         countEl.textContent = '終了です〜';         subEl.textContent = '翌日0:00に自動でカウントダウン再開';       } else {         const nextCutoff = tomorrowAt(18,0,0,0);         const diff = nextCutoff - now;         badgeEl.textContent = 'カウントダウン中';         titleEl.textContent = '明日の18:00まで';         countEl.textContent = fmtHMS(diff);         subEl.textContent = 'ローカル日付が変わると自動で今日表示に戻ります';       }     }     tick();     setInterval(tick, 250);   </script> </body> </html>  
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>18時までカウントダウン</title>
+  <style>
+    :root { --fg: #111; --bg: #f7f7f7; --muted:#6b6b6b; }
+    @media (prefers-color-scheme: dark){
+      :root { --fg:#f5f5f5; --bg:#0e0e0e; --muted:#9a9a9a; }
+    }
+    html,body{ height:100%; margin:0; background:var(--bg); color:var(--fg); font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", "Meiryo", sans-serif; }
+    .wrap{ min-height:100%; display:flex; align-items:center; justify-content:center; }
+    .card{ text-align:center; padding:8vmin 6vmin; }
+    .title{ font-size: clamp(20px, 3.2vmin, 28px); letter-spacing:.03em; margin-bottom:1.2rem; font-weight:600; }
+    .count{ font-variant-numeric: tabular-nums; font-weight:700; letter-spacing:.04em; font-size: clamp(32px, 12vmin, 120px); line-height:1; }
+    .sub{ margin-top:1rem; font-size: clamp(12px, 2.2vmin, 16px); color:var(--muted); }
+    .badge{ display:inline-block; border:1px solid currentColor; border-radius:999px; padding:.25em .7em; font-size:.9em; margin-bottom:.75rem; }
+    .hidden{ display:none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div id="modeBadge" class="badge">カウントダウン中</div>
+      <div id="title" class="title">今日の18:00まで</div>
+      <div id="count" class="count">--:--:--</div>
+      <div id="sub" class="sub">ローカル時間で動作します</div>
+    </div>
+  </div>
+
+  <script>
+    // ユーザーの端末ローカル時間で動作（タイムゾーン設定不要）
+    const countEl = document.getElementById('count');
+    const badgeEl = document.getElementById('modeBadge');
+    const titleEl = document.getElementById('title');
+    const subEl = document.getElementById('sub');
+
+    function two(n){ return n.toString().padStart(2,'0'); }
+
+    function todayAt(hour, minute=0, second=0, ms=0){
+      const n = new Date();
+      return new Date(n.getFullYear(), n.getMonth(), n.getDate(), hour, minute, second, ms);
+    }
+
+    function tomorrowAt(hour, minute=0, second=0, ms=0){
+      const n = new Date();
+      const d = new Date(n.getFullYear(), n.getMonth(), n.getDate()+1, hour, minute, second, ms);
+      return d;
+    }
+
+    function fmtHMS(ms){
+      if (ms < 0) ms = 0;
+      const s = Math.floor(ms/1000);
+      const h = Math.floor(s/3600);
+      const m = Math.floor((s%3600)/60);
+      const sec = s%60;
+      return `${two(h)}:${two(m)}:${two(sec)}`;
+    }
+
+    function tick(){
+      const now = new Date();
+
+      // その日の18:00境界
+      const cutoff = todayAt(18,0,0,0);
+      const endOfDay = todayAt(23,59,59,999);
+
+      if (now < cutoff) {
+        // 18:00までカウントダウン
+        const diff = cutoff - now;
+        badgeEl.textContent = 'カウントダウン中';
+        titleEl.textContent = '今日の18:00まで';
+        countEl.textContent = fmtHMS(diff);
+        subEl.textContent = '18:00になると終了表示に切り替わります';
+      } else if (now <= endOfDay) {
+        // 18:00〜23:59 は終了表示
+        badgeEl.textContent = '終了です〜';
+        titleEl.textContent = '本日のイベントは終了しました';
+        countEl.textContent = '終了です〜';
+        subEl.textContent = '翌日0:00に自動でカウントダウン再開';
+      } else {
+        // 24:00を越えたら翌日の18:00へカウントダウン
+        const nextCutoff = tomorrowAt(18,0,0,0);
+        const diff = nextCutoff - now;
+        badgeEl.textContent = 'カウントダウン中';
+        titleEl.textContent = '明日の18:00まで';
+        countEl.textContent = fmtHMS(diff);
+        subEl.textContent = 'ローカル日付が変わると自動で今日表示に戻ります';
+      }
+    }
+
+    // 初期表示＆更新ループ（ずれ防止のため毎回現在時刻から再計算）
+    tick();
+    setInterval(tick, 250);
+  </script>
+</body>
+</html>
+ 
