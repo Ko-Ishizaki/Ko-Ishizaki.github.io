@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ja" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Source Snippet</title>
+  <meta name="description" content="Source Sni[[et Writen by Ishizaki">
+  <meta name="color-scheme" content="dark" />
+  <style>
+    :root{
+      --bg:#0e1116; 
+      --card:#121722;
+      --fg:#e6edf3;
+      --muted:#a7b1be;
+      --border:#202635;
+      --accent:#6aa9ff;
+      --code-bg:#0b1320;
+      --code-fg:#dbe6ff;
+      --radius:12px;
+      --tap:44px;
+      --pad:clamp(14px,3.2vw,22px);
+      --shadow:0 1px 0 var(--border), 0 10px 24px rgba(0,0,0,.25);
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      margin:0; background:var(--bg); color:var(--fg);
+      font: clamp(15px,1.7vw,16.5px)/1.7 ui-sans-serif,system-ui,-apple-system,
+            "Segoe UI",Roboto,"Helvetica Neue","Noto Sans JP",
+            "Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Arial,sans-serif;
+    }
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+    :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
+
+    .container{
+      max-width:960px;margin-inline:auto;padding:var(--pad);
+      padding-left:max(var(--pad),env(safe-area-inset-left));
+      padding-right:max(var(--pad),env(safe-area-inset-right));
+    }
+
+    header{
+      position:sticky; top:0; z-index:10; background:var(--bg);
+      border-bottom:1px solid var(--border);
+      padding-top:env(safe-area-inset-top);
+    }
+    .head{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px}
+    h1{margin:0;font-size:clamp(1rem,2.6vw,1.15rem);letter-spacing:.2px}
+    .muted{color:var(--muted);font-size:.92rem}
+
+    .controls{display:flex;gap:8px;align-items:center}
+    #search{
+      width:min(100%,520px); height:var(--tap);
+      padding:10px 12px; border:1px solid var(--border); border-radius:999px;
+      background:var(--card); color:var(--fg);
+      outline:none;
+    }
+
+    main{padding-block: clamp(8px,2.5vw,16px)}
+    #snippets{display:grid;gap:clamp(12px,2.5vw,16px)}
+    article{
+      background:var(--card); border:1px solid var(--border);
+      border-radius:var(--radius); box-shadow:var(--shadow);
+      padding: clamp(12px,2.6vw,16px);
+    }
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    h2{margin:0;font-size:clamp(.98rem,2.5vw,1.05rem)}
+    h2[id]{scroll-margin-top:72px}
+    .tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{font-size:.8rem;color:var(--muted);padding:2px 10px;border:1px solid var(--border);border-radius:999px}
+
+    pre{
+      margin:10px 0 0; padding:12px; overflow:auto;
+      background:var(--code-bg); color:var(--code-fg);
+      border:1px solid var(--border); border-radius:10px;
+      -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+    }
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono","Courier New",monospace;
+         font-size:clamp(.88rem,2.3vw,.95rem)}
+
+    .copy{
+      border:1px solid var(--border); background:transparent; color:var(--fg);
+      border-radius:10px; padding:0 12px; height:var(--tap); min-width:calc(var(--tap) * 1.4);
+      display:inline-flex; align-items:center; justify-content:center; cursor:pointer;
+    }
+    .copy:hover{border-color:var(--accent)}
+
+    #empty{
+      display:none; margin-top:10px; text-align:center;
+      border:1px dashed var(--border); border-radius:10px; padding:18px; color:var(--muted);
+    }
+    footer{border-top:1px solid var(--border);margin-top:clamp(12px,3vw,20px);padding-top:10px;padding-bottom:env(safe-area-inset-bottom)}
+
+    @media (min-width:720px){ #snippets{gap:18px} }
+  </style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <div class="head">
+      <h1>Source Snippet</h1>
+      <div class="controls">
+        <input id="search" type="search" inputmode="search" enterkeyhint="search"
+               placeholder="キーワード / タグで検索" autocomplete="off" />
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container" role="main">
+  <section id="snippets" aria-live="polite">
+
+    <article>
+      <div class="row">
+        <h2 id="ps-get-path">実行PCのIPのみを表示（PowerShell）</h2>
+        <div class="tags"><span class="tag">powershell</span><span class="tag">windows</span></div>
+      </div>
+      <pre><code class="language-powershell">(Get-NetIPAddress -AddressFamily IPv4 |
+      Where-Object {$_.IPAddress -notlike '169.*' -and $_.IPAddress -ne '127.0.0.1'}).IPAddress</code></pre>
+      <div class="row" style="margin-top:8px">
+        <button class="copy" data-for="ps-get-path" aria-label="コードをコピー">コピー</button>
+      </div>
+    </article>
+
+    <article>
+      <div class="row">
+        <h2 id="ps-listen-ports">待ち受けポートを確認（PowerShell）</h2>
+        <div class="tags"><span class="tag">powershell</span><span class="tag">network</span></div>
+      </div>
+      <pre><code class="language-powershell">Get-NetTCPConnection -State Listen |
+  Sort-Object -Property LocalPort |
+  Select-Object LocalAddress,LocalPort,OwningProcess</code></pre>
+      <div class="row" style="margin-top:8px">
+        <button class="copy" data-for="ps-listen-ports" aria-label="コードをコピー">コピー</button>
+      </div>
+    </article>
+
+    <article>
+      <div class="row">
+        <h2 id="git-amend">直前コミットのメッセージを直す（Git）</h2>
+        <div class="tags"><span class="tag">git</span><span class="tag">shell</span></div>
+      </div>
+      <pre><code class="language-bash">git commit --amend -m "fix: 正しいメッセージに更新"</code></pre>
+      <div class="row" style="margin-top:8px">
+        <button class="copy" data-for="git-amend" aria-label="コードをコピー">コピー</button>
+      </div>
+    </article>
+
+  </section>
+
+  <div id="empty">該当する項目がありません。</div>
+
+  <footer class="muted">Copyright Ishizaki 2025</footer>
+</main>
+
+<script>
+  (function(){
+    const q=document.getElementById('search');
+    const list=document.getElementById('snippets');
+    const empty=document.getElementById('empty');
+    let t=0;
+    function filter(){
+      const terms=(q.value||'').toLowerCase().split(/\s+/).filter(Boolean);
+      let shown=0;
+      list.querySelectorAll('article').forEach(a=>{
+        const hay=(a.textContent+' '+(a.dataset.tags||'')).toLowerCase();
+        const ok=terms.every(t=>hay.includes(t));
+        a.style.display=ok?'':'none';
+        if(ok) shown++;
+      });
+      empty.style.display= shown? 'none':'block';
+      history.replaceState(null,'',location.pathname+(q.value?('#q='+encodeURIComponent(q.value)):''));
+    }
+    q.addEventListener('input',()=>{ clearTimeout(t); t=setTimeout(filter, 80); });
+    if(location.hash.startsWith('#q=')){ q.value=decodeURIComponent(location.hash.slice(3)); filter(); }
+  })();
+
+  (function(){
+    function getCode(id){
+      const h=document.getElementById(id);
+      const pre=h?.parentElement?.nextElementSibling;
+      return pre? pre.innerText : '';
+    }
+    document.querySelectorAll('.copy').forEach(b=>{
+      b.addEventListener('click',async()=>{
+        const text=getCode(b.dataset.for);
+        try{
+          await navigator.clipboard.writeText(text);
+          const t=b.textContent; b.textContent='✓ コピーしました';
+          setTimeout(()=>b.textContent=t, 1100);
+        }catch(e){ alert('コピーに失敗: '+e); }
+      });
+    });
+  })();
+</script>
+</body>
+</html>
