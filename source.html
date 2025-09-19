@@ -124,6 +124,18 @@
 
     <article>
       <div class="row">
+        <h2 id="ps-get-path">リモートデスクトップの許可（PowerShell）</h2>
+        <div class="tags"><span class="tag">powershell</span><span class="tag">windows</span></div>
+      </div>
+      <pre><code class="language-powershell">$rdp=(Get-ItemProperty "HKLM:\System\CurrentControlSet\Control\Terminal Server").fDenyTSConnections;if($rdp -eq 0){Write-Host "現在:有効";}else{Write-Host "現在:無効";};$c=Read-Host "1=有効化,2=無効化";if($c -eq "1"){Set-ItemProperty "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name fDenyTSConnections -Value 0;Enable-NetFirewallRule -DisplayGroup "Remote Desktop";Set-ItemProperty "HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name UserAuthentication -Value 1;Write-Host "✅ 有効化しました"}elseif($c -eq "2"){Set-ItemProperty "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name fDenyTSConnections -Value 1;Disable-NetFirewallRule -DisplayGroup "Remote Desktop";Write-Host "❌ 無効化しました"}else{Write-Host "キャンセル"}
+            </code></pre>
+      <div class="row" style="margin-top:8px">
+        <button class="copy" data-for="ps-get-path" aria-label="コードをコピー">コピー</button>
+      </div>
+    </article>
+
+    <article>
+      <div class="row">
         <h2 id="ps-listen-ports">待ち受けポートを確認（PowerShell）</h2>
         <div class="tags"><span class="tag">powershell</span><span class="tag">network</span></div>
       </div>
