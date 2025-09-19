@@ -134,6 +134,151 @@
       </div>
     </article>
 
+
+    <article>
+      <div class="row">
+        <h2 id="ps-change-battery-plan">リモートデスクトップの許可（PowerShell）</h2>
+        <div class="tags"><span class="tag">powershell</span><span class="tag">windows</span></div>
+      </div>
+      <pre><code class="language-powershell">
+# System_LocateがJP限定です。
+# 日本にいる人向けの設定更新になります。
+function Admin {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($identity)
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+# 管理者でなければ再起動
+if (-not (Admin)) {
+    Write-Host "🔁 管理者権限で再起動します..."
+    $script = $MyInvocation.MyCommand.Definition
+    Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`"" -Verb RunAs
+    exit
+}
+
+# 現在のプランID取得
+$schemeGuid = (powercfg /getactivescheme) -replace '.*:\s+|\s+\(.*', ''
+
+# 設定一覧（GUIDベースで定義）
+$settings = @(
+    @{ id = "1"; name = "ディスプレイの電源を切る（バッテリ駆動）"; group = "SUB_VIDEO"; subKey = "3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e"; mode = "dc" },
+    @{ id = "2"; name = "ディスプレイの電源を切る（電源に接続）"; group = "SUB_VIDEO"; subKey = "3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e"; mode = "ac" },
+    @{ id = "3"; name = "スリープ状態にする（バッテリ駆動）"; group = "SUB_SLEEP"; subKey = "29f6c1db-86da-48c5-9fdb-f2b67b1f44da"; mode = "dc" },
+    @{ id = "4"; name = "スリープ状態にする（電源に接続）"; group = "SUB_SLEEP"; subKey = "29f6c1db-86da-48c5-9fdb-f2b67b1f44da"; mode = "ac" }
+)
+
+# 現在値取得
+function Get-TimeoutValue {
+    param (
+        [string]$subgroup,
+        [string]$settingGuid,
+        [string]$mode
+    )
+    $tempFile = New-TemporaryFile
+    powercfg -query SCHEME_CURRENT $subgroup $settingGuid > $tempFile.FullName 2>$null
+    $lines = Get-Content $tempFile.FullName
+    Remove-Item $tempFile -Force
+
+    foreach ($line in $lines) {
+        if ($mode -eq "ac" -and $line -match "AC.*インデックス.*:\s*0x([0-9a-fA-F]+)") {
+            return [math]::Round(([convert]::ToInt32($matches[1], 16)) / 60)
+        }
+        if ($mode -eq "dc" -and $line -match "DC.*インデックス.*:\s*0x([0-9a-fA-F]+)") {
+            return [math]::Round(([convert]::ToInt32($matches[1], 16)) / 60)
+        }
+    }
+
+    return -1
+}
+
+# 表示
+Write-Host "`n🔎 現在の設定:"
+foreach ($s in $settings) {
+    $s.minutes = Get-TimeoutValue $s.group $s.subKey $s.mode
+    Write-Host "  [$($s.id)] $($s.name): $($s.minutes) 分"
+}
+Write-Host "  [0] やめる（終了）"
+Write-Host "  [5] 現在の設定を再読み込み"
+Write-Host "  [6] すべて「0 分」にする"
+Write-Host "  [7] すべて「1 分」にする"
+
+# 設定変更ループ
+do {
+    $choice = Read-Host "`n変更したい設定の番号を選んでください（0で終了 / 5で再読み込み）"
+    
+    if ($choice -eq "0") {
+        Write-Host "`n👋 終了します。"
+        break
+    }
+
+    if ($choice -eq "5") {
+        Write-Host "`n🔄 設定を再取得中..."
+        foreach ($s in $settings) {
+            $s.minutes = Get-TimeoutValue $s.group $s.subKey $s.mode
+            Write-Host "  [$($s.id)] $($s.name): $($s.minutes) 分"
+        }
+        continue
+    }
+
+    if ($choice -eq "6" -or $choice -eq "7") {
+        $newMinutes = if ($choice -eq "6") { 0 } else { 1 }
+        $seconds = $newMinutes * 60
+        Write-Host "`n🔧 すべての設定を $newMinutes 分に変更中..."
+
+        foreach ($s in $settings) {
+            if ($s.mode -eq "ac") {
+                powercfg -setacvalueindex $schemeGuid $s.group $s.subKey $seconds
+            } else {
+                powercfg -setdcvalueindex $schemeGuid $s.group $s.subKey $seconds
+            }
+        }
+
+        powercfg -S $schemeGuid
+        Write-Host "✅ 一括設定完了！"
+
+        foreach ($s in $settings) {
+            $s.minutes = Get-TimeoutValue $s.group $s.subKey $s.mode
+        }
+        continue
+    }
+
+    $target = $settings | Where-Object { $_.id -eq $choice }
+    if (-not $target) {
+        Write-Host "❌ 無効な選択です。"
+        continue
+    }
+
+    Write-Host "`n⏲ 新しい時間を入力（単位：分）"
+    Write-Host "  ※ 0 を入力すると『適用しない』になります。"
+    do {
+        $input = Read-Host "現在値: $($target.minutes) 分 → 新しい値（分）を入力してください"
+    } until ($input -match '^\d+$')
+
+    $newMinutes = [int]$input
+    $seconds = $newMinutes * 60
+
+    Write-Host "🛠 設定変更中: $($target.name) → $newMinutes 分..."
+
+    if ($target.mode -eq "ac") {
+        powercfg -setacvalueindex $schemeGuid $target.group $target.subKey $seconds
+    } else {
+        powercfg -setdcvalueindex $schemeGuid $target.group $target.subKey $seconds
+    }
+
+    powercfg -S $schemeGuid  # 変更を有効にする
+
+    Write-Host "✅ 設定完了！"
+
+    # 更新後の値を再取得
+    $target.minutes = Get-TimeoutValue $target.group $target.subKey $target.mode
+
+} while ($true)        
+            </code></pre>
+      <div class="row" style="margin-top:8px">
+        <button class="copy" data-for="ps-change-battery-plan" aria-label="コードをコピー">コピー</button>
+      </div>
+    </article>
     <article>
       <div class="row">
         <h2 id="ps-listen-ports">待ち受けポートを確認（PowerShell）</h2>
