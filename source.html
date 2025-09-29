@@ -115,8 +115,8 @@
         <h2 id="ps-get-path">実行PCのIPのみを表示（PowerShell）</h2>
         <div class="tags"><span class="tag">powershell</span><span class="tag">windows</span></div>
       </div>
-      <pre><code class="language-powershell">(Get-NetIPAddress -AddressFamily IPv4 |
-      Where-Object {$_.IPAddress -notlike '169.*' -and $_.IPAddress -ne '127.0.0.1'}).IPAddress</code></pre>
+      <pre><code class="language-powershell">(Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_ .IPAddress -notlike '169.*' -and $_ .IPAddress -ne '127.0.0.1'}).IPAddress
+</code></pre>
       <div class="row" style="margin-top:8px">
         <button class="copy" data-for="ps-get-path" aria-label="コードをコピー">コピー</button>
       </div>
