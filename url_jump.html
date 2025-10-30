@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-R" />
   <title>url_jump</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
@@ -23,7 +23,7 @@
       max-width: 400px;
       width: 100%;
       padding: 2rem 2.25rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); 
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
     h1 {
       font-size: 1.25rem;
@@ -77,6 +77,26 @@
     button:hover {
       background: #0056b3;
     }
+
+    /* ▼▼▼ [CSS] ローディング表示用のスタイルを追加 ▼▼▼ */
+    .loading-overlay {
+      /* bodyの grid place-content: center によって中央配置されます */
+      text-align: center;
+    }
+    .loading-message {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 2rem 2.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #333;
+      display: inline-block;
+      line-height: 1.5;
+    }
+    /* ▲▲▲ [CSS] 追加ここまで ▲▲▲ */
+
     .result-area {
       margin-top: 1.5rem;
       font-size: 0.85rem;
@@ -107,7 +127,14 @@
   </style>
 </head>
 <body>
-  <div class="card">
+
+  <div class="loading-overlay" id="loadingIndicator" style="display: none;">
+    <div class="loading-message">
+      リダイレクトしています...<br />
+      しばらくお待ちください。
+    </div>
+  </div>
+  <div class="card" id="formCard">
     <h1>リダイレクトURLの生成</h1>
 
     <label for="targetUrl">遷移先URL</label>
@@ -133,28 +160,54 @@
   </div>
 
   <script>
-    // クエリに redirect=xxxxx が付いていたら即ジャンプ
+    // ▼▼▼ [JavaScript] handleAutoRedirect 関数を修正 ▼▼▼
     (function handleAutoRedirect() {
       const params = new URLSearchParams(location.search);
       const encoded = params.get("redirect");
       if (!encoded) return; // 何もなければ何もしない（フォーム画面をそのまま表示）
 
-      try {
-        // decodeURIComponent -> atob の逆順でエンコードと合わせる
-        const decoded = atob(decodeURIComponent(encoded));
+      // 1. フォームとローディング要素を取得
+      const formCard = document.getElementById("formCard");
+      const loadingIndicator = document.getElementById("loadingIndicator");
 
-        // 安全っぽい最低限のチェック（http/https始まりのみ許可）
-        if (!/^https?:\/\//i.test(decoded)) {
-          console.warn("Invalid redirect target:", decoded);
-          return;
-        }
-
-        // 即リダイレクト
-        location.replace(decoded);
-      } catch (e) {
-        console.error("Failed to decode redirect param", e);
+      // 2. フォームを非表示にし、「読み込み中」を表示
+      if (formCard) {
+        formCard.style.display = "none";
       }
+      if (loadingIndicator) {
+        loadingIndicator.style.display = "block";
+      }
+
+      // 3. 処理関数（エラー時に表示を戻すため）
+      const attemptRedirect = () => {
+        try {
+          // decodeURIComponent -> atob の逆順でエンコードと合わせる
+          const decoded = atob(decodeURIComponent(encoded));
+
+          // 安全っぽい最低限のチェック（http/https始まりのみ許可）
+          if (!/^https?:\/\//i.test(decoded)) {
+            console.warn("Invalid redirect target:", decoded);
+            throw new Error("Invalid URL scheme"); // 検証エラーもcatchへ
+          }
+
+          // リダイレクト実行
+          location.replace(decoded);
+
+        } catch (e) {
+          console.error("Failed to decode or validate redirect param", e);
+          
+          // エラー発生時はフォームを再表示し、ローディングを消す
+          if (formCard) formCard.style.display = "block";
+          if (loadingIndicator) loadingIndicator.style.display = "none";
+        }
+      };
+
+      // 4. わずかに遅延させてリダイレクトを実行
+      // (ブラウザが「読み込み中」を描画する時間を与えるため)
+      setTimeout(attemptRedirect, 50); // 50ミリ秒 (0.05秒)
+
     })();
+    // ▲▲▲ [JavaScript] 修正ここまで ▲▲▲
 
     // フォーム動作：入力URLから「中継URL」を生成して表示
     (function setupGenerator() {
