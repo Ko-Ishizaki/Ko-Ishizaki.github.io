@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>url_jump</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+      background: #f4f7f6;
+      color: #333;
+      display: grid;
+      place-content: center;
+      min-height: 100dvh;
+      padding: 2rem;
+      box-sizing: border-box;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 100%;
+      padding: 2rem 2.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); 
+    }
+    h1 {
+      font-size: 1.25rem;
+      margin: 0 0 1rem;
+      line-height: 1.4;
+      font-weight: 600;
+      color: #222;
+    }
+    label {
+      font-size: 0.875rem;
+      color: #555;
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    input[type="url"] {
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #fcfcfc;
+      color: #333;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      padding: 0.75rem 0.8rem;
+      box-sizing: border-box;
+    }
+    input[type="url"]::placeholder {
+      color: #999;
+    }
+    input[type="url"]:focus {
+      outline: 0;
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+    }
+    button {
+      appearance: none;
+      display: inline-block;
+      cursor: pointer;
+      border: 0;
+      border-radius: 6px;
+      background: #007bff;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.9rem;
+      line-height: 1.2;
+      padding: 0.8rem 1rem;
+      width: 100%;
+      margin-top: 1rem;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .result-area {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: #444;
+      word-break: break-all;
+      display: none;
+    }
+    .result-area code {
+      background: #e9ecef;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 0.6rem 0.7rem;
+      display: block;
+      color: #212529;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
+        monospace;
+      margin-top: 0.5rem;
+    }
+    .note {
+      font-size: 0.75rem;
+      color: #777;
+      margin-top: 0.5rem;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>リダイレクトURLの生成</h1>
+
+    <label for="targetUrl">遷移先URL</label>
+    <input
+      id="targetUrl"
+      type="url"
+      placeholder="https://example.com/..."
+      inputmode="url"
+      autocomplete="off"
+      spellcheck="false"
+      required
+    />
+
+    <button id="makeLinkBtn">URLを生成する</button>
+
+    <div class="result-area" id="resultArea">
+      <div>生成されたURL：</div>
+      <code id="generatedLink"></code>
+      <div class="note">
+        このURLにアクセスすると、指定されたページにリダイレクトされます。
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // クエリに redirect=xxxxx が付いていたら即ジャンプ
+    (function handleAutoRedirect() {
+      const params = new URLSearchParams(location.search);
+      const encoded = params.get("redirect");
+      if (!encoded) return; // 何もなければ何もしない（フォーム画面をそのまま表示）
+
+      try {
+        // decodeURIComponent -> atob の逆順でエンコードと合わせる
+        const decoded = atob(decodeURIComponent(encoded));
+
+        // 安全っぽい最低限のチェック（http/https始まりのみ許可）
+        if (!/^https?:\/\//i.test(decoded)) {
+          console.warn("Invalid redirect target:", decoded);
+          return;
+        }
+
+        // 即リダイレクト
+        location.replace(decoded);
+      } catch (e) {
+        console.error("Failed to decode redirect param", e);
+      }
+    })();
+
+    // フォーム動作：入力URLから「中継URL」を生成して表示
+    (function setupGenerator() {
+      const btn = document.getElementById("makeLinkBtn");
+      const input = document.getElementById("targetUrl");
+      const resultArea = document.getElementById("resultArea");
+      const generatedLinkEl = document.getElementById("generatedLink");
+
+      btn.addEventListener("click", () => {
+        const rawUrl = input.value.trim();
+
+        // ざっくりチェック
+        if (!/^https?:\/\//i.test(rawUrl)) {
+          alert(
+            "https:// または http:// から始まる有効なURLを入力してください。"
+          );
+          return;
+        }
+
+        // リダイレクト先URLを少しだけそれっぽく隠す/圧縮する
+        // -> encodeURIComponent + btoa で "ランダムな謎っぽい文字列" にする
+        const encoded = encodeURIComponent(btoa(rawUrl));
+
+        // いま開いてるページのベースURL（クエリと#を除いたもの）
+        const base = location.origin + location.pathname;
+
+        // 例: https://あなたのページ.html?redirect=YWJjMTIz...
+        const fullLink = `${base}?redirect=${encoded}`;
+
+        generatedLinkEl.textContent = fullLink;
+        resultArea.style.display = "block";
+      });
+    })();
+  </script>
+</body>
+</html>
