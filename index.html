@@ -5,62 +5,681 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ko ISHIZAKI | Portfolio</title>
     <style>
+        :root {
+            --bg-color: #030305;
+            --surface-color: rgba(15, 15, 25, 0.4);
+            --surface-border: rgba(0, 243, 255, 0.2);
+            --neon-cyan: #00f3ff;
+            --neon-magenta: #bc13fe;
+            --text-main: #f8fafc;
+            --text-muted: #8b9bb4;
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Sans', Meiryo, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
         body {
-            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::selection {
+            background: rgba(188, 19, 254, 0.5);
+            color: #fff;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 10px; }
+
+        /* =========================================
+           Custom Cursor
+        ========================================= */
+        #cursor, #cursor-blur {
+            position: fixed;
+            top: 0; left: 0;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, background 0.3s;
+        }
+        #cursor {
+            width: 8px; height: 8px;
+            background-color: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+        #cursor-blur {
+            width: 40px; height: 40px;
+            border: 1px solid rgba(0, 243, 255, 0.5);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+            transition: 0.1s ease-out;
+        }
+        .hover-target:hover ~ #cursor { transform: translate(-50%, -50%) scale(0); }
+        body.hovering #cursor-blur {
+            width: 60px; height: 60px;
+            background-color: rgba(188, 19, 254, 0.1);
+            border-color: var(--neon-magenta);
+            box-shadow: 0 0 30px rgba(188, 19, 254, 0.4);
+        }
+
+        /* =========================================
+           Preloader
+        ========================================= */
+        #loader {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: var(--bg-color);
+            z-index: 10000;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #ffffff;
-            color: #1a1a1a;
-            letter-spacing: 0.05em;
+            transition: opacity 0.8s ease, visibility 0.8s;
         }
-        .container {
-            text-align: center;
-            border-top: 1px solid #eee;
-            border-bottom: 1px solid #eee;
-            padding: 60px 20px;
-            max-width: 500px;
-            width: 90%;
+        .loader-ring {
+            width: 150px; height: 150px;
+            border: 2px solid transparent;
+            border-top-color: var(--neon-cyan);
+            border-bottom-color: var(--neon-magenta);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
         }
-        h1 {
-            font-size: 1.25rem;
-            font-weight: 500;
-            margin: 0 0 1.5rem 0;
-            color: #000;
+        .loader-ring::before {
+            content: ''; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 2px solid transparent;
+            border-left-color: var(--neon-cyan);
+            border-right-color: var(--neon-magenta);
+            border-radius: 50%;
+            animation: spin 1s linear infinite reverse;
         }
-        p {
-            font-size: 0.9rem;
-            line-height: 1.8;
-            margin: 0;
-            color: #666;
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* =========================================
+           Background Elements (Orbs & Particles)
+        ========================================= */
+        .bg-orbs {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; pointer-events: none;
         }
-        .contact {
-            margin-top: 1.5rem;
+        .orb {
+            position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.4;
+            animation: breathe 15s infinite alternate ease-in-out;
         }
-        a {
-            color: #1a1a1a;
-            text-decoration: none;
-            font-weight: 500;
-            border-bottom: 1px solid #1a1a1a;
-            transition: opacity 0.2s;
+        .orb-1 { width: 45vw; height: 45vw; top: -10%; left: -10%; background: var(--neon-cyan); }
+        .orb-2 { width: 50vw; height: 50vw; bottom: -20%; right: -10%; background: var(--neon-magenta); animation-delay: -7s; opacity: 0.3; }
+        
+        @keyframes breathe {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.2) translate(50px, -50px); }
         }
-        a:hover {
-            opacity: 0.6;
+
+        #particles {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0;
+            animation: float-up linear infinite;
+        }
+        @keyframes float-up {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% { transform: translateY(-100px) scale(1); opacity: 0; }
+        }
+
+        /* =========================================
+           Layout & Typography
+        ========================================= */
+        .container { max-width: 1050px; margin: 0 auto; padding: 0 30px; }
+        section { padding: 150px 0; position: relative; }
+
+        .section-title {
+            font-size: 2.5rem; text-align: center; margin-bottom: 5rem;
+            letter-spacing: 4px; text-transform: uppercase; font-weight: 200;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .section-title span {
+            color: #fff; font-weight: 800;
+            text-shadow: 0 0 10px var(--neon-cyan), 0 0 30px rgba(0,243,255,0.4);
+            position: relative;
+        }
+        .section-title::after {
+            content: ''; width: 60px; height: 2px; margin-top: 15px;
+            background: linear-gradient(90deg, transparent, var(--neon-magenta), transparent);
+        }
+
+        .glass-card {
+            background: var(--surface-color);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--surface-border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform-style: preserve-3d;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 200%; height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1), transparent 50%);
+            transform: translate(-50%, -50%); opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            z-index: 1;
+        }
+        .glass-card:hover::before { opacity: 1; }
+        .glass-card:hover {
+            border-color: rgba(188, 19, 254, 0.4);
+            box-shadow: 0 0 30px rgba(188, 19, 254, 0.2), inset 0 0 20px rgba(188, 19, 254, 0.05);
+        }
+        .glass-card > * { transform: translateZ(30px); position: relative; z-index: 2; }
+
+        /* =========================================
+           Hero Section (Glitch Effect)
+        ========================================= */
+        #hero {
+            height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+        }
+        
+        .glitch-wrapper { position: relative; }
+        .hero-name {
+            font-size: 5rem; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 10px;
+            color: #fff; text-shadow: 0 0 20px var(--neon-cyan);
+            position: relative;
+        }
+        .hero-name::before, .hero-name::after {
+            content: 'KO ISHIZAKI'; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+        }
+        .hero-name::before {
+            left: 3px; text-shadow: -2px 0 var(--neon-magenta);
+            animation: glitch-anim-1 3s infinite linear alternate-reverse;
+        }
+        .hero-name::after {
+            left: -3px; text-shadow: -2px 0 var(--neon-cyan);
+            animation: glitch-anim-2 2s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(20% 0 80% 0); }
+            20% { clip-path: inset(60% 0 10% 0); }
+            40% { clip-path: inset(40% 0 50% 0); }
+            60% { clip-path: inset(80% 0 5% 0); }
+            80% { clip-path: inset(10% 0 70% 0); }
+            100% { clip-path: inset(30% 0 20% 0); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(10% 0 60% 0); }
+            20% { clip-path: inset(30% 0 20% 0); }
+            40% { clip-path: inset(70% 0 10% 0); }
+            60% { clip-path: inset(20% 0 50% 0); }
+            80% { clip-path: inset(90% 0 5% 0); }
+            100% { clip-path: inset(5% 0 80% 0); }
+        }
+
+        .hero-role {
+            font-size: 1.2rem; color: var(--text-muted); letter-spacing: 0.3em;
+            text-transform: uppercase; margin-bottom: 2rem;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: fade-up 1s ease-out 1s both;
+        }
+        @keyframes fade-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* =========================================
+           About Section
+        ========================================= */
+        .about-content { display: grid; grid-template-columns: 1fr 2fr; gap: 50px; align-items: center; }
+        .about-icon svg {
+            width: 140px; height: 140px; stroke: var(--neon-cyan);
+            filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.5));
+            animation: float-icon 4s ease-in-out infinite;
+        }
+        @keyframes float-icon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .about-text p { margin-bottom: 1.5rem; font-size: 1.1rem; letter-spacing: 0.05em; }
+        .highlight { color: #fff; text-shadow: 0 0 8px var(--neon-magenta); font-weight: bold; }
+
+        /* =========================================
+           Timeline Section
+        ========================================= */
+        .timeline { position: relative; max-width: 800px; margin: 0 auto; }
+        .timeline::before {
+            content: ''; position: absolute; width: 2px; top: 0; bottom: 0; left: 50%; margin-left: -1px;
+            background: linear-gradient(to bottom, transparent, var(--neon-cyan), var(--neon-magenta), transparent);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        .timeline-item { padding: 0 50px 50px 50px; position: relative; width: 50%; }
+        .timeline-item.left { left: 0; text-align: right; }
+        .timeline-item.right { left: 50%; }
+
+        .timeline-node {
+            position: absolute; width: 20px; height: 20px; background: var(--bg-color);
+            border: 3px solid var(--neon-cyan); border-radius: 50%; top: 30px; z-index: 1;
+            box-shadow: 0 0 15px var(--neon-cyan), inset 0 0 5px var(--neon-cyan);
+            transition: 0.3s;
+        }
+        .timeline-item:hover .timeline-node { background: var(--neon-cyan); transform: scale(1.3); }
+        .timeline-item.left .timeline-node { right: -10px; }
+        .timeline-item.right .timeline-node { left: -10px; }
+
+        .timeline-date {
+            display: inline-block; color: var(--neon-magenta); font-weight: bold; font-size: 0.9rem;
+            letter-spacing: 3px; margin-bottom: 10px; border-bottom: 1px solid rgba(188,19,254,0.3); padding-bottom: 5px;
+        }
+        .timeline-item h3 { font-size: 1.4rem; margin-bottom: 15px; color: #fff; }
+        .timeline-item p { color: var(--text-muted); font-size: 0.95rem; }
+
+        /* =========================================
+           Skills Section
+        ========================================= */
+        .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; }
+        .skill-group h3 {
+            display: flex; align-items: center; gap: 15px; font-size: 1.2rem; margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;
+        }
+        .skill-group h3 svg { width: 28px; height: 28px; stroke: var(--neon-magenta); filter: drop-shadow(0 0 8px var(--neon-magenta)); }
+        
+        .tags-container { display: flex; flex-wrap: wrap; gap: 15px; }
+        .tag {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 20px; border-radius: 30px; font-size: 0.9rem; letter-spacing: 1px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative; overflow: hidden;
+        }
+        .tag::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 0; height: 100%;
+            background: var(--neon-cyan); opacity: 0.1; transition: width 0.3s ease; z-index: -1;
+        }
+        .tag:hover { border-color: var(--neon-cyan); color: #fff; text-shadow: 0 0 8px var(--neon-cyan); transform: translateY(-3px); }
+        .tag:hover::before { width: 100%; }
+
+        /* =========================================
+           Certifications & Footer
+        ========================================= */
+        .cert-card { display: flex; align-items: center; gap: 30px; max-width: 700px; margin: 0 auto; }
+        .cert-icon svg { width: 60px; height: 60px; stroke: #fbbf24; filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.5)); }
+
+        /* =========================================
+           Contact Section (NEW)
+        ========================================= */
+        .contact-card {
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            max-width: 800px; margin: 0 auto;
+        }
+        .contact-card h3 {
+            font-size: 1.8rem; margin-bottom: 15px; color: #fff; text-shadow: 0 0 10px rgba(0,243,255,0.4);
+        }
+        .contact-btn {
+            display: inline-flex; align-items: center; gap: 15px;
+            margin-top: 20px; padding: 15px 35px;
+            background: rgba(0, 243, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 50px;
+            color: var(--neon-cyan);
+            font-size: 1.1rem; font-weight: bold; letter-spacing: 1.5px;
+            transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        .contact-btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .contact-btn:hover {
+            color: #fff; background: rgba(0, 243, 255, 0.15);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.4), inset 0 0 10px rgba(0, 243, 255, 0.2);
+            transform: translateY(-5px);
+        }
+        .contact-btn:hover::before { left: 100%; }
+        .contact-btn svg { width: 24px; height: 24px; stroke: currentColor; }
+
+        footer { text-align: center; padding: 50px 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 100px; }
+        footer p { color: var(--text-muted); font-size: 0.85rem; letter-spacing: 2px; }
+
+        .reveal { opacity: 0; transform: translateY(60px); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* =========================================
+           Responsive
+        ========================================= */
+        @media (max-width: 768px) {
+            .hero-name { font-size: 3rem; }
+            .about-content { grid-template-columns: 1fr; text-align: center; }
+            .timeline::before { left: 20px; }
+            .timeline-item { width: 100%; padding-left: 60px; padding-right: 0; text-align: left; }
+            .timeline-item.right { left: 0; }
+            .timeline-item.left .timeline-node, .timeline-item.right .timeline-node { left: 10px; right: auto; }
+            #cursor, #cursor-blur { display: none; } /* スマホではカーソル非表示 */
+            * { cursor: auto; }
+            .cert-card { flex-direction: column; text-align: center; }
+            .contact-btn { font-size: 0.9rem; padding: 12px 20px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>ホームページは現在修正中です</h1>
-        <p>
-            恐れ入りますが、再開まで今しばらくお待ちください。<br>
-            ご連絡は下記メールアドレスにて承っております。
-        </p>
-        <p class="contact">
-            <a href="mailto:koishizakigithubio@gmail.com">koishizakigithubio@gmail.com</a>
-        </p>
+
+    <div id="loader">
+        <div class="loader-ring"></div>
     </div>
+
+    <div id="cursor"></div>
+    <div id="cursor-blur"></div>
+
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+    <div id="particles"></div>
+
+    <section id="hero">
+        <div class="glitch-wrapper">
+            <h1 class="hero-name hover-target">KO ISHIZAKI</h1>
+        </div>
+        <p class="hero-role">Web Engineer / Internal SE</p>
+        <div class="tags-container" style="justify-content: center; opacity: 0.7; animation: fade-up 1s ease-out 1.2s both;">
+            <span class="tag hover-target">System Development</span>
+            <span class="tag hover-target">Infrastructure</span>
+            <span class="tag hover-target">Problem Solving</span>
+        </div>
+    </section>
+
+    <section id="about" class="container">
+        <h2 class="section-title reveal">Profile <span>Details</span></h2>
+        <div class="glass-card about-content reveal hover-target">
+            <div class="about-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <div class="about-text">
+                <p>2003年生まれ。</p>
+                <p>ITヘルプデスクとしてキャリアをスタートし、プログラマー・社内SEへと転向。</p>
+                <p>現在はWebシステムの保守・運営をメインに担当。<span class="highlight">PHP</span>や<span class="highlight">ASP.NET</span>を用いたバックエンド開発から、インフラ環境の構築・運用まで、レイヤーを問わず幅広く対応しています。</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="experience" class="container">
+        <h2 class="section-title reveal">Career <span>Path</span></h2>
+        <div class="timeline">
+            
+            <div class="timeline-item left reveal">
+                <div class="timeline-node"></div>
+                <div class="glass-card hover-target">
+                    <span class="timeline-date">2021.04</span>
+                    <h3>高等学校 卒業</h3>
+                </div>
+            </div>
+
+            <div class="timeline-item right reveal">
+                <div class="timeline-node"></div>
+                <div class="glass-card hover-target">
+                    <span class="timeline-date">2023.04</span>
+                    <h3>電気設備関連企業 入社</h3>
+                    <p>講習の運営補助業務等に従事。実務と並行して技術講習を受講し、国家資格「第二種電気工事士」を取得。</p>
+                </div>
+            </div>
+
+            <div class="timeline-item left reveal">
+                <div class="timeline-node"></div>
+                <div class="glass-card hover-target">
+                    <span class="timeline-date">2024.04</span>
+                    <h3>商社系企業 入社</h3>
+                    <p>社内ユーザーのシステムトラブル解決やインフラサポートを約1年間担当。</p>
+                </div>
+            </div>
+
+            <div class="timeline-item right reveal">
+                <div class="timeline-node"></div>
+                <div class="glass-card hover-target" style="border-color: rgba(188, 19, 254, 0.4); box-shadow: 0 0 30px rgba(188, 19, 254, 0.15);">
+                    <span class="timeline-date" style="color: var(--neon-cyan); border-color: rgba(0,243,255,0.3);">2025.02 - Present</span>
+                    <h3>システム開発 異動</h3>
+                    <p>プログラマー・社内SEへ転向。現在、Webシステム（PHP, .NET等）の保守・機能改修・運用をメインに担当。フロントエンドからサーバー環境までフルスタックに業務を遂行中。</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="skills" class="container">
+        <h2 class="section-title reveal">Technical <span>Stack</span></h2>
+        <div class="skills-grid">
+            
+            <div class="glass-card skill-group reveal hover-target">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                    Languages
+                </h3>
+                <div class="tags-container">
+                    <span class="tag">PHP</span> <span class="tag">C#</span> <span class="tag">Python</span>
+                    <span class="tag">Go</span> <span class="tag">Rust</span> <span class="tag">Node.js</span>
+                    <span class="tag">Visual Basic</span> <span class="tag">Excel VBA</span>
+                </div>
+            </div>
+
+            <div class="glass-card skill-group reveal hover-target">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                    Frameworks
+                </h3>
+                <div class="tags-container">
+                    <span class="tag">Laravel</span> <span class="tag">CakePHP</span> <span class="tag">ASP.NET</span>
+                    <span class="tag">.NET</span> <span class="tag">Flask</span> <span class="tag">FastAPI</span>
+                </div>
+            </div>
+
+            <div class="glass-card skill-group reveal hover-target">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                    </svg>
+                    Frontend
+                </h3>
+                <div class="tags-container">
+                    <span class="tag">JavaScript</span> <span class="tag">React</span>
+                    <span class="tag">HTML5</span> <span class="tag">CSS3</span>
+                </div>
+            </div>
+
+            <div class="glass-card skill-group reveal hover-target">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                    </svg>
+                    Infra & DB
+                </h3>
+                <div class="tags-container">
+                    <span class="tag">Docker</span> <span class="tag">Docker Compose</span>
+                    <span class="tag">SQL Server</span> <span class="tag">Ubuntu</span>
+                    <span class="tag">Rocky Linux</span> <span class="tag">Windows 11</span> <span class="tag">Rancher</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="certifications" class="container">
+        <h2 class="section-title reveal">License <span>& Cert</span></h2>
+        <div class="glass-card cert-card reveal hover-target">
+            <div class="cert-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 15l-2 5l9-5l-9-5l2 5z"></path>
+                    <circle cx="12" cy="8" r="6"></circle>
+                </svg>
+            </div>
+            <div>
+                <h3 style="font-size: 1.4rem; margin-bottom: 10px; color: #fff; text-shadow: 0 0 8px rgba(251,191,36,0.6);">第二種電気工事士</h3>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW: Contact Section -->
+    <section id="contact" class="container">
+        <h2 class="section-title reveal">Get in <span>Touch</span></h2>
+        <div class="glass-card contact-card reveal hover-target">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 70px; height: 70px; stroke: var(--neon-cyan); margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(0, 243, 255, 0.4));">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <h3>Let's Build Something Together</h3>
+            <p style="color: var(--text-muted); font-size: 1.05rem;">開発に関するご相談やお問い合わせなど、お気軽にご連絡ください。</p>
+            
+            <a href="mailto:koishizakigithubio@gmail.com" class="contact-btn hover-target" id="email-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                <span id="email-text">koishizakigithubio@gmail.com</span>
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Ko Ishizaki. Crafted purely with HTML/CSS/JS.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 800);
+            }, 1200);
+
+            const cursor = document.getElementById('cursor');
+            const cursorBlur = document.getElementById('cursor-blur');
+            let mouseX = 0, mouseY = 0;
+            let cursorX = 0, cursorY = 0;
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                cursor.style.left = mouseX + 'px';
+                cursor.style.top = mouseY + 'px';
+            });
+
+            const renderCursor = () => {
+                cursorX += (mouseX - cursorX) * 0.15;
+                cursorY += (mouseY - cursorY) * 0.15;
+                cursorBlur.style.left = cursorX + 'px';
+                cursorBlur.style.top = cursorY + 'px';
+                requestAnimationFrame(renderCursor);
+            };
+            renderCursor();
+
+            const hoverTargets = document.querySelectorAll('.hover-target, a, .tag');
+            hoverTargets.forEach(target => {
+                target.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+                target.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+            });
+
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 40;
+            
+            for(let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                const size = Math.random() * 4 + 1;
+                const left = Math.random() * 100;
+                const duration = Math.random() * 10 + 10;
+                const delay = Math.random() * 15;
+                
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = left + 'vw';
+                particle.style.animationDuration = duration + 's';
+                particle.style.animationDelay = delay + 's';
+                
+                particle.style.boxShadow = Math.random() > 0.5 
+                    ? '0 0 10px #00f3ff, 0 0 20px #00f3ff' 
+                    : '0 0 10px #bc13fe, 0 0 20px #bc13fe';
+                    
+                particlesContainer.appendChild(particle);
+            }
+
+            const cards = document.querySelectorAll('.glass-card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = ((y - centerY) / centerY) * -8;
+                    const rotateY = ((x - centerX) / centerX) * 8;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                    
+                    const before = card.style;
+                    before.setProperty('--x', `${x}px`);
+                    before.setProperty('--y', `${y}px`);
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+                });
+            });
+
+            const observerOptions = { threshold: 0.15, rootMargin: "0px 0px -50px 0px" };
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+            // Copy to Clipboard Interaction for Contact Button
+            const emailBtn = document.getElementById('email-btn');
+            const emailText = document.getElementById('email-text');
+            
+            emailBtn.addEventListener('click', (e) => {
+                if(navigator.clipboard) {
+                    navigator.clipboard.writeText('koishizakigithubio@gmail.com').then(() => {
+                        const originalText = emailText.innerText;
+                        emailText.innerText = 'Copied to clipboard!';
+                        emailText.style.color = '#fff';
+                        
+                        setTimeout(() => {
+                            emailText.innerText = originalText;
+                            emailText.style.color = '';
+                        }, 2500);
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
