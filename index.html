@@ -243,10 +243,20 @@
            About Section
         ========================================= */
         .about-content { display: grid; grid-template-columns: 1fr 2fr; gap: 50px; align-items: center; }
-        .about-icon svg {
-            width: 140px; height: 140px; stroke: var(--neon-cyan);
-            filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.5));
+        .about-icon { text-align: center; }
+        .about-icon img {
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.5);
             animation: float-icon 4s ease-in-out infinite;
+            position: relative;
+            z-index: 2;
+        }
+        @keyframes float-icon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
         }
         @keyframes float-icon {
             0%, 100% { transform: translateY(0); }
@@ -402,10 +412,7 @@
         <h2 class="section-title reveal">Profile <span>Details</span></h2>
         <div class="glass-card about-content reveal hover-target">
             <div class="about-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
+                <img src="https://github.com/Ko-Ishizaki.png" alt="Ko Ishizaki GitHub Avatar" class="hover-target">
             </div>
             <div class="about-text">
                 <p>2003年生まれ。</p>
