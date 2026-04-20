@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unix Timestamp Converter</title>
+    <style>
+        :root {
+            --primary-color: #0366d6;
+            --bg-color: #f6f8fa;
+            --border-color: #e1e4e8;
+            --text-color: #24292e;
+            --error-color: #cb2431;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 1.5em;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        h2 {
+            font-size: 1.1em;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        input[type="text"], input[type="date"], input[type="time"], select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+        .row > div {
+            flex: 1;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 5px;
+        }
+        button:hover {
+            background-color: #005cc5;
+        }
+        button.secondary {
+            background-color: #fafbfc;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        button.secondary:hover {
+            background-color: #f3f4f6;
+        }
+        .result-box {
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .result-row:last-child {
+            margin-bottom: 0;
+        }
+        .result-label {
+            font-weight: 600;
+            width: 50px;
+        }
+        .result-value {
+            flex: 1;
+            font-family: monospace;
+            font-size: 1.1em;
+            margin: 0 10px;
+            word-break: break-all;
+        }
+        .copy-btn {
+            width: auto;
+            padding: 4px 8px;
+            font-size: 0.8em;
+            margin-top: 0;
+        }
+        #error-msg {
+            color: var(--error-color);
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-top: 10px;
+            text-align: center;
+            min-height: 1.5em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Unix Timestamp Converter</h1>
+
+    <div class="section">
+        <button class="secondary" onclick="setCurrentTime()" style="margin-bottom: 15px;">現在時刻をセット (Current Time)</button>
+
+        <h2>Unix → 日時変換</h2>
+        <div class="form-group">
+            <label for="unix-input">Unixタイムスタンプ (秒 or ミリ秒)</label>
+            <input type="text" id="unix-input" placeholder="例: 1772527118" oninput="convertFromUnix()">
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>日時 → Unix変換</h2>
+        <div class="form-group row">
+            <div>
+                <label for="date-input">日付</label>
+                <input type="date" id="date-input" oninput="convertFromDate()">
+            </div>
+            <div>
+                <label for="time-input">時刻</label>
+                <input type="time" id="time-input" step="1" value="00:00:00" oninput="convertFromDate()">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="tz-select">タイムゾーン</label>
+            <select id="tz-select" onchange="convertFromDate()">
+                <option value="JST">JST (UTC+9)</option>
+                <option value="UTC">UTC</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>結果 (Results)</h2>
+        <div class="result-box">
+            <div class="result-row">
+                <span class="result-label">UTC:</span>
+                <span class="result-value" id="res-utc">-</span>
+                <button class="secondary copy-btn" onclick="copyToClipboard('res-utc')">Copy</button>
+            </div>
+            <div class="result-row">
+                <span class="result-label">JST:</span>
+                <span class="result-value" id="res-jst">-</span>
+                <button class="secondary copy-btn" onclick="copyToClipboard('res-jst')">Copy</button>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Unix:</span>
+                <span class="result-value" id="res-unix">-</span>
+                <button class="secondary copy-btn" onclick="copyToClipboard('res-unix')">Copy</button>
+            </div>
+        </div>
+        <div id="error-msg"></div>
+    </div>
+</div>
+
+<script>
+    // ゼロ埋めユーティリティ
+    const pad = (num) => String(num).padStart(2, '0');
+
+    // エラー表示処理
+    function showError(msg) {
+        document.getElementById('error-msg').textContent = msg;
+        if (msg) {
+            document.getElementById('res-utc').textContent = '-';
+            document.getElementById('res-jst').textContent = '-';
+            document.getElementById('res-unix').textContent = '-';
+        }
+    }
+
+    // 結果の描画と入力欄の同期
+    function updateResults(timestampMs, source) {
+        showError(''); // エラークリア
+
+        const dateUtc = new Date(timestampMs);
+        const dateJst = new Date(timestampMs + 9 * 60 * 60 * 1000); // UTC+9
+        const unixSec = Math.floor(timestampMs / 1000);
+
+        // UTC文字列の生成
+        const utcStr = `${dateUtc.getUTCFullYear()}-${pad(dateUtc.getUTCMonth() + 1)}-${pad(dateUtc.getUTCDate())} ${pad(dateUtc.getUTCHours())}:${pad(dateUtc.getUTCMinutes())}:${pad(dateUtc.getUTCSeconds())}`;
+        
+        // JST文字列の生成
+        const jstStr = `${dateJst.getUTCFullYear()}-${pad(dateJst.getUTCMonth() + 1)}-${pad(dateJst.getUTCDate())} ${pad(dateJst.getUTCHours())}:${pad(dateJst.getUTCMinutes())}:${pad(dateJst.getUTCSeconds())}`;
+
+        // 下部結果エリアの更新
+        document.getElementById('res-utc').textContent = utcStr;
+        document.getElementById('res-jst').textContent = jstStr;
+        document.getElementById('res-unix').textContent = unixSec;
+
+        // 【双方向連動】日時入力が元データでない場合は、日時入力欄をJSTで更新する
+        if (source !== 'date') {
+            document.getElementById('date-input').value = `${dateJst.getUTCFullYear()}-${pad(dateJst.getUTCMonth() + 1)}-${pad(dateJst.getUTCDate())}`;
+            document.getElementById('time-input').value = `${pad(dateJst.getUTCHours())}:${pad(dateJst.getUTCMinutes())}:${pad(dateJst.getUTCSeconds())}`;
+            document.getElementById('tz-select').value = 'JST';
+        }
+
+        // 【双方向連動】Unix入力が元データでない場合は、Unix入力欄を更新する
+        if (source !== 'unix') {
+            document.getElementById('unix-input').value = unixSec;
+        }
+    }
+
+    // Unix → 日時変換 (Unix入力欄が変更された時)
+    function convertFromUnix() {
+        const val = document.getElementById('unix-input').value.trim();
+        if (!val) return showError('');
+
+        if (!/^-?\d+$/.test(val)) {
+            return showError('無効なUnixタイムスタンプです（数値のみ入力してください）');
+        }
+
+        let num = parseInt(val, 10);
+        let timestampMs = val.length < 12 ? num * 1000 : num; // 13桁未満は秒として扱う
+
+        const d = new Date(timestampMs);
+        if (isNaN(d.getTime())) return showError('無効な日時です');
+
+        updateResults(timestampMs, 'unix');
+    }
+
+    // 日時 → Unix変換 (日時入力欄が変更された時)
+    function convertFromDate() {
+        const dateVal = document.getElementById('date-input').value;
+        const timeVal = document.getElementById('time-input').value || '00:00:00';
+        const tz = document.getElementById('tz-select').value;
+
+        if (!dateVal) return showError('');
+
+        // YYYY-MM-DDTHH:mm:ss+09:00 のISO8601形式を作成してパース
+        const isoString = `${dateVal}T${timeVal}${tz === 'JST' ? '+09:00' : 'Z'}`;
+        const timestampMs = Date.parse(isoString);
+
+        if (isNaN(timestampMs)) return showError('無効な日付・時刻です');
+
+        updateResults(timestampMs, 'date');
+    }
+
+    // 現在時刻をセット
+    function setCurrentTime() {
+        updateResults(Date.now(), 'current');
+    }
+
+    // コピー機能
+    function copyToClipboard(elementId) {
+        const text = document.getElementById(elementId).textContent;
+        if (text === '-') return;
+
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = originalText, 1500);
+        }).catch(() => alert('コピーに失敗しました'));
+    }
+
+    // 初期化: 現在時刻をセットして開始
+    window.onload = setCurrentTime;
+</script>
+
+</body>
+</html>
